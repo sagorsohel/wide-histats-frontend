@@ -1,8 +1,15 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useCallback } from "react";
 import { Website } from "@/types/analytics";
-import { api } from "@/lib/api";
+import { useAppDispatch, useAppSelector } from "@/store";
+import {
+  fetchWebsites,
+  createNewWebsite,
+  setSelectedWebsite as setSelectedWebsiteAction,
+  openTrackingModal as openTrackingModalAction,
+  closeTrackingModal as closeTrackingModalAction,
+} from "@/store/slices/websiteSlice";
 import { useAuth } from "./AuthContext";
 import { subscribeToWebsite, unsubscribeFromWebsite } from "@/lib/socket";
 
@@ -21,45 +28,23 @@ interface WebsiteContextType {
 const WebsiteContext = createContext<WebsiteContextType | undefined>(undefined);
 
 export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const dispatch = useAppDispatch();
   const { user } = useAuth();
-  const [websites, setWebsites] = useState<Website[]>([]);
-  const [selectedWebsite, setSelectedWebsiteState] = useState<Website | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [trackingModalWebsite, setTrackingModalWebsite] = useState<Website | null>(null);
+  const { websites, selectedWebsite, loading, trackingModalWebsite } = useAppSelector(
+    (state) => state.website
+  );
 
   const reloadWebsites = useCallback(async () => {
-    if (!user) {
-      setWebsites([]);
-      setSelectedWebsiteState(null);
-      return;
+    if (user) {
+      await dispatch(fetchWebsites());
     }
-
-    setLoading(true);
-    try {
-      const res = await api.get<Website[]>("/api/v1/websites");
-      if (res.success && res.data) {
-        setWebsites(res.data);
-        if (res.data.length > 0) {
-          // Keep current selected website if still exists, or default to first
-          setSelectedWebsiteState((prev) => {
-            if (prev) {
-              const matched = res.data?.find((w) => w.id === prev.id);
-              if (matched) return matched;
-            }
-            return res.data![0];
-          });
-        }
-      }
-    } catch {
-      // Silent catch
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
+  }, [user, dispatch]);
 
   useEffect(() => {
-    reloadWebsites();
-  }, [reloadWebsites]);
+    if (user) {
+      dispatch(fetchWebsites());
+    }
+  }, [user, dispatch]);
 
   useEffect(() => {
     if (selectedWebsite?.id) {
@@ -71,34 +56,27 @@ export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [selectedWebsite?.id]);
 
   const setSelectedWebsite = (website: Website) => {
-    if (selectedWebsite && selectedWebsite.id !== website.id) {
-      unsubscribeFromWebsite(selectedWebsite.id);
-    }
-    setSelectedWebsiteState(website);
-    subscribeToWebsite(website.id);
+    dispatch(setSelectedWebsiteAction(website));
   };
 
-  const createWebsite = async (name: string, domain: string, isPublic = false): Promise<Website | null> => {
-    const res = await api.post<Website>("/api/v1/websites", {
-      name,
-      domain,
-      isPublic,
-    });
-
-    if (res.success && res.data) {
-      await reloadWebsites();
-      setSelectedWebsite(res.data);
-      return res.data;
+  const createWebsite = async (
+    name: string,
+    domain: string,
+    isPublic = false
+  ): Promise<Website | null> => {
+    const result = await dispatch(createNewWebsite({ name, domain, isPublic }));
+    if (createNewWebsite.fulfilled.match(result)) {
+      return result.payload;
     }
     return null;
   };
 
   const openTrackingModal = (website: Website) => {
-    setTrackingModalWebsite(website);
+    dispatch(openTrackingModalAction(website));
   };
 
   const closeTrackingModal = () => {
-    setTrackingModalWebsite(null);
+    dispatch(closeTrackingModalAction());
   };
 
   return (

@@ -8,12 +8,15 @@ export interface ApiResponse<T = any> {
 }
 
 class ApiClient {
-  private getToken(): string | null {
+  private isRefreshing = false;
+  private refreshPromise: Promise<string | null> | null = null;
+
+  public getAccessToken(): string | null {
     if (typeof window === "undefined") return null;
     return localStorage.getItem("accessToken");
   }
 
-  public setToken(token: string | null) {
+  public setAccessToken(token: string | null) {
     if (typeof window === "undefined") return;
     if (token) {
       localStorage.setItem("accessToken", token);
@@ -22,11 +25,102 @@ class ApiClient {
     }
   }
 
+  // Alias for backward compatibility
+  public setToken(token: string | null) {
+    this.setAccessToken(token);
+  }
+
+  public getRefreshToken(): string | null {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("refreshToken");
+  }
+
+  public setRefreshToken(token: string | null) {
+    if (typeof window === "undefined") return;
+    if (token) {
+      localStorage.setItem("refreshToken", token);
+    } else {
+      localStorage.removeItem("refreshToken");
+    }
+  }
+
+  public getStoredUser(): any | null {
+    if (typeof window === "undefined") return null;
+    try {
+      const u = localStorage.getItem("histat_user");
+      return u ? JSON.parse(u) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  public setStoredUser(user: any | null) {
+    if (typeof window === "undefined") return;
+    if (user) {
+      localStorage.setItem("histat_user", JSON.stringify(user));
+    } else {
+      localStorage.removeItem("histat_user");
+    }
+  }
+
+  public clearAuth() {
+    if (typeof window === "undefined") return;
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("histat_user");
+  }
+
+  private async refreshAccessToken(): Promise<string | null> {
+    if (this.isRefreshing && this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
+      return null;
+    }
+
+    this.isRefreshing = true;
+    this.refreshPromise = (async () => {
+      try {
+        const response = await fetch(`${API_BASE}/api/v1/auth/refresh`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ refreshToken }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Refresh failed");
+        }
+
+        const json = await response.json();
+        if (json.success && json.data?.accessToken) {
+          const newAccessToken = json.data.accessToken;
+          this.setAccessToken(newAccessToken);
+          if (json.data.refreshToken) {
+            this.setRefreshToken(json.data.refreshToken);
+          }
+          return newAccessToken;
+        }
+        return null;
+      } catch {
+        this.clearAuth();
+        return null;
+      } finally {
+        this.isRefreshing = false;
+        this.refreshPromise = null;
+      }
+    })();
+
+    return this.refreshPromise;
+  }
+
   async request<T = any>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
-    const token = this.getToken();
+    let token = this.getAccessToken();
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
       ...(options.headers as Record<string, string>),
@@ -37,11 +131,29 @@ class ApiClient {
     }
 
     try {
-      const response = await fetch(`${API_BASE}${endpoint}`, {
+      let response = await fetch(`${API_BASE}${endpoint}`, {
         ...options,
         headers,
         credentials: "include",
       });
+
+      // Handle token expiration: attempt auto-refresh on 401
+      if (
+        response.status === 401 &&
+        !endpoint.includes("/auth/login") &&
+        !endpoint.includes("/auth/register") &&
+        !endpoint.includes("/auth/refresh")
+      ) {
+        const newToken = await this.refreshAccessToken();
+        if (newToken) {
+          headers["Authorization"] = `Bearer ${newToken}`;
+          response = await fetch(`${API_BASE}${endpoint}`, {
+            ...options,
+            headers,
+            credentials: "include",
+          });
+        }
+      }
 
       const data = await response.json();
 

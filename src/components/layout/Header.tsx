@@ -27,7 +27,7 @@ export const Header: React.FC = () => {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   return (
-    <header className="h-16 border-b border-slate-200 bg-white sticky top-0 z-40 px-4 lg:px-8 flex items-center justify-between shadow-sm">
+    <header className="h-16 border-b border-slate-200 bg-white sticky top-0 z-40 px-4 lg:px-8 flex items-center justify-between shadow-sm shrink-0">
       {/* Brand & Website Selector */}
       <div className="flex items-center gap-6">
         <Link href="/" className="flex items-center gap-2.5">

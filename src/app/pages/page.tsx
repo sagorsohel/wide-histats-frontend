@@ -64,12 +64,12 @@ export default function PagesReportPage() {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/50">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight">
+          <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
             Pages & Content Performance
           </h1>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             Analyze visitor flow, entry landing pages, and drop-off exit pages
           </p>
         </div>
@@ -78,11 +78,11 @@ export default function PagesReportPage() {
       </div>
 
       {/* Top Pages Table */}
-      <div className="glass-panel p-6 rounded-2xl">
-        <h3 className="font-bold text-base text-white mb-4">All Visited Pages</h3>
+      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
+        <h3 className="font-bold text-base text-slate-900 mb-4">All Visited Pages</h3>
 
         {pages.length === 0 ? (
-          <div className="py-12 text-center text-xs text-muted-foreground">
+          <div className="py-12 text-center text-xs text-slate-400">
             No pageviews recorded.
           </div>
         ) : (
@@ -93,21 +93,21 @@ export default function PagesReportPage() {
               return (
                 <div key={index} className="group relative">
                   <div
-                    className="absolute inset-y-0 left-0 bg-cyan-500/10 rounded-lg pointer-events-none transition-all group-hover:bg-cyan-500/15"
+                    className="absolute inset-y-0 left-0 bg-blue-500/10 rounded-lg pointer-events-none transition-all group-hover:bg-blue-500/15"
                     style={{ width: `${percentage}%` }}
                   />
 
                   <div className="relative flex items-center justify-between p-3 rounded-lg text-xs">
                     <div className="flex items-center gap-3 truncate pr-4">
-                      <span className="w-5 text-slate-500 font-mono font-bold text-[11px]">
+                      <span className="w-5 text-slate-400 font-mono font-bold text-[11px]">
                         {index + 1}
                       </span>
                       <div className="truncate">
-                        <div className="font-semibold text-slate-200 truncate group-hover:text-cyan-400 font-mono">
+                        <div className="font-semibold text-slate-800 truncate group-hover:text-[#1d5b9f] font-mono">
                           {page.path}
                         </div>
                         {page.title && (
-                          <div className="text-[11px] text-muted-foreground truncate">
+                          <div className="text-[11px] text-slate-500 truncate">
                             {page.title}
                           </div>
                         )}
@@ -116,16 +116,16 @@ export default function PagesReportPage() {
 
                     <div className="flex items-center gap-6 shrink-0 text-right">
                       <div>
-                        <div className="font-extrabold text-white">
+                        <div className="font-extrabold text-slate-900 tabular-nums">
                           {page.pageviews}
                         </div>
-                        <div className="text-[10px] text-muted-foreground">views</div>
+                        <div className="text-[10px] text-slate-400">views</div>
                       </div>
                       <div>
-                        <div className="font-bold text-slate-300">
+                        <div className="font-bold text-slate-600 tabular-nums">
                           {page.visitors}
                         </div>
-                        <div className="text-[10px] text-muted-foreground">visitors</div>
+                        <div className="text-[10px] text-slate-400">visitors</div>
                       </div>
                     </div>
                   </div>
@@ -139,14 +139,14 @@ export default function PagesReportPage() {
       {/* Two Column Breakdown: Landing vs Exit Pages */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Landing Pages */}
-        <div className="glass-panel p-6 rounded-2xl">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
           <div className="flex items-center gap-2 mb-4">
-            <LogIn className="w-4 h-4 text-emerald-400" />
-            <h3 className="font-bold text-base text-white">Top Landing Pages</h3>
+            <LogIn className="w-4 h-4 text-emerald-600" />
+            <h3 className="font-bold text-base text-slate-900">Top Landing Pages</h3>
           </div>
 
           {landingPages.length === 0 ? (
-            <div className="py-12 text-center text-xs text-muted-foreground">
+            <div className="py-12 text-center text-xs text-slate-400">
               No landing records.
             </div>
           ) : (
@@ -154,12 +154,12 @@ export default function PagesReportPage() {
               {landingPages.map((l, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/40 text-xs font-mono"
+                  className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-mono"
                 >
-                  <span className="text-slate-300 truncate max-w-[280px]">
+                  <span className="text-slate-700 truncate max-w-[280px]">
                     {l.path}
                   </span>
-                  <span className="font-bold text-emerald-400 font-sans">
+                  <span className="font-bold text-emerald-700 font-sans tabular-nums">
                     {l.sessions} sessions
                   </span>
                 </div>
@@ -169,14 +169,14 @@ export default function PagesReportPage() {
         </div>
 
         {/* Exit Pages */}
-        <div className="glass-panel p-6 rounded-2xl">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
           <div className="flex items-center gap-2 mb-4">
-            <LogOut className="w-4 h-4 text-rose-400" />
-            <h3 className="font-bold text-base text-white">Top Exit Pages</h3>
+            <LogOut className="w-4 h-4 text-rose-500" />
+            <h3 className="font-bold text-base text-slate-900">Top Exit Pages</h3>
           </div>
 
           {exitPages.length === 0 ? (
-            <div className="py-12 text-center text-xs text-muted-foreground">
+            <div className="py-12 text-center text-xs text-slate-400">
               No exit records.
             </div>
           ) : (
@@ -184,12 +184,12 @@ export default function PagesReportPage() {
               {exitPages.map((e, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/40 text-xs font-mono"
+                  className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-mono"
                 >
-                  <span className="text-slate-300 truncate max-w-[280px]">
+                  <span className="text-slate-700 truncate max-w-[280px]">
                     {e.path}
                   </span>
-                  <span className="font-bold text-rose-400 font-sans">
+                  <span className="font-bold text-rose-600 font-sans tabular-nums">
                     {e.sessions} exits
                   </span>
                 </div>

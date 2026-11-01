@@ -81,19 +81,19 @@ export default function WebsitesPage() {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/50">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight">
+          <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
             Websites Management
           </h1>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             Register websites, configure domains, and obtain JavaScript tracking snippets
           </p>
         </div>
 
         <button
           onClick={() => setModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold text-xs shadow-md shadow-cyan-500/20 transition-all self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1d5b9f] hover:bg-[#174880] text-white font-bold text-xs shadow-md shadow-blue-500/20 transition-all self-start sm:self-auto cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           Register Website
@@ -108,27 +108,27 @@ export default function WebsitesPage() {
           return (
             <div
               key={site.id}
-              className={`glass-panel p-6 rounded-2xl flex flex-col justify-between transition-all duration-300 ${
+              className={`bg-white p-6 rounded-2xl border flex flex-col justify-between transition-all duration-300 shadow-2xs ${
                 isSelected
-                  ? "ring-2 ring-cyan-500/50 border-cyan-500/40 bg-slate-900/90 shadow-xl shadow-cyan-500/10"
-                  : "hover:border-slate-700"
+                  ? "ring-2 ring-[#1d5b9f] border-[#1d5b9f] shadow-md shadow-blue-500/10"
+                  : "border-slate-200 hover:border-slate-300"
               }`}
             >
               <div>
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2.5 truncate pr-2">
-                    <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center text-[#1d5b9f] shrink-0">
                       <Globe className="w-4 h-4" />
                     </div>
                     <div className="truncate">
-                      <h3 className="font-extrabold text-white text-base truncate">
+                      <h3 className="font-extrabold text-slate-900 text-base truncate">
                         {site.name}
                       </h3>
                       <a
                         href={`https://${site.domain}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-xs text-muted-foreground hover:text-cyan-400 flex items-center gap-1 font-mono"
+                        className="text-xs text-slate-500 hover:text-[#1d5b9f] flex items-center gap-1 font-mono"
                       >
                         {site.domain}
                         <ExternalLink className="w-2.5 h-2.5" />
@@ -137,37 +137,37 @@ export default function WebsitesPage() {
                   </div>
 
                   {isSelected && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shrink-0">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-[#1d5b9f] border border-blue-200 shrink-0">
                       Active
                     </span>
                   )}
                 </div>
 
                 {/* Tracking ID Badge */}
-                <div className="p-2.5 rounded-xl bg-slate-900/80 border border-border/80 text-xs font-mono text-slate-300 flex items-center justify-between mb-4">
-                  <span className="text-muted-foreground text-[10px] uppercase tracking-wider font-sans">
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-700 flex items-center justify-between mb-4">
+                  <span className="text-slate-500 text-[10px] uppercase tracking-wider font-sans">
                     Tracking ID
                   </span>
-                  <span className="font-bold text-cyan-400 text-[11px]">
+                  <span className="font-bold text-[#1d5b9f] text-[11px]">
                     {site.trackingId}
                   </span>
                 </div>
 
                 {/* Quick counts */}
                 <div className="grid grid-cols-2 gap-2 mb-5 text-center text-xs">
-                  <div className="p-2 rounded-lg bg-slate-900/40 border border-border/60">
-                    <span className="text-[10px] text-muted-foreground block">
+                  <div className="p-2 rounded-lg bg-slate-50 border border-slate-200">
+                    <span className="text-[10px] text-slate-500 block">
                       Total Visitors
                     </span>
-                    <span className="font-extrabold text-white text-sm">
+                    <span className="font-extrabold text-slate-900 text-sm tabular-nums">
                       {site.totalVisitors || 0}
                     </span>
                   </div>
-                  <div className="p-2 rounded-lg bg-slate-900/40 border border-border/60">
-                    <span className="text-[10px] text-muted-foreground block">
+                  <div className="p-2 rounded-lg bg-slate-50 border border-slate-200">
+                    <span className="text-[10px] text-slate-500 block">
                       Total Views
                     </span>
-                    <span className="font-extrabold text-white text-sm">
+                    <span className="font-extrabold text-slate-900 text-sm tabular-nums">
                       {site.totalPageviews || 0}
                     </span>
                   </div>
@@ -175,10 +175,10 @@ export default function WebsitesPage() {
               </div>
 
               {/* Actions Footer */}
-              <div className="pt-3 border-t border-border flex items-center justify-between gap-2">
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                 <button
                   onClick={() => openTrackingModal(site)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 text-xs font-semibold transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-200 bg-blue-50 text-[#1d5b9f] hover:bg-blue-100 text-xs font-semibold transition-all cursor-pointer"
                 >
                   <Code className="w-3.5 h-3.5" />
                   Code
@@ -188,7 +188,7 @@ export default function WebsitesPage() {
                   {!isSelected && (
                     <button
                       onClick={() => setSelectedWebsite(site)}
-                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-all"
+                      className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-all cursor-pointer"
                     >
                       Select
                     </button>
@@ -196,7 +196,7 @@ export default function WebsitesPage() {
 
                   <button
                     onClick={() => handleDelete(site.id, site.name)}
-                    className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                     title="Delete Website"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -210,29 +210,29 @@ export default function WebsitesPage() {
 
       {/* Modal for creating website */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-md rounded-2xl border border-cyan-500/30 bg-[#0f172a] shadow-2xl p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in">
+          <div className="relative w-full max-w-md rounded-2xl border border-slate-200 bg-white shadow-2xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-extrabold text-lg text-white">
+              <h3 className="font-extrabold text-lg text-slate-900">
                 Register New Website
               </h3>
               <button
                 onClick={() => setModalOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {error && (
-              <div className="mb-4 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs">
+              <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
                 {error}
               </div>
             )}
 
             <form onSubmit={handleCreate} className="space-y-4 text-xs">
               <div>
-                <label className="block font-semibold text-slate-300 mb-1.5">
+                <label className="block font-semibold text-slate-700 mb-1.5">
                   Website Name
                 </label>
                 <input
@@ -241,12 +241,12 @@ export default function WebsitesPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. My Tech Blog"
                   required
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#090d16] border border-border focus:border-cyan-500 focus:outline-none text-white text-xs"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:border-[#1d5b9f] focus:outline-none text-slate-900 text-xs"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-300 mb-1.5">
+                <label className="block font-semibold text-slate-700 mb-1.5">
                   Domain Name
                 </label>
                 <input
@@ -255,9 +255,9 @@ export default function WebsitesPage() {
                   onChange={(e) => setDomain(e.target.value)}
                   placeholder="e.g. myblog.com"
                   required
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#090d16] border border-border focus:border-cyan-500 focus:outline-none text-white text-xs font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:border-[#1d5b9f] focus:outline-none text-slate-900 text-xs font-mono"
                 />
-                <span className="text-[11px] text-muted-foreground mt-1 block">
+                <span className="text-[11px] text-slate-500 mt-1 block">
                   Enter domain without http:// or trailing slashes.
                 </span>
               </div>
@@ -268,9 +268,9 @@ export default function WebsitesPage() {
                   id="isPublic"
                   checked={isPublic}
                   onChange={(e) => setIsPublic(e.target.checked)}
-                  className="rounded border-border bg-slate-900 text-cyan-500 focus:ring-cyan-500"
+                  className="rounded border-slate-300 text-[#1d5b9f] focus:ring-[#1d5b9f]"
                 />
-                <label htmlFor="isPublic" className="text-slate-300 select-none cursor-pointer">
+                <label htmlFor="isPublic" className="text-slate-700 select-none cursor-pointer">
                   Public Statistics (allow visitors to view analytics dashboard without login)
                 </label>
               </div>
@@ -279,14 +279,14 @@ export default function WebsitesPage() {
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold disabled:opacity-50"
+                  className="px-4 py-2 rounded-xl bg-[#1d5b9f] hover:bg-[#174880] text-white font-bold disabled:opacity-50 shadow-sm"
                 >
                   {submitting ? "Registering..." : "Register Website"}
                 </button>

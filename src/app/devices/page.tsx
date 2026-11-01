@@ -66,12 +66,12 @@ export default function DevicesReportPage() {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/50">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight">
+          <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
             Devices & Technology
           </h1>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             Browser families, operating systems, and device form factors
           </p>
         </div>
@@ -82,31 +82,31 @@ export default function DevicesReportPage() {
       {/* Device Categories Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
-          { key: "desktop", label: "Desktop", icon: Monitor, color: "text-cyan-400" },
-          { key: "mobile", label: "Mobile", icon: Smartphone, color: "text-emerald-400" },
-          { key: "tablet", label: "Tablet", icon: Tablet, color: "text-purple-400" },
-        ].map(({ key, label, icon: Icon, color }) => {
+          { key: "desktop", label: "Desktop", icon: Monitor, color: "text-[#1d5b9f]", bg: "bg-blue-50 border-blue-200" },
+          { key: "mobile", label: "Mobile", icon: Smartphone, color: "text-emerald-600", bg: "bg-emerald-50 border-emerald-200" },
+          { key: "tablet", label: "Tablet", icon: Tablet, color: "text-purple-600", bg: "bg-purple-50 border-purple-200" },
+        ].map(({ key, label, icon: Icon, color, bg }) => {
           const matched = devices.find((d) => d.device.toLowerCase() === key);
           const sessions = matched ? matched.sessions : 0;
           const percentage = Math.round((sessions / totalDeviceSessions) * 100);
 
           return (
-            <div key={key} className="glass-panel p-6 rounded-2xl flex flex-col justify-between">
+            <div key={key} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs flex flex-col justify-between hover:border-[#1d5b9f]/40 transition-colors">
               <div className="flex items-center justify-between mb-4">
-                <span className="font-bold text-white text-base">{label}</span>
-                <div className="w-10 h-10 rounded-xl bg-slate-800/80 flex items-center justify-center">
+                <span className="font-bold text-slate-900 text-base">{label}</span>
+                <div className={`w-10 h-10 rounded-xl border flex items-center justify-center ${bg}`}>
                   <Icon className={`w-5 h-5 ${color}`} />
                 </div>
               </div>
 
               <div>
                 <div className="flex items-baseline justify-between mb-2">
-                  <span className="text-3xl font-black text-white">{sessions}</span>
-                  <span className="text-sm font-bold text-slate-300">{percentage}%</span>
+                  <span className="text-3xl font-black text-slate-900 tabular-nums">{sessions}</span>
+                  <span className="text-sm font-bold text-slate-600">{percentage}%</span>
                 </div>
-                <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                   <div
-                    className="bg-gradient-to-r from-cyan-500 to-emerald-400 h-full rounded-full"
+                    className="bg-gradient-to-r from-[#1d5b9f] to-blue-500 h-full rounded-full"
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
@@ -119,14 +119,14 @@ export default function DevicesReportPage() {
       {/* Two Column Breakdown: Browsers & Operating Systems */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Browsers Table */}
-        <div className="glass-panel p-6 rounded-2xl">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
           <div className="flex items-center gap-2 mb-4">
-            <Globe className="w-4 h-4 text-cyan-400" />
-            <h3 className="font-bold text-base text-white">Browser Breakdown</h3>
+            <Globe className="w-4 h-4 text-[#1d5b9f]" />
+            <h3 className="font-bold text-base text-slate-900">Browser Breakdown</h3>
           </div>
 
           {browsers.length === 0 ? (
-            <div className="py-12 text-center text-xs text-muted-foreground">
+            <div className="py-12 text-center text-xs text-slate-400">
               No browser records found.
             </div>
           ) : (
@@ -136,15 +136,15 @@ export default function DevicesReportPage() {
                 return (
                   <div key={i} className="space-y-1">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-200">{b.browser}</span>
+                      <span className="font-semibold text-slate-800">{b.browser}</span>
                       <div className="flex items-center gap-3">
-                        <span className="font-bold text-white">{b.sessions} visits</span>
-                        <span className="text-cyan-400 font-bold w-10 text-right">{percentage}%</span>
+                        <span className="font-bold text-slate-900 tabular-nums">{b.sessions} visits</span>
+                        <span className="text-[#1d5b9f] font-bold w-10 text-right">{percentage}%</span>
                       </div>
                     </div>
-                    <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                    <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
                       <div
-                        className="bg-cyan-500 h-full rounded-full"
+                        className="bg-[#1d5b9f] h-full rounded-full"
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
@@ -156,14 +156,14 @@ export default function DevicesReportPage() {
         </div>
 
         {/* Operating Systems Table */}
-        <div className="glass-panel p-6 rounded-2xl">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
           <div className="flex items-center gap-2 mb-4">
-            <Cpu className="w-4 h-4 text-emerald-400" />
-            <h3 className="font-bold text-base text-white">Operating Systems</h3>
+            <Cpu className="w-4 h-4 text-emerald-600" />
+            <h3 className="font-bold text-base text-slate-900">Operating Systems</h3>
           </div>
 
           {osList.length === 0 ? (
-            <div className="py-12 text-center text-xs text-muted-foreground">
+            <div className="py-12 text-center text-xs text-slate-400">
               No OS records found.
             </div>
           ) : (
@@ -173,15 +173,15 @@ export default function DevicesReportPage() {
                 return (
                   <div key={i} className="space-y-1">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-200">{o.os}</span>
+                      <span className="font-semibold text-slate-800">{o.os}</span>
                       <div className="flex items-center gap-3">
-                        <span className="font-bold text-white">{o.sessions} visits</span>
-                        <span className="text-emerald-400 font-bold w-10 text-right">{percentage}%</span>
+                        <span className="font-bold text-slate-900 tabular-nums">{o.sessions} visits</span>
+                        <span className="text-emerald-700 font-bold w-10 text-right">{percentage}%</span>
                       </div>
                     </div>
-                    <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                    <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
                       <div
-                        className="bg-emerald-500 h-full rounded-full"
+                        className="bg-emerald-600 h-full rounded-full"
                         style={{ width: `${percentage}%` }}
                       />
                     </div>

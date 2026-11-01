@@ -19,17 +19,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-[#eef2f7] text-slate-800 antialiased selection:bg-[#1d5b9f]/20 selection:text-[#1d5b9f]">
+    <html lang="en" className="h-full">
+      <body className="h-full overflow-hidden bg-[#eef2f7] text-slate-800 antialiased selection:bg-[#1d5b9f]/20 selection:text-[#1d5b9f]">
         <StoreProvider>
           <AuthProvider>
             <WebsiteProvider>
-              <div className="min-h-screen flex flex-col">
+              <div className="h-full flex flex-col overflow-hidden">
                 <Header />
-                <div className="flex-1 flex">
+                <div className="flex-1 flex overflow-hidden">
                   <Sidebar />
-                  <main className="flex-1 p-3 lg:p-6 max-w-[1600px] w-full mx-auto overflow-y-auto">
-                    {children}
+                  <main className="flex-1 h-full overflow-y-auto p-3 lg:p-6">
+                    <div className="max-w-[1600px] w-full mx-auto">
+                      {children}
+                    </div>
                   </main>
                 </div>
               </div>

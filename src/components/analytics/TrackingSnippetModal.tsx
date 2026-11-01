@@ -20,7 +20,7 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
 
   const publicTunnelUrl =
     process.env.NEXT_PUBLIC_TRACKER_URL ||
-    "https://chemistry-solved-caring-europe.trycloudflare.com";
+    "https://ace-nearest-learning-backing.trycloudflare.com";
 
   const localUrl =
     typeof window !== "undefined"

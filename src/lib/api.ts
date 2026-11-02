@@ -90,8 +90,15 @@ class ApiClient {
           body: JSON.stringify({ refreshToken }),
         });
 
+        if (response.status === 401 || response.status === 403) {
+          // Token is definitively invalid/revoked
+          this.clearAuth();
+          return null;
+        }
+
         if (!response.ok) {
-          throw new Error("Refresh failed");
+          // Transient server issue, keep credentials intact
+          return null;
         }
 
         const json = await response.json();
@@ -105,7 +112,7 @@ class ApiClient {
         }
         return null;
       } catch {
-        this.clearAuth();
+        // Network offline or tab sleep/wake glitch - DO NOT clear credentials!
         return null;
       } finally {
         this.isRefreshing = false;

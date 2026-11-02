@@ -9,6 +9,7 @@ import {
   RangeOption,
 } from "@/components/analytics/DateRangePicker";
 import { FileText, LogIn, LogOut, ExternalLink } from "lucide-react";
+import { useTabFocus } from "@/hooks/useTabFocus";
 
 export default function PagesReportPage() {
   const { selectedWebsite } = useWebsite();
@@ -55,8 +56,17 @@ export default function PagesReportPage() {
     }
   }, [selectedWebsite, range, getDateRange]);
 
+  // Auto-refresh when user returns to this tab
+  useTabFocus(loadPageData);
+
   useEffect(() => {
     loadPageData();
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        loadPageData();
+      }
+    }, 20000);
+    return () => clearInterval(interval);
   }, [loadPageData]);
 
   const maxViews = pages.length > 0 ? Math.max(...pages.map((p) => p.pageviews)) : 1;

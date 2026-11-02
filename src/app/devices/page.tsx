@@ -9,6 +9,7 @@ import {
   RangeOption,
 } from "@/components/analytics/DateRangePicker";
 import { Monitor, Smartphone, Tablet, Globe, Cpu } from "lucide-react";
+import { useTabFocus } from "@/hooks/useTabFocus";
 
 export default function DevicesReportPage() {
   const { selectedWebsite } = useWebsite();
@@ -55,8 +56,17 @@ export default function DevicesReportPage() {
     }
   }, [selectedWebsite, range, getDateRange]);
 
+  // Auto-refresh when user returns to this tab
+  useTabFocus(loadData);
+
   useEffect(() => {
     loadData();
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        loadData();
+      }
+    }, 20000);
+    return () => clearInterval(interval);
   }, [loadData]);
 
   const totalDeviceSessions = devices.reduce((sum, d) => sum + d.sessions, 0) || 1;

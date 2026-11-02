@@ -10,6 +10,7 @@ import {
 } from "@/components/analytics/DateRangePicker";
 import { Globe2, MapPin, Info, ArrowUpRight } from "lucide-react";
 import { CountryFlag } from "@/components/common/CountryFlag";
+import { useTabFocus } from "@/hooks/useTabFocus";
 
 export default function GeographyPage() {
   const { selectedWebsite } = useWebsite();
@@ -53,8 +54,17 @@ export default function GeographyPage() {
     }
   }, [selectedWebsite, range, getDateRange]);
 
+  // Auto-refresh when user returns to this tab
+  useTabFocus(loadGeoData);
+
   useEffect(() => {
     loadGeoData();
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        loadGeoData();
+      }
+    }, 20000);
+    return () => clearInterval(interval);
   }, [loadGeoData]);
 
   const totalVisitors =

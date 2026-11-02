@@ -24,6 +24,7 @@ import {
   Minus,
   CornerDownRight,
 } from "lucide-react";
+import { useTabFocus } from "@/hooks/useTabFocus";
 
 type TabType =
   | "summary"
@@ -127,9 +128,21 @@ export default function RealtimeHistatsPage() {
     }
   }, [selectedWebsite, isPaused]);
 
+  // Auto-reconnect and refresh immediately when user returns to this tab
+  useTabFocus(() => {
+    if (selectedWebsite) {
+      subscribeToWebsite(selectedWebsite.id);
+      loadRealtime();
+    }
+  });
+
   useEffect(() => {
     loadRealtime();
-    const interval = setInterval(loadRealtime, 3000);
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        loadRealtime();
+      }
+    }, 3000);
     return () => clearInterval(interval);
   }, [loadRealtime]);
 

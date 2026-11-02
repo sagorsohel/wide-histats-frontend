@@ -6,13 +6,22 @@ let socket: Socket | null = null;
 let currentSubscribedWebsiteId: string | null = null;
 
 export const getSocket = (): Socket => {
-  if (!socket && typeof window !== "undefined") {
-    const token = localStorage.getItem("accessToken") || "";
+  if (typeof window === "undefined") return null as any;
+
+  if (!socket) {
     socket = io(SOCKET_URL, {
-      auth: { token },
+      auth: (cb) => {
+        const token = localStorage.getItem("accessToken") || "";
+        cb({ token });
+      },
       withCredentials: true,
       transports: ["websocket", "polling"],
       autoConnect: true,
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000,
     });
 
     socket.on("connect", () => {
@@ -20,15 +29,57 @@ export const getSocket = (): Socket => {
         socket?.emit("subscribe:website", currentSubscribedWebsiteId);
       }
     });
+
+    socket.on("disconnect", (reason) => {
+      // If server or transport disconnected while backgrounded, auto-reconnect
+      if (reason === "io server disconnect" || reason === "transport close") {
+        setTimeout(() => {
+          socket?.connect();
+        }, 1000);
+      }
+    });
+
+    // Auto-reconnect & resubscribe when tab regains focus or becomes visible
+    const handleWakeup = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        const token = localStorage.getItem("accessToken") || "";
+        if (socket) {
+          socket.auth = { token };
+          if (!socket.connected) {
+            socket.connect();
+          } else if (currentSubscribedWebsiteId) {
+            socket.emit("subscribe:website", currentSubscribedWebsiteId);
+          }
+        }
+      }
+    };
+
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", handleWakeup);
+      window.addEventListener("focus", handleWakeup);
+      window.addEventListener("online", handleWakeup);
+    }
   }
-  return socket!;
+
+  // If socket was disconnected while tab was asleep, trigger reconnect
+  if (socket && !socket.connected) {
+    const token = localStorage.getItem("accessToken") || "";
+    socket.auth = { token };
+    socket.connect();
+  }
+
+  return socket;
 };
 
 export const subscribeToWebsite = (websiteId: string) => {
   currentSubscribedWebsiteId = websiteId;
   const s = getSocket();
   if (s) {
-    s.emit("subscribe:website", websiteId);
+    if (!s.connected) {
+      s.connect();
+    } else {
+      s.emit("subscribe:website", websiteId);
+    }
   }
 };
 
@@ -37,7 +88,8 @@ export const unsubscribeFromWebsite = (websiteId: string) => {
     currentSubscribedWebsiteId = null;
   }
   const s = getSocket();
-  if (s) {
+  if (s && s.connected) {
     s.emit("unsubscribe:website", websiteId);
   }
 };
+

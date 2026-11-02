@@ -12,6 +12,7 @@ import {
 } from "@/store/slices/websiteSlice";
 import { useAuth } from "./AuthContext";
 import { subscribeToWebsite, unsubscribeFromWebsite } from "@/lib/socket";
+import { useTabFocus } from "@/hooks/useTabFocus";
 
 interface WebsiteContextType {
   websites: Website[];
@@ -45,6 +46,17 @@ export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ child
       dispatch(fetchWebsites());
     }
   }, [user, dispatch]);
+
+  useTabFocus(() => {
+    if (user) {
+      if (websites.length === 0) {
+        dispatch(fetchWebsites());
+      }
+      if (selectedWebsite?.id) {
+        subscribeToWebsite(selectedWebsite.id);
+      }
+    }
+  });
 
   useEffect(() => {
     if (selectedWebsite?.id) {

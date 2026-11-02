@@ -9,6 +9,7 @@ import {
   RangeOption,
 } from "@/components/analytics/DateRangePicker";
 import { Compass, Search, Share2, Link as LinkIcon, Target } from "lucide-react";
+import { useTabFocus } from "@/hooks/useTabFocus";
 
 export default function SourcesPage() {
   const { selectedWebsite } = useWebsite();
@@ -48,8 +49,17 @@ export default function SourcesPage() {
     }
   }, [selectedWebsite, range, getDateRange]);
 
+  // Auto-refresh when user returns to this tab
+  useTabFocus(loadSources);
+
   useEffect(() => {
     loadSources();
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        loadSources();
+      }
+    }, 20000);
+    return () => clearInterval(interval);
   }, [loadSources]);
 
   const totalSessions =

@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { formatNumber, formatDuration } from "@/lib/utils";
+import { useTabFocus } from "@/hooks/useTabFocus";
 
 export default function SummaryPage() {
   const router = useRouter();
@@ -125,8 +126,17 @@ export default function SummaryPage() {
     }
   }, [selectedWebsite, range, getDateRange]);
 
+  // Auto-refresh when user returns to this tab after inactivity or sleep
+  useTabFocus(loadData);
+
   useEffect(() => {
     loadData();
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        loadData();
+      }
+    }, 20000);
+    return () => clearInterval(interval);
   }, [loadData]);
 
   // Listen to live updates via Socket.IO

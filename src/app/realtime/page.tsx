@@ -146,6 +146,7 @@ export default function RealtimeHistatsPage() {
           os: event.os || "Windows",
           deviceType: event.deviceType || "desktop",
           visitorKey: event.visitorKey || "vis-" + Math.floor(Math.random() * 10000),
+          ip: event.ip || "127.0.0.1",
         };
 
         // 1. Immediately push new hit to recent hits at index 0
@@ -312,6 +313,7 @@ export default function RealtimeHistatsPage() {
         h.path.toLowerCase().includes(q) ||
         (h.country || "").toLowerCase().includes(q) ||
         (h.city || "").toLowerCase().includes(q) ||
+        (h.ip || "").toLowerCase().includes(q) ||
         (h.visitorKey || "").toLowerCase().includes(q)
     );
   }, [displayHits, searchQuery]);
@@ -319,7 +321,7 @@ export default function RealtimeHistatsPage() {
   return (
     <div className="w-full max-w-[1550px] mx-auto text-[12px] font-sans antialiased bg-[#f3f6fa] border border-[#c8d4e2] shadow-sm rounded-sm overflow-hidden select-text">
       {/* 1. Classic Histats Top Website Banner */}
-      <div className="bg-[#1b4e8c] text-white px-3 py-1.5 flex items-center justify-between border-b border-[#143b6a]">
+      <div className="bg-[#1b4e8c] text-white px-3 py-1.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-[#143b6a]">
         <div className="flex items-center gap-2">
           <a
             href={baseWebsiteUrl}
@@ -414,7 +416,7 @@ export default function RealtimeHistatsPage() {
       </div>
 
       {/* 3. Sub-Navigation Tabs Bar */}
-      <div className="bg-[#245897] px-2 flex items-center gap-1 border-b border-[#184070] overflow-x-auto text-[11px] font-bold">
+      <div className="bg-[#245897] px-2 flex items-center gap-1 border-b border-[#184070] overflow-x-auto whitespace-nowrap scrollbar-none text-[11px] font-bold">
         {[
           { id: "summary", label: "Summary" },
           { id: "recent", label: "Recent" },
@@ -508,6 +510,12 @@ export default function RealtimeHistatsPage() {
                           ? hit.city
                           : getCountryName(hit.countryCode, hit.country || "Online")}
                       </span>
+                    </div>
+
+                    {/* Visitor IP badge */}
+                    <div className="hidden sm:flex items-center gap-1 font-mono text-[10px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 shrink-0">
+                      <span className="text-slate-400">IP:</span>
+                      <span>{hit.ip || hit.visitorKey || "127.0.0.1"}</span>
                     </div>
 
                     {/* Browser & OS icons */}
@@ -748,7 +756,7 @@ export default function RealtimeHistatsPage() {
                               </span>
                               <div className="flex items-center gap-1.5 font-mono text-slate-800 font-semibold">
                                 <span className="text-emerald-600 font-bold">👤</span>
-                                <span>{vis.visitorKey}</span>
+                                <span title={vis.visitorKey}>{vis.ip || vis.visitorKey}</span>
                               </div>
                             </div>
 
@@ -842,7 +850,7 @@ export default function RealtimeHistatsPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="py-2 px-3 font-mono text-slate-600">{h.visitorKey || "127.0.0.1"}</td>
+                      <td className="py-2 px-3 font-mono text-slate-700 font-medium">{h.ip || h.visitorKey || "127.0.0.1"}</td>
                       <td className="py-2 px-3">
                         <span className="mr-1">{getBrowserIcon(h.browser)}</span>
                         <span className="capitalize">{h.browser} on {h.os}</span>
@@ -876,7 +884,7 @@ export default function RealtimeHistatsPage() {
                     </span>
                     <div>
                       <div className="font-bold text-slate-800 font-mono flex items-center gap-2">
-                        <span>👤 {vis.visitorKey}</span>
+                        <span>👤 {vis.ip || vis.visitorKey}</span>
                         <span className="text-[10px] px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded">Active</span>
                       </div>
                       <div className="text-[11px] text-slate-500 mt-0.5">

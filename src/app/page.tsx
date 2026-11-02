@@ -77,7 +77,7 @@ export default function RootLoginPage() {
   return (
     <div className="min-h-[75vh] flex items-center justify-center py-6 px-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-3xl p-8 border border-slate-200/90 shadow-2xl shadow-slate-200/50 backdrop-blur-sm relative overflow-hidden">
+        <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-8 border border-slate-200/90 shadow-2xl shadow-slate-200/50 backdrop-blur-sm relative overflow-hidden">
           {/* Subtle decorative top bar */}
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#1d5b9f] via-blue-500 to-indigo-600" />
 

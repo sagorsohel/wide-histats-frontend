@@ -22,15 +22,15 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
   ];
 
   return (
-    <div className="flex items-center gap-1 p-1 rounded-lg bg-white border border-slate-200 shadow-2xs">
-      <div className="px-2 text-slate-400 hidden sm:block">
+    <div className="flex items-center gap-1 p-1 rounded-lg bg-white border border-slate-200 shadow-2xs max-w-full overflow-x-auto whitespace-nowrap scrollbar-none">
+      <div className="px-1.5 sm:px-2 text-slate-400 hidden sm:block shrink-0">
         <Calendar className="w-3.5 h-3.5" />
       </div>
       {options.map((opt) => (
         <button
           key={opt.id}
           onClick={() => onChange(opt.id)}
-          className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+          className={`px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-semibold transition-all shrink-0 ${
             selectedRange === opt.id
               ? "bg-[#1d5b9f] text-white shadow-xs"
               : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"

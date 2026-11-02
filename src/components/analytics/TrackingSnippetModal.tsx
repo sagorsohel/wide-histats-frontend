@@ -46,18 +46,18 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in">
-      <div className="relative w-full max-w-xl rounded-2xl border border-slate-200 bg-white shadow-2xl p-6 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in">
+      <div className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl p-4 sm:p-6">
         {/* Glow header accent */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#1d5b9f] via-blue-500 to-indigo-500" />
 
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#1d5b9f]">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#1d5b9f] shrink-0">
               <Code className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-lg text-slate-900">
+              <h3 className="font-extrabold text-base sm:text-lg text-slate-900">
                 Tracking Code for {website.name}
               </h3>
               <p className="text-xs text-slate-500">
@@ -79,8 +79,8 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
         </p>
 
         {/* Environment Mode Switcher */}
-        <div className="flex items-center justify-between mb-3 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
-          <div className="flex gap-1.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+          <div className="flex flex-wrap gap-1.5">
             <button
               onClick={() => setMode("production")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
@@ -90,7 +90,7 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
               }`}
             >
               <Globe className="w-3.5 h-3.5" />
-              Live / Real Website (HTTPS)
+              Live Website (HTTPS)
             </button>
             <button
               onClick={() => setMode("local")}

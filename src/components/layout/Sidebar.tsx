@@ -27,7 +27,7 @@ interface NavGroup {
   }[];
 }
 
-const NAV_GROUPS: NavGroup[] = [
+export const NAV_GROUPS: NavGroup[] = [
   {
     title: "Traffic",
     items: [
@@ -77,7 +77,7 @@ export const Sidebar: React.FC = () => {
   }
 
   return (
-    <aside className="w-60 border-r border-slate-200 bg-[#f8fafc] flex flex-col shrink-0 h-full overflow-y-auto p-2.5">
+    <aside className="hidden md:flex md:w-60 border-r border-slate-200 bg-[#f8fafc] flex-col shrink-0 h-full overflow-y-auto p-2.5">
       <nav className="space-y-4">
         {NAV_GROUPS.map((group) => (
           <div key={group.title} className="space-y-1">

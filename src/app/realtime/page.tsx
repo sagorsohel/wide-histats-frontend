@@ -20,6 +20,7 @@ import {
   Globe,
   Plus,
   Minus,
+  CornerDownRight,
 } from "lucide-react";
 
 type TabType =
@@ -147,6 +148,7 @@ export default function RealtimeHistatsPage() {
           deviceType: event.deviceType || "desktop",
           visitorKey: event.visitorKey || "vis-" + Math.floor(Math.random() * 10000),
           ip: event.ip || "127.0.0.1",
+          hitsCount: event.hitsCount || 1,
         };
 
         // 1. Immediately push new hit to recent hits at index 0
@@ -473,58 +475,116 @@ export default function RealtimeHistatsPage() {
               </div>
 
               <div className="divide-y divide-[#edf2f7] overflow-x-auto">
-                {filteredHits.slice(0, 10).map((hit, idx) => (
-                  <div
-                    key={hit.id || idx}
-                    className="px-3 py-1.5 flex items-center justify-between hover:bg-[#f6f9fc] transition-colors gap-2 text-[11px]"
-                  >
-                    {/* Time Badge in classic Histats seconds quote format e.g. 1", 19" */}
-                    <div className="flex items-center gap-2 min-w-[32px] text-right font-bold text-[#1b62b7]">
-                      <span>{formatElapsedTime(hit.viewedAt)}</span>
-                    </div>
-
-                    {/* Page Title & Link */}
-                    <div className="flex-1 flex items-center gap-1.5 truncate max-w-[580px] lg:max-w-[700px]">
-                      <ExternalLink className="w-3 h-3 text-slate-400 shrink-0" />
-                      <a
-                        href={getFullUrl(hit.url, hit.path)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title={getFullUrl(hit.url, hit.path)}
-                        className="truncate text-slate-800 font-medium hover:text-[#1b62b7] hover:underline cursor-pointer group flex-1 min-w-0"
-                      >
-                        <span className="group-hover:hidden truncate block">
-                          {hit.title || hit.path}
-                        </span>
-                        <span className="hidden group-hover:block truncate font-mono text-[#1b62b7] text-[11px]">
-                          {getFullUrl(hit.url, hit.path)}
-                        </span>
-                      </a>
-                    </div>
-
-                    {/* Geolocation Country & City */}
-                    <div className="flex items-center gap-1.5 text-slate-600 shrink-0 min-w-[130px] justify-start">
-                      <CountryFlag code={hit.countryCode} />
-                      <span className="truncate">
-                        {hit.city && hit.city !== hit.countryCode
-                          ? hit.city
-                          : getCountryName(hit.countryCode, hit.country || "Online")}
-                      </span>
-                    </div>
-
-                    {/* Visitor IP badge */}
-                    <div className="hidden sm:flex items-center gap-1 font-mono text-[10px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 shrink-0">
-                      <span className="text-slate-400">IP:</span>
-                      <span>{hit.ip || hit.visitorKey || "127.0.0.1"}</span>
-                    </div>
-
-                    {/* Browser & OS icons */}
-                    <div className="flex items-center gap-1.5 shrink-0 text-slate-500">
-                      <span className="text-xs" title={hit.browser}>{getBrowserIcon(hit.browser)}</span>
-                      {getDeviceIcon(hit.deviceType, hit.os)}
-                    </div>
+                {filteredHits.length === 0 ? (
+                  <div className="p-4 text-center text-slate-400 text-xs">
+                    No recent visitor hits recorded yet
                   </div>
-                ))}
+                ) : (
+                  filteredHits.slice(0, 15).map((hit, idx) => {
+                    const isReferrerValid =
+                      hit.referrer &&
+                      hit.referrer !== "direct" &&
+                      hit.referrer.trim() !== "";
+
+                    return (
+                      <div
+                        key={hit.id || idx}
+                        className="px-3 py-2 flex items-start gap-2.5 hover:bg-[#f6f9fc] transition-colors border-b border-[#eef2f7] text-xs"
+                      >
+                        {/* Time Badge in authentic Histats orange quote e.g. 1", 19" */}
+                        <div className="font-bold text-[#e65100] min-w-[28px] text-right pt-0.5 select-none font-mono text-[11px] shrink-0">
+                          {formatElapsedTime(hit.viewedAt)}
+                        </div>
+
+                        {/* Main Details Block matching Histats screenshot */}
+                        <div className="flex-1 min-w-0 space-y-1">
+                          {/* Row 1: [i] Real IP in bold, Hits: X button, Flag + City/Region, Phone/Device badge */}
+                          <div className="flex flex-wrap items-center gap-2">
+                            {/* Green [i] icon */}
+                            <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-[#7cb342] text-white font-black text-[11px] shrink-0 shadow-2xs select-none">
+                              i
+                            </span>
+
+                            {/* Real Client IP Address in bold */}
+                            <span className="font-bold text-slate-900 text-[13px] tracking-tight font-sans">
+                              {hit.ip || hit.visitorKey || "127.0.0.1"}
+                            </span>
+
+                            {/* Gray Hits: X Button */}
+                            <span className="bg-[#e2e8f0] border border-[#cbd5e1] text-slate-800 text-[11px] font-bold px-2.5 py-0.5 rounded shadow-2xs shrink-0 select-none">
+                              Hits: {hit.hitsCount || 1}
+                            </span>
+
+                            {/* Country Flag & Location */}
+                            <div className="flex items-center gap-1.5 text-slate-700 text-xs shrink-0">
+                              <CountryFlag code={hit.countryCode} />
+                              <span className="font-medium">
+                                {hit.city && hit.city !== hit.countryCode
+                                  ? hit.city
+                                  : getCountryName(hit.countryCode, hit.country || "-")}
+                              </span>
+                            </div>
+
+                            {/* Visitor Phone / Device Badge */}
+                            <div className="flex items-center gap-1.5 ml-auto text-xs shrink-0">
+                              {hit.deviceType === "mobile" ? (
+                                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded shadow-2xs">
+                                  <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
+                                  <span>Mobile ({hit.os})</span>
+                                </span>
+                              ) : hit.deviceType === "tablet" ? (
+                                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-1.5 py-0.2 rounded shadow-2xs">
+                                  <Tablet className="w-3.5 h-3.5 text-purple-600" />
+                                  <span>Tablet</span>
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded shadow-2xs">
+                                  <Monitor className="w-3.5 h-3.5 text-blue-600" />
+                                  <span>Desktop ({hit.os})</span>
+                                </span>
+                              )}
+                              <span className="text-xs" title={`${hit.browser} on ${hit.os}`}>
+                                {getBrowserIcon(hit.browser)}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Row 2: [↗] Page Title and URL */}
+                          <div className="flex items-center gap-1.5 truncate text-xs">
+                            <ExternalLink className="w-3.5 h-3.5 text-[#1b62b7] shrink-0" />
+                            <a
+                              href={getFullUrl(hit.url, hit.path)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={getFullUrl(hit.url, hit.path)}
+                              className="text-[#1b62b7] hover:underline font-medium truncate flex-1 min-w-0"
+                            >
+                              {hit.title || hit.path}
+                            </a>
+                          </div>
+
+                          {/* Row 3: [ref] ref: [↗] Referrer URL (only if valid) */}
+                          {isReferrerValid && (
+                            <div className="flex items-center gap-1.5 truncate text-xs pl-0.5">
+                              <CornerDownRight className="w-3.5 h-3.5 text-[#16a34a] shrink-0" />
+                              <span className="font-bold text-[#16a34a] text-[11px]">ref:</span>
+                              <ExternalLink className="w-3 h-3 text-[#1b62b7] shrink-0" />
+                              <a
+                                href={hit.referrer!}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title={hit.referrer!}
+                                className="text-[#1b62b7] hover:underline font-mono text-[11px] truncate"
+                              >
+                                {hit.referrer}
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
 
@@ -755,8 +815,15 @@ export default function RealtimeHistatsPage() {
                                 {vis.pageviewsCount || 20 - idx * 2}
                               </span>
                               <div className="flex items-center gap-1.5 font-mono text-slate-800 font-semibold">
-                                <span className="text-emerald-600 font-bold">👤</span>
-                                <span title={vis.visitorKey}>{vis.ip || vis.visitorKey}</span>
+                                <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded bg-[#7cb342] text-white font-bold text-[9px] shrink-0">
+                                  i
+                                </span>
+                                <span className="font-bold text-slate-900" title={vis.visitorKey}>
+                                  {vis.ip || vis.visitorKey}
+                                </span>
+                                {vis.deviceType === "mobile" && (
+                                  <span title="Mobile Phone"><Smartphone className="w-3 h-3 text-emerald-600 inline" /></span>
+                                )}
                               </div>
                             </div>
 
@@ -850,10 +917,24 @@ export default function RealtimeHistatsPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="py-2 px-3 font-mono text-slate-700 font-medium">{h.ip || h.visitorKey || "127.0.0.1"}</td>
-                      <td className="py-2 px-3">
-                        <span className="mr-1">{getBrowserIcon(h.browser)}</span>
-                        <span className="capitalize">{h.browser} on {h.os}</span>
+                      <td className="py-2 px-3 font-mono text-slate-800 font-bold whitespace-nowrap">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-3.5 h-3.5 rounded bg-[#7cb342] text-white font-bold text-[9px] flex items-center justify-center shrink-0">
+                            i
+                          </span>
+                          <span>{h.ip || h.visitorKey || "127.0.0.1"}</span>
+                          <span className="bg-[#e2e8f0] border border-[#cbd5e1] text-slate-700 text-[10px] px-1.5 py-0.2 rounded font-bold">
+                            Hits: {h.hitsCount || 1}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-2 px-3 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5">
+                          {getDeviceIcon(h.deviceType, h.os)}
+                          <span className="capitalize text-slate-700 font-medium">
+                            {h.deviceType === "mobile" ? "Mobile" : h.deviceType === "tablet" ? "Tablet" : "Desktop"} ({h.os})
+                          </span>
+                        </div>
                       </td>
                       <td className="py-2 px-3 text-slate-500 max-w-[200px] truncate">
                         {h.referrer || "direct"}
@@ -883,9 +964,23 @@ export default function RealtimeHistatsPage() {
                       #{idx + 1}
                     </span>
                     <div>
-                      <div className="font-bold text-slate-800 font-mono flex items-center gap-2">
-                        <span>👤 {vis.ip || vis.visitorKey}</span>
-                        <span className="text-[10px] px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded">Active</span>
+                      <div className="font-bold text-slate-800 font-mono flex flex-wrap items-center gap-2">
+                        <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-[#7cb342] text-white font-bold text-[10px]">
+                          i
+                        </span>
+                        <span className="text-slate-900 font-bold text-[13px]">{vis.ip || vis.visitorKey}</span>
+                        {vis.deviceType === "mobile" ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded">
+                            <Smartphone className="w-3 h-3 text-emerald-600" />
+                            <span>Mobile ({vis.os})</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded">
+                            <Monitor className="w-3 h-3 text-blue-600" />
+                            <span>Desktop ({vis.os})</span>
+                          </span>
+                        )}
+                        <span className="text-[10px] px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded font-bold">Active</span>
                       </div>
                       <div className="text-[11px] text-slate-500 mt-0.5">
                         Browsing:{" "}

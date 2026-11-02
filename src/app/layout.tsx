@@ -20,15 +20,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-full">
-      <body className="min-h-screen bg-[#eef2f7] text-slate-800 antialiased selection:bg-[#1d5b9f]/20 selection:text-[#1d5b9f]">
+      <body className="h-full min-h-screen md:h-screen md:overflow-hidden bg-[#eef2f7] text-slate-800 antialiased selection:bg-[#1d5b9f]/20 selection:text-[#1d5b9f]">
         <StoreProvider>
           <AuthProvider>
             <WebsiteProvider>
-              <div className="min-h-screen flex flex-col">
+              <div className="h-full min-h-screen md:h-screen flex flex-col md:overflow-hidden">
                 <Header />
-                <div className="flex-1 flex overflow-hidden md:h-[calc(100vh-4rem)]">
+                <div className="flex-1 flex overflow-hidden h-[calc(100vh-4rem)]">
                   <Sidebar />
-                  <main className="flex-1 overflow-y-auto p-2 sm:p-4 lg:p-6">
+                  <main className="flex-1 h-full overflow-y-auto p-2 sm:p-4 lg:p-6">
                     <div className="max-w-[1600px] w-full mx-auto">
                       {children}
                     </div>

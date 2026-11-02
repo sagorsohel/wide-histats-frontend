@@ -37,6 +37,7 @@ export interface ActiveVisitor {
   os: string;
   source: string;
   ip?: string;
+  hitsCount?: number;
   lastSeenAt: number;
 }
 
@@ -55,6 +56,7 @@ export interface RealtimeRecentHit {
   deviceType?: string;
   visitorKey?: string;
   ip?: string;
+  hitsCount?: number;
 }
 
 export interface RealtimeData {

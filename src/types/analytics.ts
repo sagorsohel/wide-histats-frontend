@@ -16,6 +16,9 @@ export interface OverviewStats {
   totalPageviews: number;
   uniqueVisitors: number;
   totalSessions: number;
+  allTimeVisitors?: number;
+  allTimePageviews?: number;
+  allTimeSessions?: number;
   pagesPerSession: number;
   bounceRate: number;
   avgDuration: number;
@@ -128,6 +131,7 @@ export interface SourcesData {
 export interface PageStat {
   path: string;
   title: string | null;
+  url?: string;
   pageviews: number;
   visitors: number;
 }

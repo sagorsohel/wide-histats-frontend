@@ -8,7 +8,7 @@ import {
   DateRangePicker,
   RangeOption,
 } from "@/components/analytics/DateRangePicker";
-import { FileText, LogIn, LogOut } from "lucide-react";
+import { FileText, LogIn, LogOut, ExternalLink } from "lucide-react";
 
 export default function PagesReportPage() {
   const { selectedWebsite } = useWebsite();
@@ -60,6 +60,9 @@ export default function PagesReportPage() {
   }, [loadPageData]);
 
   const maxViews = pages.length > 0 ? Math.max(...pages.map((p) => p.pageviews)) : 1;
+  const cleanDomain = selectedWebsite?.domain
+    ? (selectedWebsite.domain.startsWith("http") ? selectedWebsite.domain : `https://${selectedWebsite.domain}`)
+    : "https://streamespn.org";
 
   return (
     <div className="space-y-6">
@@ -89,6 +92,7 @@ export default function PagesReportPage() {
           <div className="space-y-3">
             {pages.map((page, index) => {
               const percentage = Math.round((page.pageviews / maxViews) * 100);
+              const fullLink = page.url || `${cleanDomain}${page.path.startsWith("/") ? page.path : `/${page.path}`}`;
 
               return (
                 <div key={index} className="group relative">
@@ -97,17 +101,29 @@ export default function PagesReportPage() {
                     style={{ width: `${percentage}%` }}
                   />
 
-                  <div className="relative flex items-center justify-between p-3 rounded-lg text-xs">
-                    <div className="flex items-center gap-3 truncate pr-4">
-                      <span className="w-5 text-slate-400 font-mono font-bold text-[11px]">
+                  <div className="relative flex items-center justify-between p-3 rounded-lg text-xs gap-3">
+                    <div className="flex items-center gap-3 min-w-0 flex-1 pr-4">
+                      <span className="w-5 text-slate-400 font-mono font-bold text-[11px] shrink-0">
                         {index + 1}
                       </span>
-                      <div className="truncate">
-                        <div className="font-semibold text-slate-800 truncate group-hover:text-[#1d5b9f] font-mono">
-                          {page.path}
+                      <div className="min-w-0 flex-1 space-y-0.5">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <ExternalLink className="w-3.5 h-3.5 text-slate-400 shrink-0 group-hover:text-[#1d5b9f]" />
+                          <a
+                            href={fullLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={fullLink}
+                            className="font-bold text-slate-900 truncate group-hover:text-[#1d5b9f] hover:underline font-mono text-[12px] block"
+                          >
+                            {fullLink}
+                          </a>
                         </div>
                         {page.title && (
-                          <div className="text-[11px] text-slate-500 truncate">
+                          <div
+                            title={page.title}
+                            className="text-[11px] text-slate-600 truncate block font-sans"
+                          >
                             {page.title}
                           </div>
                         )}
@@ -151,19 +167,32 @@ export default function PagesReportPage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {landingPages.map((l, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-mono"
-                >
-                  <span className="text-slate-700 truncate max-w-[280px]">
-                    {l.path}
-                  </span>
-                  <span className="font-bold text-emerald-700 font-sans tabular-nums">
-                    {l.sessions} sessions
-                  </span>
-                </div>
-              ))}
+              {landingPages.map((l, i) => {
+                const cleanDomain = selectedWebsite?.domain
+                  ? (selectedWebsite.domain.startsWith("http") ? selectedWebsite.domain : `https://${selectedWebsite.domain}`)
+                  : "https://streamespn.org";
+                const fullLandLink = `${cleanDomain}${l.path.startsWith("/") ? l.path : `/${l.path}`}`;
+                return (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs gap-2"
+                  >
+                    <a
+                      href={fullLandLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={fullLandLink}
+                      className="text-slate-800 hover:text-[#1d5b9f] hover:underline truncate font-mono text-[11px] flex items-center gap-1 flex-1 min-w-0"
+                    >
+                      <ExternalLink className="w-3 h-3 text-slate-400 shrink-0" />
+                      <span className="truncate">{fullLandLink}</span>
+                    </a>
+                    <span className="font-bold text-emerald-700 font-sans tabular-nums shrink-0">
+                      {l.sessions} sessions
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -181,19 +210,32 @@ export default function PagesReportPage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {exitPages.map((e, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-mono"
-                >
-                  <span className="text-slate-700 truncate max-w-[280px]">
-                    {e.path}
-                  </span>
-                  <span className="font-bold text-rose-600 font-sans tabular-nums">
-                    {e.sessions} exits
-                  </span>
-                </div>
-              ))}
+              {exitPages.map((e, i) => {
+                const cleanDomain = selectedWebsite?.domain
+                  ? (selectedWebsite.domain.startsWith("http") ? selectedWebsite.domain : `https://${selectedWebsite.domain}`)
+                  : "https://streamespn.org";
+                const fullExitLink = `${cleanDomain}${e.path.startsWith("/") ? e.path : `/${e.path}`}`;
+                return (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs gap-2"
+                  >
+                    <a
+                      href={fullExitLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={fullExitLink}
+                      className="text-slate-800 hover:text-[#1d5b9f] hover:underline truncate font-mono text-[11px] flex items-center gap-1 flex-1 min-w-0"
+                    >
+                      <ExternalLink className="w-3 h-3 text-slate-400 shrink-0" />
+                      <span className="truncate">{fullExitLink}</span>
+                    </a>
+                    <span className="font-bold text-rose-600 font-sans tabular-nums shrink-0">
+                      {e.sessions} exits
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

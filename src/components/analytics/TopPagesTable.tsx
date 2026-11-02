@@ -48,6 +48,9 @@ export const TopPagesTable: React.FC<TopPagesTableProps> = ({
           {pages.map((page, index) => {
             const percentage = Math.round((page.pageviews / maxViews) * 100);
 
+            const cleanDomain = domain ? (domain.startsWith("http") ? domain : `https://${domain}`) : "https://streamespn.org";
+            const fullLink = page.url || `${cleanDomain}${page.path.startsWith("/") ? page.path : `/${page.path}`}`;
+
             return (
               <div key={index} className="group relative">
                 {/* Background relative progress bar */}
@@ -56,17 +59,29 @@ export const TopPagesTable: React.FC<TopPagesTableProps> = ({
                   style={{ width: `${percentage}%` }}
                 />
 
-                <div className="relative flex items-center justify-between p-2 rounded-lg text-xs">
-                  <div className="flex items-center gap-2.5 min-w-0 pr-4">
-                    <span className="w-5 text-slate-400 font-mono font-bold text-[11px]">
+                <div className="relative flex items-center justify-between p-2.5 rounded-lg text-xs gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <span className="w-5 text-slate-400 font-mono font-bold text-[11px] shrink-0">
                       {index + 1}
                     </span>
-                    <div className="truncate">
-                      <div className="font-semibold text-slate-800 truncate group-hover:text-[#1d5b9f] transition-colors">
-                        {page.path}
+                    <div className="min-w-0 flex-1 space-y-0.5">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <ExternalLink className="w-3 h-3 text-slate-400 shrink-0 group-hover:text-[#1d5b9f]" />
+                        <a
+                          href={fullLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={fullLink}
+                          className="font-bold text-slate-800 hover:text-[#1d5b9f] hover:underline font-mono text-xs truncate block"
+                        >
+                          {fullLink}
+                        </a>
                       </div>
-                      {page.title && page.title !== page.path && (
-                        <div className="text-[11px] text-slate-500 truncate">
+                      {page.title && (
+                        <div
+                          title={page.title}
+                          className="text-[11px] text-slate-600 truncate block font-sans"
+                        >
                           {page.title}
                         </div>
                       )}
@@ -75,13 +90,13 @@ export const TopPagesTable: React.FC<TopPagesTableProps> = ({
 
                   <div className="flex items-center gap-5 shrink-0 text-right">
                     <div>
-                      <div className="font-extrabold text-slate-900">
+                      <div className="font-extrabold text-slate-900 tabular-nums">
                         {page.pageviews}
                       </div>
                       <div className="text-[10px] text-slate-500">views</div>
                     </div>
                     <div className="hidden sm:block">
-                      <div className="font-bold text-slate-700">
+                      <div className="font-bold text-slate-700 tabular-nums">
                         {page.visitors}
                       </div>
                       <div className="text-[10px] text-slate-500">visitors</div>

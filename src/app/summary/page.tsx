@@ -225,6 +225,45 @@ export default function SummaryPage() {
         </div>
       </div>
 
+      {/* Lifetime / All-Time Totals Banner (Since Tracking Code Installed) */}
+      <div className="bg-gradient-to-r from-[#173e6d] via-[#1b4d87] to-[#143760] text-white p-4 rounded-xl shadow-sm border border-[#1b4e8a] flex flex-wrap items-center justify-between gap-4">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-sm tracking-tight text-white flex items-center gap-1.5">
+              <Activity className="w-4 h-4 text-emerald-400" />
+              All-Time Lifetime Totals
+            </span>
+            <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-2 py-0.5 rounded-full font-bold">
+              Since Tracking Installed
+            </span>
+          </div>
+          <p className="text-[11px] text-blue-200">
+            Total unique individuals and total pageviews collected across the entire history of this site
+          </p>
+        </div>
+
+        <div className="flex items-center gap-6 sm:gap-10">
+          <div className="text-right">
+            <span className="text-[10px] text-blue-200 block font-semibold uppercase tracking-wider">All-Time Total Users</span>
+            <span className="text-xl sm:text-2xl font-black text-white tabular-nums tracking-tight">
+              {formatNumber(overview?.allTimeVisitors || overview?.uniqueVisitors || 0)}
+            </span>
+          </div>
+          <div className="text-right border-l border-blue-400/20 pl-6 sm:pl-10">
+            <span className="text-[10px] text-blue-200 block font-semibold uppercase tracking-wider">All-Time Views</span>
+            <span className="text-xl sm:text-2xl font-black text-white tabular-nums tracking-tight">
+              {formatNumber(overview?.allTimePageviews || overview?.totalPageviews || 0)}
+            </span>
+          </div>
+          <div className="text-right border-l border-blue-400/20 pl-6 sm:pl-10 hidden md:block">
+            <span className="text-[10px] text-blue-200 block font-semibold uppercase tracking-wider">All-Time Visits</span>
+            <span className="text-xl sm:text-2xl font-black text-white tabular-nums tracking-tight">
+              {formatNumber(overview?.allTimeSessions || overview?.totalSessions || 0)}
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <KpiCard
@@ -236,13 +275,13 @@ export default function SummaryPage() {
           badge={{ text: "LIVE", positive: true }}
         />
         <KpiCard
-          title="Total Visitors"
+          title="Period Visitors"
           value={formatNumber(overview?.uniqueVisitors || 0)}
-          subtitle="Unique individuals"
+          subtitle="Unique in selected range"
           icon={Users}
         />
         <KpiCard
-          title="Total Pageviews"
+          title="Period Pageviews"
           value={formatNumber(overview?.totalPageviews || 0)}
           subtitle={`${overview?.pagesPerSession || 1} pages / session`}
           icon={Eye}

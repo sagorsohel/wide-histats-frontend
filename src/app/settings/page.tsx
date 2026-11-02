@@ -3,7 +3,7 @@
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useWebsite } from "@/context/WebsiteContext";
-import { Settings, Shield, Server, Database, Code, CheckCircle2 } from "lucide-react";
+import { Settings } from "lucide-react";
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -46,44 +46,6 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Backend & Database Telemetry */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
-            <Server className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="font-bold text-base text-slate-900">System Architecture</h3>
-            <p className="text-xs text-slate-500">Connected backend API and database</p>
-          </div>
-        </div>
-
-        <div className="space-y-3 text-xs">
-          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
-            <div className="flex items-center gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span className="font-semibold text-slate-800">Backend API (Express & TypeScript)</span>
-            </div>
-            <span className="font-mono text-[#1d5b9f] font-bold">http://localhost:5050</span>
-          </div>
-
-          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
-            <div className="flex items-center gap-2.5">
-              <Database className="w-4 h-4 text-[#1d5b9f]" />
-              <span className="font-semibold text-slate-800">Database Engine</span>
-            </div>
-            <span className="font-bold text-slate-700">PostgreSQL (Drizzle ORM)</span>
-          </div>
-
-          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
-            <div className="flex items-center gap-2.5">
-              <Shield className="w-4 h-4 text-purple-600" />
-              <span className="font-semibold text-slate-800">Data Isolation</span>
-            </div>
-            <span className="font-bold text-slate-700">Isolated multi-tenant by Website & Owner</span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

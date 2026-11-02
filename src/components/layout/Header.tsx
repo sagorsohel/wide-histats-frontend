@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -19,15 +19,17 @@ import {
 export const Header: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const isAuthPage = pathname === "/" || pathname === "/login";
 
   const { user, logout } = useAuth();
-  const {
-    websites,
-    selectedWebsite,
-    setSelectedWebsite,
-    openTrackingModal,
-  } = useWebsite();
+  const { websites, selectedWebsite, setSelectedWebsite, openTrackingModal } =
+    useWebsite();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
@@ -35,7 +37,10 @@ export const Header: React.FC = () => {
     <header className="h-16 border-b border-slate-200 bg-white sticky top-0 z-40 px-4 lg:px-8 flex items-center justify-between shadow-sm shrink-0">
       {/* Brand & Website Selector */}
       <div className="flex items-center gap-6">
-        <Link href={isAuthPage ? "/" : "/summary"} className="flex items-center gap-2.5">
+        <Link
+          href={isAuthPage ? "/" : "/summary"}
+          className="flex items-center gap-2.5"
+        >
           <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#1d5b9f] to-[#2563eb] flex items-center justify-center text-white font-black shadow-md shadow-blue-500/20">
             W
           </div>
@@ -49,8 +54,8 @@ export const Header: React.FC = () => {
           </div>
         </Link>
 
-        {/* Website Dropdown (Hidden on Login) */}
-        {!isAuthPage && selectedWebsite && (
+        {/* Website Dropdown (Hidden on Login & until mounted) */}
+        {mounted && !isAuthPage && selectedWebsite && (
           <div className="flex items-center gap-1.5">
             <div className="relative">
               <button
@@ -65,57 +70,57 @@ export const Header: React.FC = () => {
                 <ChevronDown className="w-3.5 h-3.5 text-slate-500 ml-1" />
               </button>
 
-            {dropdownOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setDropdownOpen(false)}
-                />
-                <div className="absolute left-0 mt-2 w-64 rounded-xl border border-slate-200 bg-white shadow-2xl p-1.5 z-50 animate-slide-down">
-                  <div className="text-[11px] font-semibold text-slate-500 uppercase px-2.5 py-1.5">
-                    Your Websites
-                  </div>
-                  <div className="max-h-60 overflow-y-auto space-y-0.5">
-                    {websites.map((site) => (
-                      <button
-                        key={site.id}
-                        onClick={() => {
-                          setSelectedWebsite(site);
-                          setDropdownOpen(false);
-                        }}
-                        className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-sm transition-colors ${
-                          selectedWebsite.id === site.id
-                            ? "bg-blue-50 text-[#1d5b9f] font-semibold"
-                            : "text-slate-700 hover:bg-slate-100"
-                        }`}
-                      >
-                        <div className="flex flex-col text-left truncate">
-                          <span className="truncate">{site.name}</span>
-                          <span className="text-[11px] text-slate-400 truncate">
-                            {site.domain}
-                          </span>
-                        </div>
-                        {selectedWebsite.id === site.id && (
-                          <Check className="w-4 h-4 text-[#1d5b9f] shrink-0 ml-2" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
+              {dropdownOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setDropdownOpen(false)}
+                  />
+                  <div className="absolute left-0 mt-2 w-64 rounded-xl border border-slate-200 bg-white shadow-2xl p-1.5 z-50 animate-slide-down">
+                    <div className="text-[11px] font-semibold text-slate-500 uppercase px-2.5 py-1.5">
+                      Your Websites
+                    </div>
+                    <div className="max-h-60 overflow-y-auto space-y-0.5">
+                      {websites.map((site) => (
+                        <button
+                          key={site.id}
+                          onClick={() => {
+                            setSelectedWebsite(site);
+                            setDropdownOpen(false);
+                          }}
+                          className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-sm transition-colors ${
+                            selectedWebsite.id === site.id
+                              ? "bg-blue-50 text-[#1d5b9f] font-semibold"
+                              : "text-slate-700 hover:bg-slate-100"
+                          }`}
+                        >
+                          <div className="flex flex-col text-left truncate">
+                            <span className="truncate">{site.name}</span>
+                            <span className="text-[11px] text-slate-400 truncate">
+                              {site.domain}
+                            </span>
+                          </div>
+                          {selectedWebsite.id === site.id && (
+                            <Check className="w-4 h-4 text-[#1d5b9f] shrink-0 ml-2" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
 
-                  <div className="border-t border-slate-200 mt-1.5 pt-1.5">
-                    <Link
-                      href="/websites"
-                      onClick={() => setDropdownOpen(false)}
-                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-[#1d5b9f] hover:bg-blue-50 transition-colors"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      Add New Website
-                    </Link>
+                    <div className="border-t border-slate-200 mt-1.5 pt-1.5">
+                      <Link
+                        href="/websites"
+                        onClick={() => setDropdownOpen(false)}
+                        className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-[#1d5b9f] hover:bg-blue-50 transition-colors"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Add New Website
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              </>
-            )}
-          </div>
+                </>
+              )}
+            </div>
 
             {/* Direct Open Link in New Tab */}
             <a
@@ -138,7 +143,7 @@ export const Header: React.FC = () => {
       {/* Right Controls */}
       <div className="flex items-center gap-3">
         {/* Tracking Code Snippet Button */}
-        {!isAuthPage && selectedWebsite && (
+        {mounted && !isAuthPage && selectedWebsite && (
           <button
             onClick={() => openTrackingModal(selectedWebsite)}
             className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#1d5b9f]/30 bg-[#1d5b9f]/10 text-[#1d5b9f] hover:bg-[#1d5b9f]/20 text-xs font-semibold transition-all shadow-sm"
@@ -149,7 +154,7 @@ export const Header: React.FC = () => {
         )}
 
         {/* Live Visitor Indicator */}
-        {!isAuthPage && selectedWebsite && (
+        {mounted && !isAuthPage && selectedWebsite && (
           <Link
             href="/realtime"
             className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold hover:bg-emerald-100 transition-all"
@@ -165,7 +170,9 @@ export const Header: React.FC = () => {
         )}
 
         {/* User Account Dropdown */}
-        {user ? (
+        {!mounted ? (
+          <div className="w-8 h-8 rounded-full bg-slate-100" />
+        ) : user ? (
           <div className="relative">
             <button
               onClick={() => setUserDropdownOpen(!userDropdownOpen)}

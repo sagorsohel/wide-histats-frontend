@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -65,9 +65,14 @@ const NAV_GROUPS: NavGroup[] = [
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
 
-  // Hide sidebar on login pages
-  if (pathname === "/" || pathname === "/login") {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Hide sidebar on login pages or until mounted
+  if (!mounted || pathname === "/" || pathname === "/login") {
     return null;
   }
 

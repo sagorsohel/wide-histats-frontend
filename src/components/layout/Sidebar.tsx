@@ -31,7 +31,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: "Traffic",
     items: [
-      { href: "/", label: "Summary", icon: BarChart3 },
+      { href: "/summary", label: "Summary", icon: BarChart3 },
       { href: "/realtime", label: "Users online", icon: Activity, badge: "Live" },
     ],
   },
@@ -66,6 +66,11 @@ const NAV_GROUPS: NavGroup[] = [
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
 
+  // Hide sidebar on login pages
+  if (pathname === "/" || pathname === "/login") {
+    return null;
+  }
+
   return (
     <aside className="w-60 border-r border-slate-200 bg-[#f8fafc] flex flex-col shrink-0 h-full overflow-y-auto p-2.5">
       <nav className="space-y-4">
@@ -79,7 +84,9 @@ export const Sidebar: React.FC = () => {
             <div className="space-y-0.5">
               {group.items.map((item) => {
                 const Icon = item.icon;
-                const isActive = pathname === item.href;
+                const isActive =
+                  pathname === item.href ||
+                  (item.href === "/summary" && pathname === "/summery");
 
                 return (
                   <Link

@@ -1,267 +1,237 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { useWebsite } from "@/context/WebsiteContext";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { api } from "@/lib/api";
-import { getSocket } from "@/lib/socket";
-import {
-  OverviewStats,
-  TimeseriesPoint,
-  PageStat,
-  SourceStat,
-  CountryStat,
-  DeviceStat,
-  BrowserStat,
-} from "@/types/analytics";
-import {
-  DateRangePicker,
-  RangeOption,
-} from "@/components/analytics/DateRangePicker";
-import { KpiCard } from "@/components/analytics/KpiCard";
-import { VisitorChart } from "@/components/analytics/VisitorChart";
-import { TopPagesTable } from "@/components/analytics/TopPagesTable";
-import { SourcesChart } from "@/components/analytics/SourcesChart";
-import { GeographyTable } from "@/components/analytics/GeographyTable";
-import { DeviceBreakdown } from "@/components/analytics/DeviceBreakdown";
-import {
-  Users,
-  Eye,
-  MousePointerClick,
-  Clock,
-  ArrowUpRight,
-  Activity,
-  Plus,
-  Code,
-  ExternalLink,
-} from "lucide-react";
-import Link from "next/link";
-import { formatNumber, formatDuration } from "@/lib/utils";
+import { Sparkles, AlertCircle, ArrowRight, ShieldCheck, Activity } from "lucide-react";
 
-export default function OverviewPage() {
-  const { user } = useAuth();
-  const { selectedWebsite, websites, openTrackingModal } = useWebsite();
+export default function RootLoginPage() {
+  const router = useRouter();
+  const { user, loading: authLoading, login, register, quickDemoLogin } = useAuth();
 
-  const [range, setRange] = useState<RangeOption>("7d");
-  const [overview, setOverview] = useState<OverviewStats | null>(null);
-  const [timeseries, setTimeseries] = useState<TimeseriesPoint[]>([]);
-  const [pages, setPages] = useState<PageStat[]>([]);
-  const [sources, setSources] = useState<SourceStat[]>([]);
-  const [countries, setCountries] = useState<CountryStat[]>([]);
-  const [devices, setDevices] = useState<DeviceStat[]>([]);
-  const [browsers, setBrowsers] = useState<BrowserStat[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isRegister, setIsRegister] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("admin@gmail.com");
+  const [password, setPassword] = useState("sohoj@sohoj");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Calculate Date filters
-  const getDateRange = useCallback((option: RangeOption) => {
-    const now = new Date();
-    let from = new Date();
-
-    if (option === "today") {
-      from.setHours(0, 0, 0, 0);
-    } else if (option === "yesterday") {
-      from.setDate(from.getDate() - 1);
-      from.setHours(0, 0, 0, 0);
-      now.setDate(now.getDate() - 1);
-      now.setHours(23, 59, 59, 999);
-    } else if (option === "7d") {
-      from.setDate(from.getDate() - 7);
-    } else if (option === "30d") {
-      from.setDate(from.getDate() - 30);
+  // If already logged in, redirect straight to /summary
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace("/summary");
     }
+  }, [user, authLoading, router]);
 
-    return {
-      from: from.toISOString(),
-      to: now.toISOString(),
-    };
-  }, []);
-
-  const loadData = useCallback(async () => {
-    if (!selectedWebsite) {
-      setLoading(false);
-      return;
-    }
-
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
-    const { from, to } = getDateRange(range);
-    const q = `websiteId=${selectedWebsite.id}&from=${from}&to=${to}`;
+    setError(null);
 
     try {
-      const [
-        overviewRes,
-        timeseriesRes,
-        pagesRes,
-        sourcesRes,
-        geoRes,
-        devicesRes,
-        browsersRes,
-      ] = await Promise.all([
-        api.get<OverviewStats>(`/api/v1/analytics/overview?${q}`),
-        api.get<TimeseriesPoint[]>(`/api/v1/analytics/timeseries?${q}`),
-        api.get<PageStat[]>(`/api/v1/analytics/pages?${q}&limit=6`),
-        api.get<{ sources: SourceStat[] }>(`/api/v1/analytics/sources?${q}&limit=6`),
-        api.get<{ countries: CountryStat[] }>(`/api/v1/analytics/geography?${q}&limit=6`),
-        api.get<DeviceStat[]>(`/api/v1/analytics/devices?${q}`),
-        api.get<BrowserStat[]>(`/api/v1/analytics/browsers?${q}`),
-      ]);
+      let success = false;
+      if (isRegister) {
+        if (!name.trim()) {
+          setError("Name is required");
+          setLoading(false);
+          return;
+        }
+        success = await register(name, email, password);
+      } else {
+        success = await login(email, password);
+      }
 
-      if (overviewRes.success && overviewRes.data) setOverview(overviewRes.data);
-      if (timeseriesRes.success && timeseriesRes.data) setTimeseries(timeseriesRes.data);
-      if (pagesRes.success && pagesRes.data) setPages(pagesRes.data);
-      if (sourcesRes.success && sourcesRes.data?.sources) setSources(sourcesRes.data.sources);
-      if (geoRes.success && geoRes.data?.countries) setCountries(geoRes.data.countries);
-      if (devicesRes.success && devicesRes.data) setDevices(devicesRes.data);
-      if (browsersRes.success && browsersRes.data) setBrowsers(browsersRes.data);
-    } catch (err) {
-      console.error("Failed to load dashboard data", err);
+      if (success) {
+        router.push("/summary");
+      } else {
+        setError(
+          isRegister
+            ? "Failed to register. Please check your credentials."
+            : "Invalid email or password. Please verify credentials."
+        );
+      }
+    } catch (err: any) {
+      setError(err.message || "An error occurred during authentication.");
     } finally {
       setLoading(false);
     }
-  }, [selectedWebsite, range, getDateRange]);
+  };
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  // Listen to live updates via Socket.IO
-  useEffect(() => {
-    if (!selectedWebsite) return;
-    const socket = getSocket();
-    if (!socket) return;
-
-    const handleRealtimeUpdate = (data: any) => {
-      if (data.websiteId === selectedWebsite.id) {
-        setOverview((prev) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            activeVisitors: data.activeCount,
-          };
-        });
+  const handleQuickSignIn = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const ok = await quickDemoLogin();
+      if (ok) {
+        router.push("/summary");
+      } else {
+        setError("Sign in failed. Please ensure the backend is running.");
       }
-    };
-
-    const handlePageView = (data: any) => {
-      if (data.websiteId === selectedWebsite.id) {
-        setOverview((prev) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            totalPageviews: prev.totalPageviews + 1,
-          };
-        });
-      }
-    };
-
-    socket.on("website:realtime_update", handleRealtimeUpdate);
-    socket.on("website:realtime_init", handleRealtimeUpdate);
-    socket.on("website:pageview", handlePageView);
-
-    return () => {
-      socket.off("website:realtime_update", handleRealtimeUpdate);
-      socket.off("website:realtime_init", handleRealtimeUpdate);
-      socket.off("website:pageview", handlePageView);
-    };
-  }, [selectedWebsite]);
-
-  // Empty state if no websites exist
-  if (!loading && (!websites || websites.length === 0)) {
-    return (
-      <div className="py-20 flex flex-col items-center justify-center text-center max-w-lg mx-auto">
-        <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mb-6 shadow-xl shadow-cyan-500/10">
-          <Activity className="w-8 h-8" />
-        </div>
-        <h2 className="text-2xl font-extrabold text-slate-900 mb-2">
-          Welcome to Wide-Histat!
-        </h2>
-        <p className="text-sm text-slate-500 mb-6 leading-relaxed">
-          You don&apos;t have any websites registered yet. Register your first website to generate an instant tracking script and begin recording live visitor analytics.
-        </p>
-        <Link
-          href="/websites"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1d5b9f] hover:bg-[#174980] text-white font-bold text-sm shadow-md shadow-blue-500/20 transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          Register Your First Website
-        </Link>
-      </div>
-    );
-  }
+    } catch (err: any) {
+      setError(err.message || "Sign in failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="space-y-5">
-      {/* Top Banner & Date Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
-              {selectedWebsite ? selectedWebsite.name : "Dashboard Overview"}
+    <div className="min-h-[75vh] flex items-center justify-center py-6 px-4">
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-3xl p-8 border border-slate-200/90 shadow-2xl shadow-slate-200/50 backdrop-blur-sm relative overflow-hidden">
+          {/* Subtle decorative top bar */}
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#1d5b9f] via-blue-500 to-indigo-600" />
+
+          {/* Header */}
+          <div className="text-center mb-6 pt-2">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#1d5b9f] to-[#2563eb] mx-auto flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-blue-500/25 mb-3.5 ring-4 ring-blue-50">
+              W
+            </div>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+              {isRegister ? "Create an Account" : "Wide-Histat Login"}
             </h1>
-            {selectedWebsite && (
-              <a
-                href={`https://${selectedWebsite.domain}`}
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs text-[#1d5b9f] hover:underline flex items-center gap-1 font-mono font-medium"
-              >
-                {selectedWebsite.domain}
-                <ExternalLink className="w-3 h-3" />
-              </a>
+            <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
+              {isRegister
+                ? "Sign up to track and monitor website visitors in real time"
+                : "Enter your credentials to access the analytics summary"}
+            </p>
+          </div>
+
+          {/* 1-Click Quick Admin Button */}
+          <button
+            type="button"
+            onClick={handleQuickSignIn}
+            disabled={loading}
+            className="w-full mb-5 flex items-center justify-between py-2.5 px-4 rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50/50 hover:from-blue-100 hover:to-indigo-100 text-[#1d5b9f] font-bold text-xs transition-all shadow-2xs group cursor-pointer"
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-[#1d5b9f] animate-pulse" />
+              <span>1-Click Admin Sign In</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 group-hover:text-[#1d5b9f]">
+              <span className="font-mono">admin@gmail.com</span>
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+            </div>
+          </button>
+
+          <div className="relative flex items-center justify-center mb-5">
+            <div className="border-t border-slate-200 w-full" />
+            <span className="bg-white px-3 text-[10px] text-slate-400 uppercase font-bold tracking-wider">
+              or sign in manually
+            </span>
+          </div>
+
+          {error && (
+            <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+            {isRegister && (
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1.5">
+                  Your Name
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Admin"
+                  required
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:border-[#1d5b9f] focus:bg-white focus:outline-none text-slate-900 text-xs transition-all"
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="block font-semibold text-slate-700 mb-1.5">
+                Email Address
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@gmail.com"
+                required
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:border-[#1d5b9f] focus:bg-white focus:outline-none text-slate-900 text-xs transition-all font-medium"
+              />
+            </div>
+
+            <div>
+              <label className="block font-semibold text-slate-700 mb-1.5">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:border-[#1d5b9f] focus:bg-white focus:outline-none text-slate-900 text-xs transition-all font-medium"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-2.5 px-4 rounded-xl bg-[#1d5b9f] hover:bg-[#174880] text-white font-bold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 mt-2 cursor-pointer flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <Activity className="w-3.5 h-3.5 animate-spin" />
+                  <span>Verifying credentials...</span>
+                </>
+              ) : isRegister ? (
+                "Create Account & Proceed"
+              ) : (
+                <>
+                  <span>Sign In & Go to Summary</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Toggle Login / Register */}
+          <div className="mt-5 text-center text-xs text-slate-500">
+            {isRegister ? (
+              <>
+                Already have an account?{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsRegister(false);
+                    setError(null);
+                  }}
+                  className="text-[#1d5b9f] hover:underline font-bold ml-1 cursor-pointer"
+                >
+                  Sign In
+                </button>
+              </>
+            ) : (
+              <>
+                Don&apos;t have an account yet?{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsRegister(true);
+                    setError(null);
+                  }}
+                  className="text-[#1d5b9f] hover:underline font-bold ml-1 cursor-pointer"
+                >
+                  Register Now
+                </button>
+              </>
             )}
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Real-time telemetry, visitor attribution, and historical trends
-          </p>
+
+          {/* Secure badge footer */}
+          <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Secure JWT authentication with live telemetry</span>
+          </div>
         </div>
-
-        <div className="flex items-center gap-3">
-          <DateRangePicker selectedRange={range} onChange={setRange} />
-        </div>
-      </div>
-
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard
-          title="Active Online"
-          value={overview?.activeVisitors || 0}
-          subtitle="Visitors active right now"
-          icon={Activity}
-          highlight
-          badge={{ text: "LIVE", positive: true }}
-        />
-        <KpiCard
-          title="Total Visitors"
-          value={formatNumber(overview?.uniqueVisitors || 0)}
-          subtitle="Unique individuals"
-          icon={Users}
-        />
-        <KpiCard
-          title="Total Pageviews"
-          value={formatNumber(overview?.totalPageviews || 0)}
-          subtitle={`${overview?.pagesPerSession || 1} pages / session`}
-          icon={Eye}
-        />
-        <KpiCard
-          title="Avg Session Duration"
-          value={formatDuration(overview?.avgDuration || 0)}
-          subtitle={`Bounce rate: ${overview?.bounceRate || 0}%`}
-          icon={Clock}
-        />
-      </div>
-
-      {/* Main Chart Section */}
-      <VisitorChart data={timeseries} loading={loading} />
-
-      {/* Two-column Widgets: Top Pages & Traffic Sources */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <TopPagesTable pages={pages} domain={selectedWebsite?.domain} loading={loading} />
-        <SourcesChart sources={sources} loading={loading} />
-      </div>
-
-      {/* Two-column Widgets: Geography & Devices */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <GeographyTable countries={countries} loading={loading} />
-        <DeviceBreakdown devices={devices} browsers={browsers} loading={loading} />
       </div>
     </div>
   );

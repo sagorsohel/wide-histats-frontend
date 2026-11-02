@@ -36,7 +36,7 @@ export default function LoginPage() {
       }
 
       if (success) {
-        router.push("/");
+        router.push("/summary");
       } else {
         setError(
           isRegister
@@ -57,7 +57,7 @@ export default function LoginPage() {
     try {
       const ok = await quickDemoLogin();
       if (ok) {
-        router.push("/");
+        router.push("/summary");
       } else {
         setError("Demo login failed. Make sure backend is running.");
       }

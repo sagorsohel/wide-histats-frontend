@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useWebsite } from "@/context/WebsiteContext";
 import {
@@ -16,6 +17,10 @@ import {
 } from "lucide-react";
 
 export const Header: React.FC = () => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const isAuthPage = pathname === "/" || pathname === "/login";
+
   const { user, logout } = useAuth();
   const {
     websites,
@@ -30,7 +35,7 @@ export const Header: React.FC = () => {
     <header className="h-16 border-b border-slate-200 bg-white sticky top-0 z-40 px-4 lg:px-8 flex items-center justify-between shadow-sm shrink-0">
       {/* Brand & Website Selector */}
       <div className="flex items-center gap-6">
-        <Link href="/" className="flex items-center gap-2.5">
+        <Link href={isAuthPage ? "/" : "/summary"} className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#1d5b9f] to-[#2563eb] flex items-center justify-center text-white font-black shadow-md shadow-blue-500/20">
             W
           </div>
@@ -44,8 +49,8 @@ export const Header: React.FC = () => {
           </div>
         </Link>
 
-        {/* Website Dropdown */}
-        {selectedWebsite && (
+        {/* Website Dropdown (Hidden on Login) */}
+        {!isAuthPage && selectedWebsite && (
           <div className="flex items-center gap-1.5">
             <div className="relative">
               <button
@@ -133,7 +138,7 @@ export const Header: React.FC = () => {
       {/* Right Controls */}
       <div className="flex items-center gap-3">
         {/* Tracking Code Snippet Button */}
-        {selectedWebsite && (
+        {!isAuthPage && selectedWebsite && (
           <button
             onClick={() => openTrackingModal(selectedWebsite)}
             className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#1d5b9f]/30 bg-[#1d5b9f]/10 text-[#1d5b9f] hover:bg-[#1d5b9f]/20 text-xs font-semibold transition-all shadow-sm"
@@ -144,7 +149,7 @@ export const Header: React.FC = () => {
         )}
 
         {/* Live Visitor Indicator */}
-        {selectedWebsite && (
+        {!isAuthPage && selectedWebsite && (
           <Link
             href="/realtime"
             className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold hover:bg-emerald-100 transition-all"
@@ -200,9 +205,10 @@ export const Header: React.FC = () => {
 
                   <div className="border-t border-slate-100 pt-1">
                     <button
-                      onClick={() => {
-                        logout();
+                      onClick={async () => {
+                        await logout();
                         setUserDropdownOpen(false);
+                        router.push("/");
                       }}
                       className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-rose-600 hover:bg-rose-50 transition-colors font-medium"
                     >
@@ -216,7 +222,7 @@ export const Header: React.FC = () => {
           </div>
         ) : (
           <Link
-            href="/login"
+            href="/"
             className="px-4 py-1.5 rounded-lg bg-[#1d5b9f] hover:bg-[#174880] text-white font-bold text-xs shadow-md shadow-blue-500/20 transition-all"
           >
             Sign In

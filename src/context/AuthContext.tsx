@@ -45,7 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const quickDemoLogin = async (): Promise<boolean> => {
-    return login("admin@widehistat.com", "Password123!");
+    return login("admin@gmail.com", "sohoj@sohoj");
   };
 
   return (

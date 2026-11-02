@@ -18,6 +18,8 @@ import {
   Smartphone,
   Tablet,
   Globe,
+  Compass,
+  Zap,
   Plus,
   Minus,
   CornerDownRight,
@@ -44,6 +46,9 @@ export default function RealtimeHistatsPage() {
 
   // Live incoming event stream buffer
   const [recentHits, setRecentHits] = useState<RealtimeRecentHit[]>([]);
+  // Track IDs of newly arrived hits for the smooth slide-down stack animation
+  const [animatingHitIds, setAnimatingHitIds] = useState<Record<string, boolean>>({});
+  const isInitialLoad = React.useRef(true);
 
   // 1-second live ticker for exact real-time elapsed seconds
   useEffect(() => {
@@ -86,7 +91,28 @@ export default function RealtimeHistatsPage() {
         if (realtimeData.recentPageviews && realtimeData.recentPageviews.length > 0) {
           setRecentHits((prev) => {
             const map = new Map<string, RealtimeRecentHit>();
+            const prevIds = new Set(prev.map((h) => h.id));
             prev.forEach((h) => map.set(h.id, h));
+
+            const newArrivals = realtimeData.recentPageviews.filter((h) => !prevIds.has(h.id));
+            if (!isInitialLoad.current && newArrivals.length > 0) {
+              const newMap: Record<string, boolean> = {};
+              newArrivals.forEach((h) => {
+                newMap[h.id] = true;
+              });
+              setAnimatingHitIds((old) => ({ ...old, ...newMap }));
+              setTimeout(() => {
+                setAnimatingHitIds((old) => {
+                  const next = { ...old };
+                  newArrivals.forEach((h) => delete next[h.id]);
+                  return next;
+                });
+              }, 2500);
+            }
+            if (isInitialLoad.current) {
+              isInitialLoad.current = false;
+            }
+
             realtimeData.recentPageviews.forEach((h) => map.set(h.id, h));
             return Array.from(map.values())
               .sort((a, b) => new Date(b.viewedAt).getTime() - new Date(a.viewedAt).getTime())
@@ -153,6 +179,14 @@ export default function RealtimeHistatsPage() {
 
         // 1. Immediately push new hit to recent hits at index 0
         setRecentHits((prev) => [newHit, ...prev.filter((h) => h.id !== newHit.id)].slice(0, 50));
+        setAnimatingHitIds((prev) => ({ ...prev, [newHit.id]: true }));
+        setTimeout(() => {
+          setAnimatingHitIds((prev) => {
+            const next = { ...prev };
+            delete next[newHit.id];
+            return next;
+          });
+        }, 2500);
 
         // 2. Instantly update live summary metrics and tables
         setData((prev) => {
@@ -272,26 +306,157 @@ export default function RealtimeHistatsPage() {
     return data?.browsingPagesCount ?? data?.topPages?.length ?? 0;
   }, [data]);
 
+  // Interactive test function to demonstrate the smooth slide-down stack animation
+  const simulateTestHit = useCallback(() => {
+    const sampleEvents = [
+      {
+        title: "Canelo Álvarez vs Christian Mbilli Live Score & Match Updates | StreamESPN",
+        path: "/boxing/canelo-vs-mbilli-live",
+        country: "Germany",
+        countryCode: "DE",
+        city: "Loerrach",
+        browser: "Chrome",
+        os: "Android",
+        deviceType: "mobile",
+        referrer: "https://www.google.com/",
+      },
+      {
+        title: "Montpellier Hérault Rugby vs Castres Olympique Live Score & Match Updates | StreamESPN",
+        path: "/rugby/montpellier-vs-castres",
+        country: "United States",
+        countryCode: "US",
+        city: "Chicago",
+        browser: "Safari",
+        os: "iOS",
+        deviceType: "mobile",
+        referrer: "https://streamespn.org/",
+      },
+      {
+        title: "Bologna vs Monza Live Score & Match Updates | StreamESPN",
+        path: "/football/bologna-vs-monza",
+        country: "Italy",
+        countryCode: "IT",
+        city: "Agliano Terme",
+        browser: "Chrome",
+        os: "Windows",
+        deviceType: "desktop",
+        referrer: "https://www.bing.com/",
+      },
+      {
+        title: "Chelsea vs Manchester United Live Score & Match Updates | StreamESPN",
+        path: "/football/chelsea-vs-man-united",
+        country: "Kenya",
+        countryCode: "KE",
+        city: "Nairobi",
+        browser: "Chrome",
+        os: "Android",
+        deviceType: "mobile",
+        referrer: "direct",
+      },
+      {
+        title: "The 70th Ballon d'Or 2026 Live Score & Match Updates | StreamESPN",
+        path: "/events/ballon-dor-2026",
+        country: "Eswatini",
+        countryCode: "SZ",
+        city: "Mbabane",
+        browser: "Firefox",
+        os: "Android",
+        deviceType: "mobile",
+        referrer: "https://m.facebook.com/",
+      },
+      {
+        title: "Ospreys vs Cardiff Rugby Live Score & Match Updates | StreamESPN",
+        path: "/rugby/ospreys-vs-cardiff",
+        country: "South Africa",
+        countryCode: "ZA",
+        city: "Cape Town",
+        browser: "Edge",
+        os: "Windows",
+        deviceType: "desktop",
+        referrer: "https://twitter.com/",
+      },
+      {
+        title: "Tennis Fixtures, Live Scores & Schedules | StreamESPN",
+        path: "/tennis/live-fixtures",
+        country: "United States",
+        countryCode: "US",
+        city: "United States",
+        browser: "Chrome",
+        os: "Windows",
+        deviceType: "desktop",
+        referrer: "direct",
+      },
+    ];
+
+    const pick = sampleEvents[Math.floor(Math.random() * sampleEvents.length)];
+    const dummyIp = `${Math.floor(Math.random() * 180 + 20)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
+
+    const newHit: RealtimeRecentHit = {
+      id: "hit-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7),
+      path: pick.path,
+      title: pick.title,
+      url: `${baseWebsiteUrl}${pick.path}`,
+      referrer: pick.referrer,
+      viewedAt: new Date().toISOString(),
+      country: pick.country,
+      countryCode: pick.countryCode,
+      city: pick.city,
+      browser: pick.browser,
+      os: pick.os,
+      deviceType: pick.deviceType,
+      visitorKey: "vis-" + Math.floor(Math.random() * 10000),
+      ip: dummyIp,
+      hitsCount: Math.floor(Math.random() * 5) + 1,
+    };
+
+    setRecentHits((prev) => [newHit, ...prev.filter((h) => h.id !== newHit.id)].slice(0, 50));
+    setAnimatingHitIds((prev) => ({ ...prev, [newHit.id]: true }));
+    setTimeout(() => {
+      setAnimatingHitIds((prev) => {
+        const next = { ...prev };
+        delete next[newHit.id];
+        return next;
+      });
+    }, 2500);
+  }, [baseWebsiteUrl]);
+
   const getDeviceIcon = (device?: string, os?: string) => {
     const d = (device || "").toLowerCase();
     const o = (os || "").toLowerCase();
-    if (d === "mobile" || o.includes("android") || o.includes("ios")) {
+    if (d === "mobile" || o.includes("android") || o.includes("ios") || o.includes("iphone")) {
       return (
-        <span title="Mobile">
-          <Smartphone className="w-3.5 h-3.5 text-emerald-600 inline-block" />
+        <span title={`Mobile (${os || "Phone"})`} className="inline-flex items-center">
+          <Smartphone className="w-3.5 h-3.5 text-emerald-600 inline-block stroke-[1.75]" />
         </span>
       );
     }
     if (d === "tablet" || o.includes("ipad")) {
       return (
-        <span title="Tablet">
-          <Tablet className="w-3.5 h-3.5 text-purple-600 inline-block" />
+        <span title={`Tablet (${os || "Tablet"})`} className="inline-flex items-center">
+          <Tablet className="w-3.5 h-3.5 text-purple-600 inline-block stroke-[1.75]" />
         </span>
       );
     }
     return (
-      <span title="Desktop">
-        <Monitor className="w-3.5 h-3.5 text-blue-600 inline-block" />
+      <span title={`Desktop (${os || "Computer"})`} className="inline-flex items-center">
+        <Monitor className="w-3.5 h-3.5 text-blue-600 inline-block stroke-[1.75]" />
+      </span>
+    );
+  };
+
+  const getReferrerOrBrowserIcon = (browser?: string, referrer?: string | null) => {
+    const b = (browser || "").toLowerCase();
+    const r = (referrer || "").toLowerCase();
+    if (b.includes("safari") || r.includes("google") || r.includes("bing") || r.includes("search")) {
+      return (
+        <span title="Safari / Search Referrer" className="inline-flex items-center">
+          <Compass className="w-3.5 h-3.5 text-amber-600 shrink-0 stroke-[1.75]" />
+        </span>
+      );
+    }
+    return (
+      <span title="Direct / Web" className="inline-flex items-center">
+        <Globe className="w-3.5 h-3.5 text-cyan-600 shrink-0 stroke-[1.75]" />
       </span>
     );
   };
@@ -464,63 +629,81 @@ export default function RealtimeHistatsPage() {
             {/* Top Box: Recent Hits Stream */}
             <div className="bg-white border border-[#cbd6e2] rounded-xs shadow-2xs overflow-hidden">
               <div className="bg-[#f0f4f9] px-3 py-1.5 border-b border-[#d2dce6] flex items-center justify-between">
-                <span className="font-bold text-slate-800 text-[12px]">Recent</span>
-                <button
-                  onClick={() => setShowSearch(!showSearch)}
-                  className="text-slate-500 hover:text-slate-800"
-                  title="Search / Filter Recent"
-                >
-                  <Search className="w-3.5 h-3.5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-slate-800 text-[12px]">Recent</span>
+                  <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 font-medium">Live Stream</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={simulateTestHit}
+                    className="text-[10px] text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2 py-0.5 rounded transition-all cursor-pointer font-semibold flex items-center gap-1 shadow-2xs"
+                    title="Simulate a new incoming hit to test live stack animation"
+                  >
+                    <Zap className="w-3 h-3 text-amber-500 fill-amber-500" />
+                    <span>Test Animation</span>
+                  </button>
+                  <button
+                    onClick={() => setShowSearch(!showSearch)}
+                    className="text-slate-500 hover:text-slate-800"
+                    title="Search / Filter Recent"
+                  >
+                    <Search className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
 
               <div className="divide-y divide-[#edf2f7] overflow-x-auto">
-                {filteredHits.slice(0, 10).map((hit, idx) => (
-                  <div
-                    key={hit.id || idx}
-                    className="px-3 py-1.5 flex items-center justify-between hover:bg-[#f6f9fc] transition-colors gap-2 text-[11px]"
-                  >
-                    {/* Time Badge in classic Histats seconds quote format e.g. 1", 19" */}
-                    <div className="flex items-center gap-2 min-w-[32px] text-right font-bold text-[#1b62b7]">
-                      <span>{formatElapsedTime(hit.viewedAt)}</span>
-                    </div>
+                {filteredHits.slice(0, 10).map((hit, idx) => {
+                  const isAnimating = Boolean(animatingHitIds[hit.id]);
+                  return (
+                    <div
+                      key={hit.id || idx}
+                      className={`px-3 py-1.5 flex items-center justify-between hover:bg-[#f6f9fc] transition-colors gap-2 text-[11px] ${
+                        isAnimating ? "animate-stream-drop" : ""
+                      }`}
+                    >
+                      {/* Time Badge in classic Histats seconds quote format e.g. 1", 19" */}
+                      <div className="flex items-center gap-2 min-w-[32px] text-right font-bold text-[#1b62b7] shrink-0 font-mono">
+                        <span>{formatElapsedTime(hit.viewedAt)}</span>
+                      </div>
 
-                    {/* Page Title & Link */}
-                    <div className="flex-1 flex items-center gap-1.5 truncate max-w-[580px] lg:max-w-[700px]">
-                      <ExternalLink className="w-3 h-3 text-slate-400 shrink-0" />
-                      <a
-                        href={getFullUrl(hit.url, hit.path)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title={getFullUrl(hit.url, hit.path)}
-                        className="truncate text-slate-800 font-medium hover:text-[#1b62b7] hover:underline cursor-pointer group flex-1 min-w-0"
-                      >
-                        <span className="group-hover:hidden truncate block">
-                          {hit.title || hit.path}
+                      {/* Page Title & Link */}
+                      <div className="flex-1 flex items-center gap-1.5 truncate max-w-[580px] lg:max-w-[700px] min-w-0">
+                        <ExternalLink className="w-3 h-3 text-slate-400 shrink-0" />
+                        <a
+                          href={getFullUrl(hit.url, hit.path)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={getFullUrl(hit.url, hit.path)}
+                          className="truncate text-slate-800 font-medium hover:text-[#1b62b7] hover:underline cursor-pointer group flex-1 min-w-0"
+                        >
+                          <span className="group-hover:hidden truncate block">
+                            {hit.title || hit.path}
+                          </span>
+                          <span className="hidden group-hover:block truncate font-mono text-[#1b62b7] text-[11px]">
+                            {getFullUrl(hit.url, hit.path)}
+                          </span>
+                        </a>
+                      </div>
+
+                      {/* Geolocation Country & City */}
+                      <div className="flex items-center gap-1.5 text-slate-600 shrink-0 min-w-[130px] justify-start">
+                        <CountryFlag code={hit.countryCode} />
+                        <span className="truncate">
+                          {hit.city && hit.city !== hit.countryCode
+                            ? hit.city
+                            : getCountryName(hit.countryCode, hit.country || "Online")}
                         </span>
-                        <span className="hidden group-hover:block truncate font-mono text-[#1b62b7] text-[11px]">
-                          {getFullUrl(hit.url, hit.path)}
-                        </span>
-                      </a>
-                    </div>
+                      </div>
 
-                    {/* Geolocation Country & City */}
-                    <div className="flex items-center gap-1.5 text-slate-600 shrink-0 min-w-[130px] justify-start">
-                      <CountryFlag code={hit.countryCode} />
-                      <span className="truncate">
-                        {hit.city && hit.city !== hit.countryCode
-                          ? hit.city
-                          : getCountryName(hit.countryCode, hit.country || "Online")}
-                      </span>
+                      {/* Browser / Referrer icon & Device icon */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        {getReferrerOrBrowserIcon(hit.browser, hit.referrer)}
+                        {getDeviceIcon(hit.deviceType, hit.os)}
+                      </div>
                     </div>
-
-                    {/* Browser & OS icons */}
-                    <div className="flex items-center gap-1.5 shrink-0 text-slate-500">
-                      <span className="text-xs" title={hit.browser}>{getBrowserIcon(hit.browser)}</span>
-                      {getDeviceIcon(hit.deviceType, hit.os)}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -820,11 +1003,14 @@ export default function RealtimeHistatsPage() {
                     hit.referrer &&
                     hit.referrer !== "direct" &&
                     hit.referrer.trim() !== "";
+                  const isAnimating = Boolean(animatingHitIds[hit.id]);
 
                   return (
                     <div
                       key={hit.id || idx}
-                      className="px-3 py-2 flex items-start gap-2.5 hover:bg-[#f6f9fc] transition-colors border-b border-[#eef2f7] text-xs"
+                      className={`px-3 py-2 flex items-start gap-2.5 hover:bg-[#f6f9fc] transition-colors border-b border-[#eef2f7] text-xs ${
+                        isAnimating ? "animate-stream-drop-detailed" : ""
+                      }`}
                     >
                       {/* Time Badge in authentic Histats orange quote e.g. 1", 19" */}
                       <div className="font-bold text-[#e65100] min-w-[28px] text-right pt-0.5 select-none font-mono text-[11px] shrink-0">

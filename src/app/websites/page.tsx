@@ -18,6 +18,7 @@ export default function WebsitesPage() {
   const {
     websites,
     selectedWebsite,
+    loading,
     setSelectedWebsite,
     reloadWebsites,
     createWebsite,
@@ -102,7 +103,24 @@ export default function WebsitesPage() {
 
       {/* Websites List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {websites.map((site) => {
+        {loading && websites.length === 0 ? (
+          [1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-4 animate-pulse"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-slate-200 shrink-0" />
+                <div className="space-y-1.5 flex-1">
+                  <div className="h-4 w-28 bg-slate-200 rounded" />
+                  <div className="h-3 w-20 bg-slate-100 rounded" />
+                </div>
+              </div>
+              <div className="h-8 w-full bg-slate-100 rounded-lg" />
+            </div>
+          ))
+        ) : (
+          websites.map((site) => {
           const isSelected = selectedWebsite?.id === site.id;
 
           return (
@@ -205,8 +223,9 @@ export default function WebsitesPage() {
               </div>
             </div>
           );
-        })}
-      </div>
+        })
+      )}
+    </div>
 
       {/* Modal for creating website */}
       {modalOpen && (

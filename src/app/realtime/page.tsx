@@ -19,7 +19,6 @@ import {
   Tablet,
   Globe,
   Compass,
-  Zap,
   Plus,
   Minus,
   CornerDownRight,
@@ -81,7 +80,11 @@ export default function RealtimeHistatsPage() {
   );
 
   const loadRealtime = useCallback(async () => {
-    if (!selectedWebsite || isPaused) return;
+    if (!selectedWebsite) {
+      setLoading(false);
+      return;
+    }
+    if (isPaused) return;
     try {
       const res = await api.get<RealtimeData>(
         `/api/v1/analytics/realtime?websiteId=${selectedWebsite.id}`
@@ -319,119 +322,6 @@ export default function RealtimeHistatsPage() {
     return data?.browsingPagesCount ?? data?.topPages?.length ?? 0;
   }, [data]);
 
-  // Interactive test function to demonstrate the smooth slide-down stack animation
-  const simulateTestHit = useCallback(() => {
-    const sampleEvents = [
-      {
-        title: "Canelo Álvarez vs Christian Mbilli Live Score & Match Updates | StreamESPN",
-        path: "/boxing/canelo-vs-mbilli-live",
-        country: "Germany",
-        countryCode: "DE",
-        city: "Loerrach",
-        browser: "Chrome",
-        os: "Android",
-        deviceType: "mobile",
-        referrer: "https://www.google.com/",
-      },
-      {
-        title: "Montpellier Hérault Rugby vs Castres Olympique Live Score & Match Updates | StreamESPN",
-        path: "/rugby/montpellier-vs-castres",
-        country: "United States",
-        countryCode: "US",
-        city: "Chicago",
-        browser: "Safari",
-        os: "iOS",
-        deviceType: "mobile",
-        referrer: "https://streamespn.org/",
-      },
-      {
-        title: "Bologna vs Monza Live Score & Match Updates | StreamESPN",
-        path: "/football/bologna-vs-monza",
-        country: "Italy",
-        countryCode: "IT",
-        city: "Agliano Terme",
-        browser: "Chrome",
-        os: "Windows",
-        deviceType: "desktop",
-        referrer: "https://www.bing.com/",
-      },
-      {
-        title: "Chelsea vs Manchester United Live Score & Match Updates | StreamESPN",
-        path: "/football/chelsea-vs-man-united",
-        country: "Kenya",
-        countryCode: "KE",
-        city: "Nairobi",
-        browser: "Chrome",
-        os: "Android",
-        deviceType: "mobile",
-        referrer: "direct",
-      },
-      {
-        title: "The 70th Ballon d'Or 2026 Live Score & Match Updates | StreamESPN",
-        path: "/events/ballon-dor-2026",
-        country: "Eswatini",
-        countryCode: "SZ",
-        city: "Mbabane",
-        browser: "Firefox",
-        os: "Android",
-        deviceType: "mobile",
-        referrer: "https://m.facebook.com/",
-      },
-      {
-        title: "Ospreys vs Cardiff Rugby Live Score & Match Updates | StreamESPN",
-        path: "/rugby/ospreys-vs-cardiff",
-        country: "South Africa",
-        countryCode: "ZA",
-        city: "Cape Town",
-        browser: "Edge",
-        os: "Windows",
-        deviceType: "desktop",
-        referrer: "https://twitter.com/",
-      },
-      {
-        title: "Tennis Fixtures, Live Scores & Schedules | StreamESPN",
-        path: "/tennis/live-fixtures",
-        country: "United States",
-        countryCode: "US",
-        city: "United States",
-        browser: "Chrome",
-        os: "Windows",
-        deviceType: "desktop",
-        referrer: "direct",
-      },
-    ];
-
-    const pick = sampleEvents[Math.floor(Math.random() * sampleEvents.length)];
-    const dummyIp = `${Math.floor(Math.random() * 180 + 20)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
-
-    const newHit: RealtimeRecentHit = {
-      id: "hit-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7),
-      path: pick.path,
-      title: pick.title,
-      url: `${baseWebsiteUrl}${pick.path}`,
-      referrer: pick.referrer,
-      viewedAt: new Date().toISOString(),
-      country: pick.country,
-      countryCode: pick.countryCode,
-      city: pick.city,
-      browser: pick.browser,
-      os: pick.os,
-      deviceType: pick.deviceType,
-      visitorKey: "vis-" + Math.floor(Math.random() * 10000),
-      ip: dummyIp,
-      hitsCount: Math.floor(Math.random() * 5) + 1,
-    };
-
-    setRecentHits((prev) => [newHit, ...prev.filter((h) => h.id !== newHit.id)].slice(0, 50));
-    setAnimatingHitIds((prev) => ({ ...prev, [newHit.id]: true }));
-    setTimeout(() => {
-      setAnimatingHitIds((prev) => {
-        const next = { ...prev };
-        delete next[newHit.id];
-        return next;
-      });
-    }, 2500);
-  }, [baseWebsiteUrl]);
 
   const getDeviceIcon = (device?: string, os?: string) => {
     const d = (device || "").toLowerCase();
@@ -562,9 +452,13 @@ export default function RealtimeHistatsPage() {
               </span>
               <span className="text-white/95 font-semibold text-sm">Users online:</span>
             </div>
-            <span className="text-3xl font-black text-white tracking-tight tabular-nums drop-shadow-xs">
-              {onlineCount}
-            </span>
+            {loading && !data ? (
+              <div className="h-8 w-14 rounded bg-white/25 animate-pulse inline-block" />
+            ) : (
+              <span className="text-3xl font-black text-white tracking-tight tabular-nums drop-shadow-xs">
+                {onlineCount}
+              </span>
+            )}
             <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
               LIVE
             </span>
@@ -573,29 +467,37 @@ export default function RealtimeHistatsPage() {
 
         {/* Right: Today's Total Visitors, Today's Pageviews, Browsing Pages, and Pause/Play */}
         <div className="flex items-center gap-4 text-xs">
-          {data?.todayVisitors !== undefined && (
-            <div className="text-right border-r border-blue-400/30 pr-3 hidden sm:block">
-              <span className="text-blue-200 text-[10px] block font-medium">Total Users Today</span>
+          <div className="text-right border-r border-blue-400/30 pr-3 hidden sm:block">
+            <span className="text-blue-200 text-[10px] block font-medium">Total Users Today</span>
+            {loading && !data ? (
+              <div className="h-4 w-12 bg-white/25 rounded animate-pulse mt-0.5 ml-auto" />
+            ) : (
               <span className="font-bold text-white text-sm tabular-nums">
-                {data.todayVisitors.toLocaleString()}
+                {(data?.todayVisitors ?? 0).toLocaleString()}
               </span>
-            </div>
-          )}
+            )}
+          </div>
 
-          {data?.todayPageviews !== undefined && (
-            <div className="text-right border-r border-blue-400/30 pr-3 hidden sm:block">
-              <span className="text-blue-200 text-[10px] block font-medium">Total Views Today</span>
+          <div className="text-right border-r border-blue-400/30 pr-3 hidden sm:block">
+            <span className="text-blue-200 text-[10px] block font-medium">Total Views Today</span>
+            {loading && !data ? (
+              <div className="h-4 w-12 bg-white/25 rounded animate-pulse mt-0.5 ml-auto" />
+            ) : (
               <span className="font-bold text-white text-sm tabular-nums">
-                {data.todayPageviews.toLocaleString()}
+                {(data?.todayPageviews ?? 0).toLocaleString()}
               </span>
-            </div>
-          )}
+            )}
+          </div>
 
           <div className="text-right">
             <span className="text-blue-200 text-[10px] block font-medium">browsing:</span>
-            <span className="text-sm font-bold text-white tabular-nums">
-              {browsingPagesCount} pages
-            </span>
+            {loading && !data ? (
+              <div className="h-4 w-14 bg-white/25 rounded animate-pulse mt-0.5 ml-auto" />
+            ) : (
+              <span className="text-sm font-bold text-white tabular-nums">
+                {browsingPagesCount} pages
+              </span>
+            )}
           </div>
 
           <button
@@ -659,31 +561,44 @@ export default function RealtimeHistatsPage() {
             {/* Top Box: Recent Hits Stream */}
             <div className="bg-white border border-[#cbd6e2] rounded-xs shadow-2xs overflow-hidden">
               <div className="bg-[#f0f4f9] px-3 py-1.5 border-b border-[#d2dce6] flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-slate-800 text-[12px]">Recent</span>
-                  <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 font-medium">Live Stream</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={simulateTestHit}
-                    className="text-[10px] text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2 py-0.5 rounded transition-all cursor-pointer font-semibold flex items-center gap-1 shadow-2xs"
-                    title="Simulate a new incoming hit to test live stack animation"
-                  >
-                    <Zap className="w-3 h-3 text-amber-500 fill-amber-500" />
-                    <span>Test Animation</span>
-                  </button>
-                  <button
-                    onClick={() => setShowSearch(!showSearch)}
-                    className="text-slate-500 hover:text-slate-800"
-                    title="Search / Filter Recent"
-                  >
-                    <Search className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                <span className="font-bold text-slate-800 text-[12px]">Recent</span>
+                <button
+                  onClick={() => setShowSearch(!showSearch)}
+                  className="text-slate-500 hover:text-slate-800"
+                  title="Search / Filter Recent"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                </button>
               </div>
 
               <div className="divide-y divide-[#edf2f7] overflow-x-auto">
-                {filteredHits.slice(0, 10).map((hit, idx) => {
+                {loading && recentHits.length === 0 ? (
+                  [1, 2, 3, 4, 5, 6].map((i) => (
+                    <div
+                      key={i}
+                      className="px-3 py-2 flex items-center justify-between gap-3 text-[11px] animate-pulse"
+                    >
+                      <div className="w-8 h-3.5 bg-slate-200 rounded shrink-0 font-mono" />
+                      <div className="flex-1 flex items-center gap-1.5 min-w-0">
+                        <div className="w-3 h-3 bg-slate-200 rounded shrink-0" />
+                        <div className="h-3.5 bg-slate-200 rounded w-2/3 max-w-[460px]" />
+                      </div>
+                      <div className="flex items-center gap-1.5 w-28 shrink-0">
+                        <div className="w-4 h-3 bg-slate-200 rounded shrink-0" />
+                        <div className="h-3.5 w-16 bg-slate-200 rounded" />
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <div className="w-3.5 h-3.5 bg-slate-200 rounded-full" />
+                        <div className="w-3.5 h-3.5 bg-slate-200 rounded-full" />
+                      </div>
+                    </div>
+                  ))
+                ) : filteredHits.length === 0 ? (
+                  <div className="px-3 py-4 text-center text-slate-400 text-[11px]">
+                    No recent visitor hits recorded yet
+                  </div>
+                ) : (
+                  filteredHits.slice(0, 10).map((hit, idx) => {
                   const isAnimating = Boolean(animatingHitIds[hit.id]);
                   return (
                     <div
@@ -733,7 +648,8 @@ export default function RealtimeHistatsPage() {
                       </div>
                     </div>
                   );
-                })}
+                })
+              )}
               </div>
             </div>
 
@@ -749,7 +665,18 @@ export default function RealtimeHistatsPage() {
                   </div>
 
                   <div className="divide-y divide-[#edf2f7]">
-                    {displayPages.length === 0 ? (
+                    {loading && displayPages.length === 0 ? (
+                      [1, 2, 3, 4, 5].map((i) => (
+                        <div
+                          key={i}
+                          className="px-3 py-2 flex items-center gap-2.5 animate-pulse"
+                        >
+                          <div className="w-6 h-3.5 bg-slate-200 rounded shrink-0" />
+                          <div className="w-3 h-3 bg-slate-200 rounded shrink-0" />
+                          <div className="h-3.5 bg-slate-200 rounded flex-1 max-w-[280px]" />
+                        </div>
+                      ))
+                    ) : displayPages.length === 0 ? (
                       <div className="px-3 py-4 text-center text-slate-400 text-[11px]">
                         No active page hits yet
                       </div>
@@ -796,7 +723,18 @@ export default function RealtimeHistatsPage() {
                   </div>
 
                   <div className="divide-y divide-[#edf2f7]">
-                    {displayReferrers.length === 0 ? (
+                    {loading && displayReferrers.length === 0 ? (
+                      [1, 2, 3, 4, 5].map((i) => (
+                        <div
+                          key={i}
+                          className="px-3 py-2 flex items-center gap-2.5 animate-pulse"
+                        >
+                          <div className="w-6 h-3.5 bg-slate-200 rounded shrink-0" />
+                          <div className="w-3 h-3 bg-slate-200 rounded shrink-0" />
+                          <div className="h-3.5 bg-slate-200 rounded flex-1 max-w-[220px]" />
+                        </div>
+                      ))
+                    ) : displayReferrers.length === 0 ? (
                       <div className="px-3 py-4 text-center text-slate-400 text-[11px]">
                         No active referrer sources yet
                       </div>
@@ -948,7 +886,28 @@ export default function RealtimeHistatsPage() {
                   </div>
 
                   <div className="divide-y divide-[#edf2f7]">
-                    {displayActiveVisitors.length === 0 ? (
+                    {loading && displayActiveVisitors.length === 0 ? (
+                      [1, 2, 3, 4, 5].map((i) => (
+                        <div
+                          key={i}
+                          className="px-3 py-2 space-y-1.5 animate-pulse"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <div className="w-5 h-3.5 bg-slate-200 rounded" />
+                              <div className="w-24 h-3.5 bg-slate-200 rounded" />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-3 bg-slate-200 rounded" />
+                              <div className="w-3 h-3 bg-slate-200 rounded" />
+                            </div>
+                          </div>
+                          <div className="pl-6">
+                            <div className="h-3 w-44 bg-slate-100 rounded" />
+                          </div>
+                        </div>
+                      ))
+                    ) : displayActiveVisitors.length === 0 ? (
                       <div className="px-3 py-4 text-center text-slate-400 text-[11px]">
                         No active visitors online right now
                       </div>
@@ -1023,7 +982,25 @@ export default function RealtimeHistatsPage() {
 
             {/* Histats Exact Screenshot Stream Layout with Real IP */}
             <div className="divide-y divide-[#edf2f7] border border-[#cbd6e2] rounded-xs overflow-hidden bg-white">
-              {filteredHits.length === 0 ? (
+              {loading && filteredHits.length === 0 ? (
+                [1, 2, 3, 4, 5, 6].map((i) => (
+                  <div
+                    key={i}
+                    className="px-3 py-2 flex items-start gap-2.5 border-b border-[#eef2f7] text-xs animate-pulse"
+                  >
+                    <div className="w-7 h-4 bg-slate-200 rounded pt-0.5 shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-slate-200 shrink-0" />
+                        <div className="h-4 w-28 bg-slate-200 rounded" />
+                        <div className="h-4 w-16 bg-slate-200 rounded" />
+                        <div className="h-4 w-20 bg-slate-200 rounded" />
+                      </div>
+                      <div className="h-3.5 w-3/4 max-w-[420px] bg-slate-200 rounded" />
+                    </div>
+                  </div>
+                ))
+              ) : filteredHits.length === 0 ? (
                 <div className="p-4 text-center text-slate-400 text-xs">
                   No recent visitor hits recorded yet
                 </div>
@@ -1220,7 +1197,31 @@ export default function RealtimeHistatsPage() {
               Most Active Visitors (Online)
             </h3>
             <div className="space-y-2">
-              {displayActiveVisitors.map((vis: any, idx: number) => (
+              {loading && displayActiveVisitors.length === 0 ? (
+                [1, 2, 3, 4, 5, 6].map((i) => (
+                  <div
+                    key={i}
+                    className="p-3 border border-slate-200 rounded bg-[#f8fafc] flex items-center justify-between text-xs animate-pulse"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-slate-200 shrink-0" />
+                      <div className="space-y-1.5">
+                        <div className="h-4 w-32 bg-slate-200 rounded" />
+                        <div className="h-3 w-48 bg-slate-100 rounded" />
+                      </div>
+                    </div>
+                    <div className="space-y-1 text-right">
+                      <div className="h-4 w-20 bg-slate-200 rounded ml-auto" />
+                      <div className="h-3 w-16 bg-slate-100 rounded ml-auto" />
+                    </div>
+                  </div>
+                ))
+              ) : displayActiveVisitors.length === 0 ? (
+                <div className="p-6 text-center text-slate-400 text-xs">
+                  No active visitors recorded
+                </div>
+              ) : (
+                displayActiveVisitors.map((vis: any, idx: number) => (
                 <div
                   key={idx}
                   className="p-3 border border-slate-200 rounded bg-[#f8fafc] flex items-center justify-between text-xs"
@@ -1274,7 +1275,8 @@ export default function RealtimeHistatsPage() {
                     </div>
                   </div>
                 </div>
-              ))}
+              ))
+            )}
             </div>
           </div>
         )}
@@ -1286,7 +1288,23 @@ export default function RealtimeHistatsPage() {
               Currently Popular Pages
             </h3>
             <div className="divide-y divide-slate-100">
-              {displayPages.map((page, idx) => {
+              {loading && displayPages.length === 0 ? (
+                [1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="py-2.5 flex items-center justify-between text-xs animate-pulse">
+                    <div className="flex items-center gap-2 max-w-[800px] flex-1">
+                      <div className="w-6 h-4 bg-slate-200 rounded shrink-0" />
+                      <div className="w-4 h-4 bg-slate-200 rounded shrink-0" />
+                      <div className="h-4 bg-slate-200 rounded w-2/3 max-w-[360px]" />
+                    </div>
+                    <div className="h-3.5 w-20 bg-slate-200 rounded" />
+                  </div>
+                ))
+              ) : displayPages.length === 0 ? (
+                <div className="p-6 text-center text-slate-400 text-xs">
+                  No popular pages recorded
+                </div>
+              ) : (
+                displayPages.map((page, idx) => {
                 const pageUrl = getFullUrl(page.url, page.path);
                 return (
                   <div key={idx} className="py-2 flex items-center justify-between text-xs">
@@ -1311,7 +1329,8 @@ export default function RealtimeHistatsPage() {
                     <span className="text-slate-500 font-medium text-[11px]">{page.count} active users</span>
                   </div>
                 );
-              })}
+              })
+            )}
             </div>
           </div>
         )}
@@ -1323,7 +1342,23 @@ export default function RealtimeHistatsPage() {
               Popular Referring Sources
             </h3>
             <div className="divide-y divide-slate-100">
-              {displayReferrers.map((ref, idx) => {
+              {loading && displayReferrers.length === 0 ? (
+                [1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="py-2.5 flex items-center justify-between text-xs animate-pulse">
+                    <div className="flex items-center gap-2 max-w-[800px] flex-1">
+                      <div className="w-6 h-4 bg-slate-200 rounded shrink-0" />
+                      <div className="w-4 h-4 bg-slate-200 rounded shrink-0" />
+                      <div className="h-4 bg-slate-200 rounded w-2/3 max-w-[280px]" />
+                    </div>
+                    <div className="h-3.5 w-24 bg-slate-200 rounded" />
+                  </div>
+                ))
+              ) : displayReferrers.length === 0 ? (
+                <div className="p-6 text-center text-slate-400 text-xs">
+                  No referrers recorded
+                </div>
+              ) : (
+                displayReferrers.map((ref, idx) => {
                 const isUrl =
                   ref.referrer &&
                   (ref.referrer.startsWith("http://") ||
@@ -1352,7 +1387,8 @@ export default function RealtimeHistatsPage() {
                     <span className="text-slate-400 font-mono text-[11px]">Incoming Traffic</span>
                   </div>
                 );
-              })}
+              })
+            )}
             </div>
           </div>
         )}
@@ -1388,7 +1424,18 @@ export default function RealtimeHistatsPage() {
 
             {/* Country ranking list */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-              {(data?.topCountries && data.topCountries.length > 0
+              {loading && (!data?.topCountries || data.topCountries.length === 0) ? (
+                [1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="p-2 border border-slate-200 rounded bg-[#f8fafc] flex items-center justify-between text-xs animate-pulse">
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-4 bg-slate-200 rounded" />
+                      <div className="h-4 w-24 bg-slate-200 rounded" />
+                    </div>
+                    <div className="h-4 w-14 bg-slate-200 rounded" />
+                  </div>
+                ))
+              ) : (
+                (data?.topCountries && data.topCountries.length > 0
                 ? data.topCountries.slice(0, 18).map((c) => {
                     const totalActive = onlineCount || 1;
                     const pct = Math.min(100, Math.round((c.count / totalActive) * 100));
@@ -1413,7 +1460,8 @@ export default function RealtimeHistatsPage() {
                     <span className="text-[10px] text-slate-500 block">({c.pct})</span>
                   </div>
                 </div>
-              ))}
+              ))
+            )}
             </div>
           </div>
         )}

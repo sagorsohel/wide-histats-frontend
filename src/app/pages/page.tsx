@@ -94,7 +94,28 @@ export default function PagesReportPage() {
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
         <h3 className="font-bold text-base text-slate-900 mb-4">All Visited Pages</h3>
 
-        {pages.length === 0 ? (
+        {loading && pages.length === 0 ? (
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div
+                key={i}
+                className="p-3 rounded-lg border border-slate-100 bg-slate-50/60 flex items-center justify-between gap-3 animate-pulse text-xs"
+              >
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="w-5 h-4 bg-slate-200 rounded shrink-0" />
+                  <div className="space-y-1.5 flex-1 max-w-[420px]">
+                    <div className="h-3.5 bg-slate-200 rounded w-3/4" />
+                    <div className="h-3 bg-slate-100 rounded w-1/2" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 shrink-0">
+                  <div className="h-4 w-12 bg-slate-200 rounded" />
+                  <div className="h-4 w-10 bg-slate-200 rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : pages.length === 0 ? (
           <div className="py-12 text-center text-xs text-slate-400">
             No pageviews recorded.
           </div>
@@ -171,7 +192,22 @@ export default function PagesReportPage() {
             <h3 className="font-bold text-base text-slate-900">Top Landing Pages</h3>
           </div>
 
-          {landingPages.length === 0 ? (
+          {loading && landingPages.length === 0 ? (
+            <div className="space-y-2">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs animate-pulse"
+                >
+                  <div className="flex items-center gap-2 flex-1">
+                    <div className="w-3.5 h-3.5 bg-slate-200 rounded shrink-0" />
+                    <div className="h-3.5 w-48 bg-slate-200 rounded" />
+                  </div>
+                  <div className="h-3.5 w-16 bg-slate-200 rounded shrink-0" />
+                </div>
+              ))}
+            </div>
+          ) : landingPages.length === 0 ? (
             <div className="py-12 text-center text-xs text-slate-400">
               No landing records.
             </div>
@@ -214,7 +250,22 @@ export default function PagesReportPage() {
             <h3 className="font-bold text-base text-slate-900">Top Exit Pages</h3>
           </div>
 
-          {exitPages.length === 0 ? (
+          {loading && exitPages.length === 0 ? (
+            <div className="space-y-2">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs animate-pulse"
+                >
+                  <div className="flex items-center gap-2 flex-1">
+                    <div className="w-3.5 h-3.5 bg-slate-200 rounded shrink-0" />
+                    <div className="h-3.5 w-48 bg-slate-200 rounded" />
+                  </div>
+                  <div className="h-3.5 w-16 bg-slate-200 rounded shrink-0" />
+                </div>
+              ))}
+            </div>
+          ) : exitPages.length === 0 ? (
             <div className="py-12 text-center text-xs text-slate-400">
               No exit records.
             </div>

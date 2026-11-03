@@ -14,14 +14,6 @@ export const GeographyTable: React.FC<GeographyTableProps> = ({
   countries,
   loading = false,
 }) => {
-  if (loading) {
-    return (
-      <div className="glass-panel rounded-2xl p-6 h-80 flex items-center justify-center text-muted-foreground text-sm">
-        Loading geography data...
-      </div>
-    );
-  }
-
   const totalVisitors =
     countries.reduce((sum, c) => sum + c.visitors, 0) || 1;
 
@@ -37,7 +29,27 @@ export const GeographyTable: React.FC<GeographyTableProps> = ({
         <Globe2 className="w-4 h-4 text-[#1d5b9f]" />
       </div>
 
-      {countries.length === 0 ? (
+      {loading ? (
+        <div className="space-y-3">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="space-y-1.5 animate-pulse">
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-3.5 bg-slate-200 rounded shrink-0" />
+                  <div className="h-3.5 w-28 bg-slate-200 rounded" />
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-3.5 w-12 bg-slate-200 rounded" />
+                  <div className="h-3.5 w-8 bg-slate-200 rounded" />
+                </div>
+              </div>
+              <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <div className="bg-slate-200 h-full rounded-full w-1/4" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : countries.length === 0 ? (
         <div className="py-12 text-center text-xs text-slate-400">
           No location data recorded yet.
         </div>

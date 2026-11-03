@@ -110,7 +110,26 @@ export default function GeographyPage() {
             </span>
           </div>
 
-          {countries.length === 0 ? (
+          {loading && countries.length === 0 ? (
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="space-y-1.5 animate-pulse">
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-5 h-3.5 bg-slate-200 rounded" />
+                      <div className="w-5 h-4 bg-slate-200 rounded" />
+                      <div className="h-4 w-28 bg-slate-200 rounded" />
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="h-4 w-12 bg-slate-200 rounded" />
+                      <div className="h-4 w-8 bg-slate-200 rounded" />
+                    </div>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-1.5" />
+                </div>
+              ))}
+            </div>
+          ) : countries.length === 0 ? (
             <div className="py-16 text-center text-xs text-slate-400">
               No country data available for this date range.
             </div>
@@ -172,7 +191,25 @@ export default function GeographyPage() {
             </span>
           </div>
 
-          {cities.length === 0 ? (
+          {loading && cities.length === 0 ? (
+            <div className="space-y-2.5">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs animate-pulse"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-4 h-4 bg-slate-200 rounded-full" />
+                    <div className="space-y-1">
+                      <div className="h-4 w-24 bg-slate-200 rounded" />
+                      <div className="h-3 w-16 bg-slate-100 rounded" />
+                    </div>
+                  </div>
+                  <div className="h-4 w-14 bg-slate-200 rounded" />
+                </div>
+              ))}
+            </div>
+          ) : cities.length === 0 ? (
             <div className="py-16 text-center text-xs text-slate-400">
               No city records found for this period.
             </div>

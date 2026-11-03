@@ -13,14 +13,6 @@ export const SourcesChart: React.FC<SourcesChartProps> = ({
   sources,
   loading = false,
 }) => {
-  if (loading) {
-    return (
-      <div className="glass-panel rounded-2xl p-6 h-80 flex items-center justify-center text-muted-foreground text-sm">
-        Loading sources...
-      </div>
-    );
-  }
-
   const totalSessions = sources.reduce((sum, s) => sum + s.sessions, 0) || 1;
 
   const getSourceIcon = (source: string, medium: string) => {
@@ -55,7 +47,28 @@ export const SourcesChart: React.FC<SourcesChartProps> = ({
         </div>
       </div>
 
-      {sources.length === 0 ? (
+      {loading ? (
+        <div className="space-y-3">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="space-y-1.5 animate-pulse">
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-slate-200 rounded shrink-0" />
+                  <div className="h-3.5 w-24 bg-slate-200 rounded" />
+                  <div className="h-3 w-12 bg-slate-100 rounded" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-3.5 w-10 bg-slate-200 rounded" />
+                  <div className="h-3.5 w-8 bg-slate-200 rounded" />
+                </div>
+              </div>
+              <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <div className="bg-slate-200 h-full rounded-full w-1/3" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : sources.length === 0 ? (
         <div className="py-12 text-center text-xs text-slate-400">
           No traffic source data available.
         </div>

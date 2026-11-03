@@ -15,14 +15,6 @@ export const TopPagesTable: React.FC<TopPagesTableProps> = ({
   domain,
   loading = false,
 }) => {
-  if (loading) {
-    return (
-      <div className="glass-panel rounded-2xl p-6 h-80 flex items-center justify-center text-muted-foreground text-sm">
-        Loading top pages...
-      </div>
-    );
-  }
-
   const maxViews = pages.length > 0 ? Math.max(...pages.map((p) => p.pageviews)) : 1;
 
   return (
@@ -35,11 +27,33 @@ export const TopPagesTable: React.FC<TopPagesTableProps> = ({
           </p>
         </div>
         <span className="text-xs font-semibold text-slate-500">
-          {pages.length} recorded
+          {loading ? (
+            <div className="h-4 w-16 bg-slate-200 rounded animate-pulse" />
+          ) : (
+            `${pages.length} recorded`
+          )}
         </span>
       </div>
 
-      {pages.length === 0 ? (
+      {loading ? (
+        <div className="space-y-2.5">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div
+              key={i}
+              className="p-3 rounded-lg border border-slate-100 bg-slate-50/50 flex items-center justify-between gap-3 animate-pulse"
+            >
+              <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                <div className="w-5 h-4 bg-slate-200 rounded shrink-0" />
+                <div className="h-3.5 bg-slate-200 rounded w-3/4 max-w-[280px]" />
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="h-3.5 w-12 bg-slate-200 rounded" />
+                <div className="h-3.5 w-8 bg-slate-200 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : pages.length === 0 ? (
         <div className="py-12 text-center text-xs text-slate-400">
           No pageviews recorded yet.
         </div>

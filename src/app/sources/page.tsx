@@ -85,7 +85,26 @@ export default function SourcesPage() {
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
         <h3 className="font-bold text-base text-slate-900 mb-4">Traffic Channels</h3>
 
-        {!data?.sources || data.sources.length === 0 ? (
+        {loading && (!data?.sources || data.sources.length === 0) ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div
+                key={i}
+                className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between animate-pulse space-y-3"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="h-4 w-24 bg-slate-200 rounded" />
+                  <div className="h-4 w-12 bg-slate-100 rounded" />
+                </div>
+                <div className="flex items-baseline justify-between">
+                  <div className="h-6 w-16 bg-slate-200 rounded" />
+                  <div className="h-4 w-8 bg-slate-200 rounded" />
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-1.5" />
+              </div>
+            ))}
+          </div>
+        ) : !data?.sources || data.sources.length === 0 ? (
           <div className="py-12 text-center text-xs text-slate-400">
             No source records found for this period.
           </div>
@@ -139,7 +158,19 @@ export default function SourcesPage() {
             <h3 className="font-bold text-base text-slate-900">Referring Domains</h3>
           </div>
 
-          {!data?.referrers || data.referrers.length === 0 ? (
+          {loading && (!data?.referrers || data.referrers.length === 0) ? (
+            <div className="space-y-2">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs animate-pulse"
+                >
+                  <div className="h-3.5 w-44 bg-slate-200 rounded" />
+                  <div className="h-3.5 w-10 bg-slate-200 rounded" />
+                </div>
+              ))}
+            </div>
+          ) : !data?.referrers || data.referrers.length === 0 ? (
             <div className="py-12 text-center text-xs text-slate-400">
               No external referrer URLs.
             </div>
@@ -167,7 +198,19 @@ export default function SourcesPage() {
             <h3 className="font-bold text-base text-slate-900">UTM Campaigns</h3>
           </div>
 
-          {!data?.campaigns || data.campaigns.length === 0 ? (
+          {loading && (!data?.campaigns || data.campaigns.length === 0) ? (
+            <div className="space-y-2">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs animate-pulse"
+                >
+                  <div className="h-3.5 w-36 bg-slate-200 rounded" />
+                  <div className="h-3.5 w-14 bg-slate-200 rounded" />
+                </div>
+              ))}
+            </div>
+          ) : !data?.campaigns || data.campaigns.length === 0 ? (
             <div className="py-12 text-center text-xs text-slate-500">
               No active UTM campaigns detected in this window. Add <code className="px-1 text-[#1d5b9f] font-mono bg-blue-50 rounded">?utm_campaign=...</code> to your marketing links.
             </div>

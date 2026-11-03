@@ -13,6 +13,7 @@ interface KpiCardProps {
     positive?: boolean;
   };
   highlight?: boolean;
+  loading?: boolean;
 }
 
 export const KpiCard: React.FC<KpiCardProps> = ({
@@ -22,6 +23,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
   icon: Icon,
   badge,
   highlight = false,
+  loading = false,
 }) => {
   return (
     <div
@@ -47,10 +49,14 @@ export const KpiCard: React.FC<KpiCardProps> = ({
       </div>
 
       <div className="flex items-baseline gap-2.5">
-        <span className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight tabular-nums">
-          {value}
-        </span>
-        {badge && (
+        {loading ? (
+          <div className="h-8 w-24 rounded bg-slate-200 animate-pulse my-0.5" />
+        ) : (
+          <span className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight tabular-nums">
+            {value}
+          </span>
+        )}
+        {!loading && badge && (
           <span
             className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
               badge.positive
@@ -63,8 +69,10 @@ export const KpiCard: React.FC<KpiCardProps> = ({
         )}
       </div>
 
-      {subtitle && (
-        <p className="mt-1.5 text-xs text-slate-500">{subtitle}</p>
+      {loading ? (
+        <div className="h-3.5 w-32 rounded bg-slate-100 animate-pulse mt-2" />
+      ) : (
+        subtitle && <p className="mt-1.5 text-xs text-slate-500">{subtitle}</p>
       )}
     </div>
   );

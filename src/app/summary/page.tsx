@@ -255,21 +255,33 @@ export default function SummaryPage() {
         <div className="flex items-center gap-6 sm:gap-10">
           <div className="text-right">
             <span className="text-[10px] text-blue-200 block font-semibold uppercase tracking-wider">All-Time Total Users</span>
-            <span className="text-xl sm:text-2xl font-black text-white tabular-nums tracking-tight">
-              {formatNumber(overview?.allTimeVisitors || overview?.uniqueVisitors || 0)}
-            </span>
+            {loading && !overview ? (
+              <div className="h-7 w-20 bg-blue-300/30 rounded animate-pulse inline-block mt-0.5" />
+            ) : (
+              <span className="text-xl sm:text-2xl font-black text-white tabular-nums tracking-tight">
+                {formatNumber(overview?.allTimeVisitors || overview?.uniqueVisitors || 0)}
+              </span>
+            )}
           </div>
           <div className="text-right border-l border-blue-400/20 pl-6 sm:pl-10">
             <span className="text-[10px] text-blue-200 block font-semibold uppercase tracking-wider">All-Time Views</span>
-            <span className="text-xl sm:text-2xl font-black text-white tabular-nums tracking-tight">
-              {formatNumber(overview?.allTimePageviews || overview?.totalPageviews || 0)}
-            </span>
+            {loading && !overview ? (
+              <div className="h-7 w-20 bg-blue-300/30 rounded animate-pulse inline-block mt-0.5" />
+            ) : (
+              <span className="text-xl sm:text-2xl font-black text-white tabular-nums tracking-tight">
+                {formatNumber(overview?.allTimePageviews || overview?.totalPageviews || 0)}
+              </span>
+            )}
           </div>
           <div className="text-right border-l border-blue-400/20 pl-6 sm:pl-10 hidden md:block">
             <span className="text-[10px] text-blue-200 block font-semibold uppercase tracking-wider">All-Time Visits</span>
-            <span className="text-xl sm:text-2xl font-black text-white tabular-nums tracking-tight">
-              {formatNumber(overview?.allTimeSessions || overview?.totalSessions || 0)}
-            </span>
+            {loading && !overview ? (
+              <div className="h-7 w-20 bg-blue-300/30 rounded animate-pulse inline-block mt-0.5" />
+            ) : (
+              <span className="text-xl sm:text-2xl font-black text-white tabular-nums tracking-tight">
+                {formatNumber(overview?.allTimeSessions || overview?.totalSessions || 0)}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -283,24 +295,28 @@ export default function SummaryPage() {
           icon={Activity}
           highlight
           badge={{ text: "LIVE", positive: true }}
+          loading={loading && !overview}
         />
         <KpiCard
           title="Period Visitors"
           value={formatNumber(overview?.uniqueVisitors || 0)}
           subtitle="Unique in selected range"
           icon={Users}
+          loading={loading && !overview}
         />
         <KpiCard
           title="Period Pageviews"
           value={formatNumber(overview?.totalPageviews || 0)}
           subtitle={`${overview?.pagesPerSession || 1} pages / session`}
           icon={Eye}
+          loading={loading && !overview}
         />
         <KpiCard
           title="Avg Session Duration"
           value={formatDuration(overview?.avgDuration || 0)}
           subtitle={`Bounce rate: ${overview?.bounceRate || 0}%`}
           icon={Clock}
+          loading={loading && !overview}
         />
       </div>
 

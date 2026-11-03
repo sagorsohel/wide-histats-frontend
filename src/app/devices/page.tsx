@@ -111,13 +111,21 @@ export default function DevicesReportPage() {
 
               <div>
                 <div className="flex items-baseline justify-between mb-2">
-                  <span className="text-3xl font-black text-slate-900 tabular-nums">{sessions}</span>
-                  <span className="text-sm font-bold text-slate-600">{percentage}%</span>
+                  {loading && devices.length === 0 ? (
+                    <div className="h-8 w-20 bg-slate-200 rounded animate-pulse" />
+                  ) : (
+                    <span className="text-3xl font-black text-slate-900 tabular-nums">{sessions}</span>
+                  )}
+                  {loading && devices.length === 0 ? (
+                    <div className="h-4 w-10 bg-slate-100 rounded animate-pulse" />
+                  ) : (
+                    <span className="text-sm font-bold text-slate-600">{percentage}%</span>
+                  )}
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                   <div
                     className="bg-gradient-to-r from-[#1d5b9f] to-blue-500 h-full rounded-full"
-                    style={{ width: `${percentage}%` }}
+                    style={{ width: `${loading && devices.length === 0 ? 0 : percentage}%` }}
                   />
                 </div>
               </div>
@@ -135,7 +143,22 @@ export default function DevicesReportPage() {
             <h3 className="font-bold text-base text-slate-900">Browser Breakdown</h3>
           </div>
 
-          {browsers.length === 0 ? (
+          {loading && browsers.length === 0 ? (
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="space-y-1 animate-pulse">
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="h-3.5 w-24 bg-slate-200 rounded" />
+                    <div className="flex items-center gap-3">
+                      <div className="h-3.5 w-14 bg-slate-200 rounded" />
+                      <div className="h-3.5 w-8 bg-slate-200 rounded" />
+                    </div>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-1.5" />
+                </div>
+              ))}
+            </div>
+          ) : browsers.length === 0 ? (
             <div className="py-12 text-center text-xs text-slate-400">
               No browser records found.
             </div>
@@ -172,7 +195,22 @@ export default function DevicesReportPage() {
             <h3 className="font-bold text-base text-slate-900">Operating Systems</h3>
           </div>
 
-          {osList.length === 0 ? (
+          {loading && osList.length === 0 ? (
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="space-y-1 animate-pulse">
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="h-3.5 w-24 bg-slate-200 rounded" />
+                    <div className="flex items-center gap-3">
+                      <div className="h-3.5 w-14 bg-slate-200 rounded" />
+                      <div className="h-3.5 w-8 bg-slate-200 rounded" />
+                    </div>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-1.5" />
+                </div>
+              ))}
+            </div>
+          ) : osList.length === 0 ? (
             <div className="py-12 text-center text-xs text-slate-400">
               No OS records found.
             </div>

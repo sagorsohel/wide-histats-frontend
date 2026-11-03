@@ -15,14 +15,6 @@ export const DeviceBreakdown: React.FC<DeviceBreakdownProps> = ({
   browsers,
   loading = false,
 }) => {
-  if (loading) {
-    return (
-      <div className="glass-panel rounded-2xl p-6 h-80 flex items-center justify-center text-muted-foreground text-sm">
-        Loading device statistics...
-      </div>
-    );
-  }
-
   const totalSessions = devices.reduce((sum, d) => sum + d.sessions, 0) || 1;
 
   const getDeviceIcon = (type: string) => {
@@ -47,53 +39,86 @@ export const DeviceBreakdown: React.FC<DeviceBreakdownProps> = ({
         </div>
       </div>
 
-      {/* Device category cards */}
-      <div className="grid grid-cols-3 gap-2.5 mb-6">
-        {["desktop", "mobile", "tablet"].map((category) => {
-          const matched = devices.find((d) => d.device.toLowerCase() === category);
-          const sessions = matched ? matched.sessions : 0;
-          const percentage = Math.round((sessions / totalSessions) * 100);
-
-          return (
-            <div
-              key={category}
-              className="p-3 rounded-xl bg-[#f8fafc] border border-slate-200 flex flex-col items-center text-center shadow-2xs"
-            >
-              <div className="mb-1.5">{getDeviceIcon(category)}</div>
-              <span className="text-[11px] font-semibold text-slate-500 capitalize">
-                {category}
-              </span>
-              <span className="text-base font-extrabold text-slate-900 mt-0.5">
-                {percentage}%
-              </span>
-              <span className="text-[10px] text-slate-400">
-                {sessions} visits
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Top Browsers list */}
-      <div className="space-y-2.5">
-        <div className="text-xs font-bold uppercase tracking-wider text-slate-500">
-          Top Browsers
-        </div>
-        {browsers.slice(0, 4).map((b, i) => {
-          const percentage = Math.round((b.sessions / totalSessions) * 100);
-          return (
-            <div key={i} className="flex items-center justify-between text-xs">
-              <span className="text-slate-800 font-medium">{b.browser}</span>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-slate-900">{b.sessions}</span>
-                <span className="text-slate-500 text-[11px] w-8 text-right">
-                  {percentage}%
-                </span>
+      {loading ? (
+        <div>
+          <div className="grid grid-cols-3 gap-2.5 mb-6">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="p-3 rounded-xl bg-[#f8fafc] border border-slate-200 flex flex-col items-center text-center animate-pulse space-y-2"
+              >
+                <div className="w-5 h-5 bg-slate-200 rounded-full" />
+                <div className="h-3 w-12 bg-slate-200 rounded" />
+                <div className="h-5 w-10 bg-slate-200 rounded" />
+                <div className="h-2.5 w-12 bg-slate-100 rounded" />
               </div>
+            ))}
+          </div>
+
+          <div className="space-y-2.5">
+            <div className="h-3 w-20 bg-slate-200 rounded animate-pulse" />
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex items-center justify-between text-xs animate-pulse py-1">
+                <div className="h-3.5 w-24 bg-slate-200 rounded" />
+                <div className="flex items-center gap-2">
+                  <div className="h-3.5 w-10 bg-slate-200 rounded" />
+                  <div className="h-3.5 w-8 bg-slate-200 rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Device category cards */}
+          <div className="grid grid-cols-3 gap-2.5 mb-6">
+            {["desktop", "mobile", "tablet"].map((category) => {
+              const matched = devices.find((d) => d.device.toLowerCase() === category);
+              const sessions = matched ? matched.sessions : 0;
+              const percentage = Math.round((sessions / totalSessions) * 100);
+
+              return (
+                <div
+                  key={category}
+                  className="p-3 rounded-xl bg-[#f8fafc] border border-slate-200 flex flex-col items-center text-center shadow-2xs"
+                >
+                  <div className="mb-1.5">{getDeviceIcon(category)}</div>
+                  <span className="text-[11px] font-semibold text-slate-500 capitalize">
+                    {category}
+                  </span>
+                  <span className="text-base font-extrabold text-slate-900 mt-0.5">
+                    {percentage}%
+                  </span>
+                  <span className="text-[10px] text-slate-400">
+                    {sessions} visits
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Top Browsers list */}
+          <div className="space-y-2.5">
+            <div className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Top Browsers
             </div>
-          );
-        })}
-      </div>
+            {browsers.slice(0, 4).map((b, i) => {
+              const percentage = Math.round((b.sessions / totalSessions) * 100);
+              return (
+                <div key={i} className="flex items-center justify-between text-xs">
+                  <span className="text-slate-800 font-medium">{b.browser}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-slate-900">{b.sessions}</span>
+                    <span className="text-slate-500 text-[11px] w-8 text-right">
+                      {percentage}%
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 };

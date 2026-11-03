@@ -100,11 +100,7 @@ body {
   }
 }
 
-.animate-stream-drop {
-  animation: streamDropIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
-  overflow: hidden;
-  will-change: transform, max-height, opacity;
-}
+
 
 @keyframes streamDropInDetailed {
   0% {
@@ -142,9 +138,5 @@ body {
   }
 }
 
-.animate-stream-drop-detailed {
-  animation: streamDropInDetailed 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
-  overflow: hidden;
-  will-change: transform, max-height, opacity;
-}
+
 

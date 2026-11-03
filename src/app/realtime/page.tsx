@@ -54,6 +54,11 @@ export default function RealtimeHistatsPage() {
   const data = currentSiteRealtime?.data || null;
   const rawRecentHits = currentSiteRealtime?.recentHits || [];
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>("summary");
   const [isPaused, setIsPaused] = useState(false);
@@ -304,8 +309,8 @@ export default function RealtimeHistatsPage() {
         return u.origin;
       } catch {}
     }
-    return "https://streamespn.org";
-  }, [selectedWebsite, rawRecentHits]);
+    return "";
+  }, [selectedWebsite?.domain, rawRecentHits]);
 
   const getFullUrl = useCallback(
     (url?: string, path?: string) => {
@@ -358,9 +363,19 @@ export default function RealtimeHistatsPage() {
     return data?.topReferrers ?? [];
   }, [data]);
 
-  // 100% Real-time active visitors - NO static fallback
+  // 100% Real-time active visitors - Sorted by highest activity (pageviews) first (#1), then latest timestamp
   const displayActiveVisitors = useMemo(() => {
-    return data?.activeVisitors ?? [];
+    if (!data?.activeVisitors || !Array.isArray(data.activeVisitors)) return [];
+    return [...data.activeVisitors].sort((a: any, b: any) => {
+      const countA = Number(a.pageviewsCount ?? a.hitsCount ?? a.count ?? a.pageviews ?? 1);
+      const countB = Number(b.pageviewsCount ?? b.hitsCount ?? b.count ?? b.pageviews ?? 1);
+      if (countB !== countA) {
+        return countB - countA; // Highest pageviews on top (#1)
+      }
+      const timeA = a.lastSeenAt ? new Date(a.lastSeenAt).getTime() : 0;
+      const timeB = b.lastSeenAt ? new Date(b.lastSeenAt).getTime() : 0;
+      return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
+    });
   }, [data]);
 
   // Active Count & Pages Count - Exact Real-Time Count Right Now
@@ -461,14 +476,17 @@ export default function RealtimeHistatsPage() {
       <div className="bg-[#1b4e8c] text-white px-3 py-1.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-[#143b6a]">
         <div className="flex items-center gap-2">
           <a
-            href={baseWebsiteUrl}
+            href={mounted && baseWebsiteUrl ? baseWebsiteUrl : "#"}
             target="_blank"
             rel="noopener noreferrer"
-            title={baseWebsiteUrl}
+            title={mounted ? baseWebsiteUrl : ""}
             className="text-white hover:underline font-bold text-[13px] flex items-center gap-1.5 group cursor-pointer"
           >
-            <span>
-              {selectedWebsite?.domain || baseWebsiteUrl.replace(/^https?:\/\//, "")}
+            <span suppressHydrationWarning>
+              {mounted
+                ? selectedWebsite?.domain ||
+                  (baseWebsiteUrl ? baseWebsiteUrl.replace(/^https?:\/\//, "") : "")
+                : ""}
             </span>
             <ExternalLink className="w-3.5 h-3.5 text-blue-200 group-hover:text-white" />
           </a>
@@ -965,7 +983,7 @@ export default function RealtimeHistatsPage() {
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2">
                               <span className="font-bold text-[#1b62b7] min-w-[20px] text-right">
-                                {vis.pageviewsCount || 20 - idx * 2}
+                                {vis.pageviewsCount ?? vis.hitsCount ?? vis.count ?? 1}
                               </span>
                               <div className="flex items-center gap-1.5 font-mono text-slate-800 font-semibold">
                                 <span className="text-emerald-600 font-bold">👤</span>
@@ -1312,7 +1330,7 @@ export default function RealtimeHistatsPage() {
 
                   <div className="text-right">
                     <div className="font-bold text-[#1b62b7] text-sm">
-                      {vis.pageviewsCount || 20 - idx * 2} Pageviews
+                      {vis.pageviewsCount ?? vis.hitsCount ?? vis.count ?? 1} Pageviews
                     </div>
                     <div className="text-slate-500 text-[11px] flex items-center justify-end gap-1.5 mt-0.5">
                       <CountryFlag code={vis.countryCode} />

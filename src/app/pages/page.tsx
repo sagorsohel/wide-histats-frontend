@@ -136,7 +136,7 @@ export default function PagesReportPage() {
   const maxViews = pages.length > 0 ? Math.max(...pages.map((p) => p.pageviews)) : 1;
   const cleanDomain = selectedWebsite?.domain
     ? (selectedWebsite.domain.startsWith("http") ? selectedWebsite.domain : `https://${selectedWebsite.domain}`)
-    : "https://streamespn.org";
+    : "";
 
   return (
     <div className="space-y-6">
@@ -280,7 +280,7 @@ export default function PagesReportPage() {
               {landingPages.map((l, i) => {
                 const cleanDomain = selectedWebsite?.domain
                   ? (selectedWebsite.domain.startsWith("http") ? selectedWebsite.domain : `https://${selectedWebsite.domain}`)
-                  : "https://streamespn.org";
+                  : "";
                 const fullLandLink = `${cleanDomain}${l.path.startsWith("/") ? l.path : `/${l.path}`}`;
                 return (
                   <div
@@ -338,7 +338,7 @@ export default function PagesReportPage() {
               {exitPages.map((e, i) => {
                 const cleanDomain = selectedWebsite?.domain
                   ? (selectedWebsite.domain.startsWith("http") ? selectedWebsite.domain : `https://${selectedWebsite.domain}`)
-                  : "https://streamespn.org";
+                  : "";
                 const fullExitLink = `${cleanDomain}${e.path.startsWith("/") ? e.path : `/${e.path}`}`;
                 return (
                   <div

@@ -98,6 +98,22 @@ export const realtimeSlice = createSlice({
           (state.byWebsite[websiteId].data.todayPageviews || 0) + 1;
         state.byWebsite[websiteId].data.totalPageviews =
           (state.byWebsite[websiteId].data.totalPageviews || 0) + 1;
+
+        if (state.byWebsite[websiteId].data.activeVisitors) {
+          const visitors = state.byWebsite[websiteId].data.activeVisitors;
+          const found = visitors.find(
+            (v: any) =>
+              (hit.visitorKey && v.visitorKey === hit.visitorKey) ||
+              (hit.ip && v.ip === hit.ip)
+          );
+          if (found) {
+            found.pageviewsCount = (found.pageviewsCount || found.hitsCount || 1) + 1;
+            found.lastSeenAt = Date.now();
+            if (hit.path) found.currentPath = hit.path;
+            if (hit.title) found.pageTitle = hit.title;
+            if (hit.url) found.pageUrl = hit.url;
+          }
+        }
       }
     },
 

@@ -62,7 +62,7 @@ export const TopPagesTable: React.FC<TopPagesTableProps> = ({
           {pages.map((page, index) => {
             const percentage = Math.round((page.pageviews / maxViews) * 100);
 
-            const cleanDomain = domain ? (domain.startsWith("http") ? domain : `https://${domain}`) : "https://streamespn.org";
+            const cleanDomain = domain ? (domain.startsWith("http") ? domain : `https://${domain}`) : "";
             const fullLink = page.url || `${cleanDomain}${page.path.startsWith("/") ? page.path : `/${page.path}`}`;
 
             return (

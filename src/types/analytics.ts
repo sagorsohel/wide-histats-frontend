@@ -41,6 +41,7 @@ export interface ActiveVisitor {
   source: string;
   ip?: string;
   hitsCount?: number;
+  pageviewsCount?: number;
   lastSeenAt: number;
 }
 

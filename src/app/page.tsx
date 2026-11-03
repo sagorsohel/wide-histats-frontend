@@ -3,16 +3,16 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { Sparkles, AlertCircle, ArrowRight, ShieldCheck, Activity } from "lucide-react";
+import { AlertCircle, ArrowRight, ShieldCheck, Activity } from "lucide-react";
 
 export default function RootLoginPage() {
   const router = useRouter();
-  const { user, loading: authLoading, login, register, quickDemoLogin } = useAuth();
+  const { user, loading: authLoading, login, register } = useAuth();
 
   const [isRegister, setIsRegister] = useState(false);
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("admin@gmail.com");
-  const [password, setPassword] = useState("sohoj@sohoj");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,23 +57,6 @@ export default function RootLoginPage() {
     }
   };
 
-  const handleQuickSignIn = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const ok = await quickDemoLogin();
-      if (ok) {
-        router.push("/summary");
-      } else {
-        setError("Sign in failed. Please ensure the backend is running.");
-      }
-    } catch (err: any) {
-      setError(err.message || "Sign in failed.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-[75vh] flex items-center justify-center py-6 px-4">
       <div className="w-full max-w-md">
@@ -92,32 +75,8 @@ export default function RootLoginPage() {
             <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
               {isRegister
                 ? "Sign up to track and monitor website visitors in real time"
-                : "Enter your credentials to access the analytics summary"}
+                : "Enter your email and password to access the analytics summary"}
             </p>
-          </div>
-
-          {/* 1-Click Quick Admin Button */}
-          <button
-            type="button"
-            onClick={handleQuickSignIn}
-            disabled={loading}
-            className="w-full mb-5 flex items-center justify-between py-2.5 px-4 rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50/50 hover:from-blue-100 hover:to-indigo-100 text-[#1d5b9f] font-bold text-xs transition-all shadow-2xs group cursor-pointer"
-          >
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#1d5b9f] animate-pulse" />
-              <span>1-Click Admin Sign In</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 group-hover:text-[#1d5b9f]">
-              <span className="font-mono">admin@gmail.com</span>
-              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-            </div>
-          </button>
-
-          <div className="relative flex items-center justify-center mb-5">
-            <div className="border-t border-slate-200 w-full" />
-            <span className="bg-white px-3 text-[10px] text-slate-400 uppercase font-bold tracking-wider">
-              or sign in manually
-            </span>
           </div>
 
           {error && (
@@ -152,7 +111,7 @@ export default function RootLoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@gmail.com"
+                placeholder="name@example.com"
                 required
                 className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:border-[#1d5b9f] focus:bg-white focus:outline-none text-slate-900 text-xs transition-all font-medium"
               />

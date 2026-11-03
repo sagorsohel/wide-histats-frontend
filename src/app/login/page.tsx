@@ -3,12 +3,12 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { LogIn, Sparkles, AlertCircle, ArrowRight } from "lucide-react";
+import { AlertCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, register, quickDemoLogin } = useAuth();
+  const { login, register } = useAuth();
 
   const [isRegister, setIsRegister] = useState(false);
   const [name, setName] = useState("");
@@ -51,23 +51,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleDemoSignIn = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const ok = await quickDemoLogin();
-      if (ok) {
-        router.push("/summary");
-      } else {
-        setError("Demo login failed. Make sure backend is running.");
-      }
-    } catch (err: any) {
-      setError(err.message || "Demo login failed.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-[80vh] flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-md">
@@ -83,27 +66,8 @@ export default function LoginPage() {
             <p className="text-xs text-slate-500 mt-1">
               {isRegister
                 ? "Sign up to start tracking website traffic in real-time"
-                : "Sign in to access your analytics dashboard"}
+                : "Enter your email and password to access your dashboard"}
             </p>
-          </div>
-
-          {/* Quick Demo Button */}
-          <button
-            type="button"
-            onClick={handleDemoSignIn}
-            disabled={loading}
-            className="w-full mb-5 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 text-[#1d5b9f] font-bold text-xs transition-all shadow-2xs group cursor-pointer"
-          >
-            <Sparkles className="w-4 h-4 text-[#1d5b9f] animate-pulse" />
-            <span>1-Click Demo Sign In (Admin)</span>
-            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-          </button>
-
-          <div className="relative flex items-center justify-center mb-5">
-            <div className="border-t border-slate-200 w-full" />
-            <span className="bg-white px-3 text-[11px] text-slate-400 uppercase font-semibold">
-              or continue with email
-            </span>
           </div>
 
           {error && (
@@ -138,7 +102,7 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@widehistat.com"
+                placeholder="name@example.com"
                 required
                 className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:border-[#1d5b9f] focus:outline-none text-slate-900 text-xs"
               />

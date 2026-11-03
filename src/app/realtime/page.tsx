@@ -639,7 +639,7 @@ export default function RealtimeHistatsPage() {
                 </button>
               </div>
 
-              <div className="divide-y divide-[#edf2f7] overflow-x-auto">
+              <div className="divide-y divide-[#edf2f7] overflow-x-auto overflow-y-auto h-[260px] scroll-smooth">
                 {loading && displayHits.length === 0 ? (
                   [1, 2, 3, 4, 5, 6].map((i) => (
                     <div
@@ -662,11 +662,11 @@ export default function RealtimeHistatsPage() {
                     </div>
                   ))
                 ) : filteredHits.length === 0 ? (
-                  <div className="px-3 py-4 text-center text-slate-400 text-[11px]">
+                  <div className="px-3 py-8 h-full flex items-center justify-center text-center text-slate-400 text-[11px]">
                     No recent visitor hits recorded yet
                   </div>
                 ) : (
-                  filteredHits.slice(0, 10).map((hit, idx) => (
+                  filteredHits.slice(0, 50).map((hit, idx) => (
                     <div
                       key={hit.id || idx}
                       className="px-3 py-1.5 flex items-center justify-between hover:bg-[#f6f9fc] transition-colors gap-2 text-[11px]"
@@ -727,7 +727,7 @@ export default function RealtimeHistatsPage() {
                     <Search className="w-3.5 h-3.5 text-slate-400 cursor-pointer" />
                   </div>
 
-                  <div className="divide-y divide-[#edf2f7]">
+                  <div className="divide-y divide-[#edf2f7] overflow-y-auto max-h-[220px] scroll-smooth">
                     {loading && displayPages.length === 0 ? (
                       [1, 2, 3, 4, 5].map((i) => (
                         <div
@@ -785,7 +785,7 @@ export default function RealtimeHistatsPage() {
                     <Search className="w-3.5 h-3.5 text-slate-400 cursor-pointer" />
                   </div>
 
-                  <div className="divide-y divide-[#edf2f7]">
+                  <div className="divide-y divide-[#edf2f7] overflow-y-auto max-h-[220px] scroll-smooth">
                     {loading && displayReferrers.length === 0 ? (
                       [1, 2, 3, 4, 5].map((i) => (
                         <div
@@ -948,7 +948,7 @@ export default function RealtimeHistatsPage() {
                     <Search className="w-3.5 h-3.5 text-slate-400 cursor-pointer" />
                   </div>
 
-                  <div className="divide-y divide-[#edf2f7]">
+                  <div className="divide-y divide-[#edf2f7] overflow-y-auto max-h-[220px] scroll-smooth">
                     {loading && displayActiveVisitors.length === 0 ? (
                       [1, 2, 3, 4, 5].map((i) => (
                         <div
@@ -975,7 +975,7 @@ export default function RealtimeHistatsPage() {
                         No active visitors online right now
                       </div>
                     ) : (
-                      displayActiveVisitors.slice(0, 6).map((vis: any, idx: number) => (
+                      displayActiveVisitors.slice(0, 25).map((vis: any, idx: number) => (
                         <div
                           key={idx}
                           className="px-3 py-1.5 hover:bg-[#f6f9fc] text-[11px] space-y-0.5"
@@ -1043,8 +1043,8 @@ export default function RealtimeHistatsPage() {
               />
             </div>
 
-            {/* Histats Exact Screenshot Stream Layout with Real IP */}
-            <div className="divide-y divide-[#edf2f7] border border-[#cbd6e2] rounded-xs overflow-hidden bg-white">
+            {/* Histats Exact Screenshot Stream Layout with Real IP - Fixed Height with Vertical Scroll */}
+            <div className="divide-y divide-[#edf2f7] border border-[#cbd6e2] rounded-xs overflow-y-auto h-[500px] bg-white scroll-smooth shadow-2xs">
               {loading && filteredHits.length === 0 ? (
                 [1, 2, 3, 4, 5, 6].map((i) => (
                   <div
@@ -1064,7 +1064,7 @@ export default function RealtimeHistatsPage() {
                   </div>
                 ))
               ) : filteredHits.length === 0 ? (
-                <div className="p-4 text-center text-slate-400 text-xs">
+                <div className="h-full flex flex-col items-center justify-center p-8 text-center text-slate-400 text-xs">
                   No recent visitor hits recorded yet
                 </div>
               ) : (
@@ -1181,9 +1181,9 @@ export default function RealtimeHistatsPage() {
             {/* Tabular Data with Real IP */}
             <div className="pt-2">
               <h4 className="font-bold text-slate-700 text-xs mb-2">Tabular Hits View</h4>
-              <div className="overflow-x-auto border border-[#cbd6e2] rounded-xs">
+              <div className="overflow-x-auto max-h-[380px] overflow-y-auto border border-[#cbd6e2] rounded-xs shadow-2xs">
                 <table className="w-full text-left text-xs border-collapse">
-                  <thead>
+                  <thead className="sticky top-0 z-10 shadow-2xs">
                     <tr className="bg-[#f0f4f9] text-slate-700 border-b border-[#cbd6e2]">
                       <th className="py-2 px-3 font-bold">Time</th>
                       <th className="py-2 px-3 font-bold">Page Title / URL</th>
@@ -1259,7 +1259,7 @@ export default function RealtimeHistatsPage() {
             <h3 className="font-bold text-slate-800 text-sm mb-3 border-b border-slate-200 pb-2">
               Most Active Visitors (Online)
             </h3>
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-[550px] overflow-y-auto pr-1">
               {loading && displayActiveVisitors.length === 0 ? (
                 [1, 2, 3, 4, 5, 6].map((i) => (
                   <div

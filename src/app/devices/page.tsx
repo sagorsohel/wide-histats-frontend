@@ -34,14 +34,17 @@ export default function DevicesReportPage() {
   }, []);
 
   const hasDataRef = React.useRef(false);
+  const activeSiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
+  activeSiteIdRef.current = selectedWebsite?.id || null;
 
-  const loadData = useCallback(async (isSilent = false) => {
-    if (!selectedWebsite) return;
+  const loadData = useCallback(async (isSilent = false, overrideSiteId?: string) => {
+    const siteId = overrideSiteId || activeSiteIdRef.current;
+    if (!siteId) return;
     if (!isSilent && !hasDataRef.current) {
       setLoading(true);
     }
     const { from, to } = getDateRange(range);
-    const q = `websiteId=${selectedWebsite.id}&from=${from}&to=${to}`;
+    const q = `websiteId=${siteId}&from=${from}&to=${to}`;
 
     try {
       const [devRes, brRes, osRes] = await Promise.all([
@@ -50,6 +53,11 @@ export default function DevicesReportPage() {
         api.get<OsStat[]>(`/api/v1/analytics/operating-systems?${q}`),
       ]);
 
+      // Strict race condition check: if user switched website while this was in flight, discard!
+      if (siteId !== activeSiteIdRef.current) {
+        return;
+      }
+
       if (devRes.success && devRes.data) setDevices(devRes.data);
       if (brRes.success && brRes.data) setBrowsers(brRes.data);
       if (osRes.success && osRes.data) setOsList(osRes.data);
@@ -57,12 +65,65 @@ export default function DevicesReportPage() {
     } catch (err) {
       console.error(err);
     } finally {
-      setLoading(false);
+      if (siteId === activeSiteIdRef.current) {
+        setLoading(false);
+      }
     }
-  }, [selectedWebsite, range, getDateRange]);
+  }, [range, getDateRange]);
+
+  // Instantly handle website switcher change in Devices page
+  const prevWebsiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
+
+  useEffect(() => {
+    if (selectedWebsite?.id && selectedWebsite.id !== prevWebsiteIdRef.current) {
+      prevWebsiteIdRef.current = selectedWebsite.id;
+      activeSiteIdRef.current = selectedWebsite.id;
+      setDevices([]);
+      setBrowsers([]);
+      setOsList([]);
+      hasDataRef.current = false;
+      setLoading(true);
+      loadData(false, selectedWebsite.id);
+    }
+  }, [selectedWebsite?.id, loadData]);
+
+  // Listen to global website changed event for immediate 0ms update
+  useEffect(() => {
+    const handleWebsiteChanged = (e: any) => {
+      const newSite = e.detail;
+      if (newSite?.id) {
+        prevWebsiteIdRef.current = newSite.id;
+        setDevices([]);
+        setBrowsers([]);
+        setOsList([]);
+        hasDataRef.current = false;
+        setLoading(true);
+        loadData(false, newSite.id);
+      }
+    };
+    window.addEventListener("histat:website_changed", handleWebsiteChanged);
+    return () => window.removeEventListener("histat:website_changed", handleWebsiteChanged);
+  }, [loadData]);
 
   // Auto-refresh when user returns to this tab
   useTabFocus(() => loadData(true));
+
+  // Silent sync on socket reconnect or network restore
+  useEffect(() => {
+    const handleSilentSync = () => {
+      if (selectedWebsite) {
+        loadData(true);
+      }
+    };
+    window.addEventListener("histat:socket_sync", handleSilentSync);
+    window.addEventListener("online", handleSilentSync);
+    window.addEventListener("focus", handleSilentSync);
+    return () => {
+      window.removeEventListener("histat:socket_sync", handleSilentSync);
+      window.removeEventListener("online", handleSilentSync);
+      window.removeEventListener("focus", handleSilentSync);
+    };
+  }, [selectedWebsite, loadData]);
 
   useEffect(() => {
     loadData(hasDataRef.current);

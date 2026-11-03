@@ -3,9 +3,15 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useWebsite } from "@/context/WebsiteContext";
 import { api } from "@/lib/api";
-import { getSocket, subscribeToWebsite } from "@/lib/socket";
+import { getSocket, subscribeToWebsite, unsubscribeFromWebsite } from "@/lib/socket";
 import { RealtimeData, ActiveVisitor, RealtimeRecentHit } from "@/types/analytics";
 import { CountryFlag, getCountryName } from "@/components/common/CountryFlag";
+import { useAppDispatch, useAppSelector } from "@/store";
+import {
+  setRealtimeData,
+  updateLiveCounts,
+  addRecentHit,
+} from "@/store/slices/realtimeSlice";
 import {
   ExternalLink,
   Search,
@@ -34,9 +40,21 @@ type TabType =
   | "geo";
 
 export default function RealtimeHistatsPage() {
+  const dispatch = useAppDispatch();
   const { selectedWebsite, openTrackingModal } = useWebsite();
-  const [data, setData] = useState<RealtimeData | null>(null);
-  const [loading, setLoading] = useState(true);
+
+  // Active website ID ref to completely prevent race conditions
+  const activeSiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
+  activeSiteIdRef.current = selectedWebsite?.id || null;
+
+  // Realtime state strictly isolated by websiteId in Redux!
+  const currentSiteRealtime = useAppSelector(
+    (state) => state.realtime.byWebsite[selectedWebsite?.id || ""]
+  );
+  const data = currentSiteRealtime?.data || null;
+  const rawRecentHits = currentSiteRealtime?.recentHits || [];
+
+  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>("summary");
   const [isPaused, setIsPaused] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -44,8 +62,6 @@ export default function RealtimeHistatsPage() {
   const [mapZoom, setMapZoom] = useState(1);
   const [currentTime, setCurrentTime] = useState<number>(() => Date.now());
 
-  // Live incoming event stream buffer
-  const [recentHits, setRecentHits] = useState<RealtimeRecentHit[]>([]);
   // Track IDs of newly arrived hits for the smooth slide-down stack animation
   const [animatingHitIds, setAnimatingHitIds] = useState<Record<string, boolean>>({});
   const isInitialLoad = React.useRef(true);
@@ -79,50 +95,78 @@ export default function RealtimeHistatsPage() {
     [currentTime]
   );
 
-  const hasInitialDataRef = React.useRef(false);
+  const loadRealtime = useCallback(
+    async (isSilent = false, overrideSiteId?: string) => {
+      const siteId = overrideSiteId || activeSiteIdRef.current;
+      if (!siteId) {
+        setLoading(false);
+        return;
+      }
+      if (isPaused) return;
 
-  const loadRealtime = useCallback(async (isSilent = false) => {
-    if (!selectedWebsite) {
-      setLoading(false);
-      return;
-    }
-    if (isPaused) return;
+      const hasData = !!currentSiteRealtime?.data;
+      if (!isSilent && !hasData) {
+        setLoading(true);
+      }
 
-    // Only show loading state if we have no data yet; never flicker or disrupt on background sync
-    if (!isSilent && !hasInitialDataRef.current) {
-      setLoading(true);
-    }
+      try {
+        const res = await api.get<RealtimeData>(
+          `/api/v1/analytics/realtime?websiteId=${siteId}`
+        );
 
-    try {
-      const res = await api.get<RealtimeData>(
-        `/api/v1/analytics/realtime?websiteId=${selectedWebsite.id}`
-      );
-      if (res.success && res.data) {
-        const realtimeData = res.data;
-        setData(realtimeData);
-        hasInitialDataRef.current = true;
+        // Strict race condition guard: If user switched website while this request was in flight, discard!
+        if (siteId !== activeSiteIdRef.current) {
+          return;
+        }
 
-        if (realtimeData.recentPageviews && realtimeData.recentPageviews.length > 0) {
-          setRecentHits((prev) => {
-            const map = new Map<string, RealtimeRecentHit>();
-            prev.forEach((h) => map.set(h.id, h));
-            realtimeData.recentPageviews.forEach((h) => map.set(h.id, h));
-            return Array.from(map.values())
-              .sort((a, b) => {
-                const timeA = a.viewedAt ? new Date(a.viewedAt).getTime() : 0;
-                const timeB = b.viewedAt ? new Date(b.viewedAt).getTime() : 0;
-                return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
-              })
-              .slice(0, 50);
-          });
+        if (res.success && res.data) {
+          dispatch(setRealtimeData({ websiteId: siteId, data: res.data }));
+        }
+      } catch (err) {
+        console.error("Failed to fetch realtime stats", err);
+      } finally {
+        if (siteId === activeSiteIdRef.current) {
+          setLoading(false);
         }
       }
-    } catch (err) {
-      console.error("Failed to fetch realtime stats", err);
-    } finally {
-      setLoading(false);
+    },
+    [isPaused, currentSiteRealtime?.data, dispatch]
+  );
+
+  // Instantly handle website switcher change: reset previous site's state & load new site immediately!
+  const prevWebsiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
+
+  useEffect(() => {
+    if (selectedWebsite?.id && selectedWebsite.id !== prevWebsiteIdRef.current) {
+      if (prevWebsiteIdRef.current) {
+        unsubscribeFromWebsite(prevWebsiteIdRef.current);
+      }
+      prevWebsiteIdRef.current = selectedWebsite.id;
+      activeSiteIdRef.current = selectedWebsite.id;
+      setAnimatingHitIds({});
+      subscribeToWebsite(selectedWebsite.id);
+      loadRealtime(false, selectedWebsite.id);
     }
-  }, [selectedWebsite, isPaused]);
+  }, [selectedWebsite?.id, loadRealtime]);
+
+  // Listen to global website changed event for immediate 0ms update
+  useEffect(() => {
+    const handleWebsiteChanged = (e: any) => {
+      const newSite = e.detail;
+      if (newSite?.id) {
+        if (prevWebsiteIdRef.current && prevWebsiteIdRef.current !== newSite.id) {
+          unsubscribeFromWebsite(prevWebsiteIdRef.current);
+        }
+        prevWebsiteIdRef.current = newSite.id;
+        activeSiteIdRef.current = newSite.id;
+        setAnimatingHitIds({});
+        subscribeToWebsite(newSite.id);
+        loadRealtime(false, newSite.id);
+      }
+    };
+    window.addEventListener("histat:website_changed", handleWebsiteChanged);
+    return () => window.removeEventListener("histat:website_changed", handleWebsiteChanged);
+  }, [loadRealtime]);
 
   // Silent auto-sync on tab wake, network restore, or socket reconnection
   useTabFocus(() => {
@@ -153,7 +197,7 @@ export default function RealtimeHistatsPage() {
 
   // Silent background auto-reload interval (runs continuously without user noticing)
   useEffect(() => {
-    loadRealtime(hasInitialDataRef.current);
+    loadRealtime(!currentSiteRealtime?.data);
     const interval = setInterval(() => {
       if (selectedWebsite && !isPaused) {
         // Self-healing: if socket disconnected in background, ensure it reconnects
@@ -166,9 +210,9 @@ export default function RealtimeHistatsPage() {
       }
     }, 4000);
     return () => clearInterval(interval);
-  }, [loadRealtime, selectedWebsite, isPaused]);
+  }, [loadRealtime, selectedWebsite, isPaused, currentSiteRealtime?.data]);
 
-  // Socket.IO real-time listener (Instant "Sathe Sathe" updates)
+  // Socket.IO real-time listener (Instant "Sathe Sathe" updates with 100% website isolation)
   useEffect(() => {
     if (!selectedWebsite || isPaused) return;
     const socket = getSocket();
@@ -178,108 +222,62 @@ export default function RealtimeHistatsPage() {
     subscribeToWebsite(selectedWebsite.id);
 
     const handleRealtimeUpdate = (payload: any) => {
-      if (payload.websiteId === selectedWebsite.id) {
-        setData((prev) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            activeCount: payload.activeCount,
-            activeCount5m: payload.activeCount5m ?? prev.activeCount5m,
-            activeCount15m: payload.activeCount15m ?? prev.activeCount15m,
-            activeVisitors: payload.activeVisitors ?? prev.activeVisitors,
-          };
-        });
+      const activeId = activeSiteIdRef.current;
+      if (payload.websiteId === activeId) {
+        dispatch(updateLiveCounts(payload));
       }
     };
 
     const handlePageView = (event: any) => {
-      if (event.websiteId === selectedWebsite.id) {
-        const newHit: RealtimeRecentHit = {
-          id: "hit-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7),
-          path: event.path || "/",
-          title: event.title || event.path || "Home Page",
-          url: event.url,
-          referrer: event.referrer || null,
-          viewedAt: event.timestamp || new Date().toISOString(),
-          country: event.country || "United States",
-          countryCode: event.countryCode || "US",
-          city: event.city || "",
-          browser: event.browser || "Chrome",
-          os: event.os || "Windows",
-          deviceType: event.deviceType || "desktop",
-          visitorKey: event.visitorKey || "vis-" + Math.floor(Math.random() * 10000),
-          ip: event.ip || "127.0.0.1",
-          hitsCount: event.hitsCount || 1,
-        };
+      const activeId = activeSiteIdRef.current;
+      if (!activeId) return;
 
-        // 1. Immediately push new hit to recent hits at index 0 (Latest visitor on top)
-        setRecentHits((prev) => {
-          const list = [newHit, ...prev.filter((h) => h.id !== newHit.id)];
-          return list
-            .sort((a, b) => {
-              const timeA = a.viewedAt ? new Date(a.viewedAt).getTime() : 0;
-              const timeB = b.viewedAt ? new Date(b.viewedAt).getTime() : 0;
-              return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
-            })
-            .slice(0, 50);
-        });
-        setAnimatingHitIds((prev) => ({ ...prev, [newHit.id]: true }));
-        setTimeout(() => {
-          setAnimatingHitIds((prev) => {
-            const next = { ...prev };
-            delete next[newHit.id];
-            return next;
-          });
-        }, 2500);
-
-        // 2. Instantly update live summary metrics and tables
-        setData((prev) => {
-          if (!prev) return prev;
-
-          const cleanPath = event.path || "/";
-          const existingPageIndex = prev.topPages.findIndex((p) => p.path === cleanPath);
-          let updatedPages = [...prev.topPages];
-          if (existingPageIndex >= 0) {
-            updatedPages[existingPageIndex] = {
-              ...updatedPages[existingPageIndex],
-              count: updatedPages[existingPageIndex].count + 1,
-            };
-          } else {
-            updatedPages.push({
-              path: cleanPath,
-              title: event.title || cleanPath,
-              url: event.url || "",
-              count: 1,
-            });
-          }
-          updatedPages.sort((a, b) => b.count - a.count);
-
-          const code = event.countryCode || "US";
-          const existingCountryIdx = prev.topCountries.findIndex((c) => c.code === code);
-          let updatedCountries = [...prev.topCountries];
-          if (existingCountryIdx >= 0) {
-            updatedCountries[existingCountryIdx] = {
-              ...updatedCountries[existingCountryIdx],
-              count: updatedCountries[existingCountryIdx].count + 1,
-            };
-          } else if (event.country) {
-            updatedCountries.push({
-              country: event.country,
-              code,
-              count: 1,
-            });
-          }
-          updatedCountries.sort((a, b) => b.count - a.count);
-
-          return {
-            ...prev,
-            todayPageviews: (prev.todayPageviews ?? 0) + 1,
-            totalPageviews: (prev.totalPageviews ?? 0) + 1,
-            topPages: updatedPages,
-            topCountries: updatedCountries,
-          };
-        });
+      // 1. Strict websiteId check: must match currently active website!
+      if (event.websiteId && event.websiteId !== activeId) {
+        return;
       }
+
+      // 2. Strict Domain Isolation Guard
+      if (selectedWebsite?.domain && event.url) {
+        try {
+          const hitHost = new URL(event.url).hostname.toLowerCase();
+          const siteHost = selectedWebsite.domain
+            .replace(/^https?:\/\//, "")
+            .split("/")[0]
+            .toLowerCase();
+          if (!hitHost.includes(siteHost) && !siteHost.includes(hitHost)) {
+            return; // Discard hit belonging to another website!
+          }
+        } catch {}
+      }
+
+      const newHit: RealtimeRecentHit = {
+        id: "hit-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7),
+        path: event.path || "/",
+        title: event.title || event.path || "Home Page",
+        url: event.url,
+        referrer: event.referrer || null,
+        viewedAt: event.timestamp || new Date().toISOString(),
+        country: event.country || "United States",
+        countryCode: event.countryCode || "US",
+        city: event.city || "",
+        browser: event.browser || "Chrome",
+        os: event.os || "Windows",
+        deviceType: event.deviceType || "desktop",
+        visitorKey: event.visitorKey || "vis-" + Math.floor(Math.random() * 10000),
+        ip: event.ip || "127.0.0.1",
+        hitsCount: event.hitsCount || 1,
+      };
+
+      dispatch(addRecentHit({ websiteId: activeId, hit: newHit }));
+      setAnimatingHitIds((prev) => ({ ...prev, [newHit.id]: true }));
+      setTimeout(() => {
+        setAnimatingHitIds((prev) => {
+          const next = { ...prev };
+          delete next[newHit.id];
+          return next;
+        });
+      }, 2500);
     };
 
     socket.on("website:realtime_update", handleRealtimeUpdate);
@@ -291,7 +289,7 @@ export default function RealtimeHistatsPage() {
       socket.off("website:realtime_init", handleRealtimeUpdate);
       socket.off("website:pageview", handlePageView);
     };
-  }, [selectedWebsite, isPaused]);
+  }, [selectedWebsite, isPaused, dispatch]);
 
   // Helper to determine base website URL
   const baseWebsiteUrl = useMemo(() => {
@@ -300,14 +298,14 @@ export default function RealtimeHistatsPage() {
         ? selectedWebsite.domain
         : `https://${selectedWebsite.domain}`;
     }
-    if (recentHits.length > 0 && recentHits[0].url) {
+    if (rawRecentHits.length > 0 && rawRecentHits[0].url) {
       try {
-        const u = new URL(recentHits[0].url);
+        const u = new URL(rawRecentHits[0].url);
         return u.origin;
       } catch {}
     }
     return "https://streamespn.org";
-  }, [selectedWebsite, recentHits]);
+  }, [selectedWebsite, rawRecentHits]);
 
   const getFullUrl = useCallback(
     (url?: string, path?: string) => {
@@ -321,14 +319,34 @@ export default function RealtimeHistatsPage() {
     [baseWebsiteUrl]
   );
 
-  // 100% Real-time hits stream - Guaranteed Descending (Latest visitor ALWAYS on top)
+  // 100% Real-time hits stream - Guaranteed Descending (Latest visitor ALWAYS on top) & strictly domain-isolated
   const displayHits = useMemo(() => {
-    return [...recentHits].sort((a, b) => {
+    let list = [...rawRecentHits];
+
+    if (selectedWebsite?.domain) {
+      const siteDomain = selectedWebsite.domain
+        .toLowerCase()
+        .replace(/^https?:\/\//, "")
+        .split("/")[0]
+        .trim();
+
+      list = list.filter((hit) => {
+        if (!hit.url) return true;
+        try {
+          const hitHost = new URL(hit.url).hostname.toLowerCase();
+          return hitHost.includes(siteDomain) || siteDomain.includes(hitHost);
+        } catch {
+          return true;
+        }
+      });
+    }
+
+    return list.sort((a, b) => {
       const timeA = a.viewedAt ? new Date(a.viewedAt).getTime() : 0;
       const timeB = b.viewedAt ? new Date(b.viewedAt).getTime() : 0;
       return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
     });
-  }, [recentHits]);
+  }, [rawRecentHits, selectedWebsite?.domain]);
 
   // 100% Real-time popular pages - NO static fallback
   const displayPages = useMemo(() => {
@@ -604,7 +622,7 @@ export default function RealtimeHistatsPage() {
               </div>
 
               <div className="divide-y divide-[#edf2f7] overflow-x-auto">
-                {loading && recentHits.length === 0 ? (
+                {loading && displayHits.length === 0 ? (
                   [1, 2, 3, 4, 5, 6].map((i) => (
                     <div
                       key={i}

@@ -84,9 +84,12 @@ export default function SummaryPage() {
   }, []);
 
   const hasDataRef = React.useRef(false);
+  const activeSiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
+  activeSiteIdRef.current = selectedWebsite?.id || null;
 
-  const loadData = useCallback(async (isSilent = false) => {
-    if (!selectedWebsite) {
+  const loadData = useCallback(async (isSilent = false, overrideSiteId?: string) => {
+    const siteId = overrideSiteId || activeSiteIdRef.current;
+    if (!siteId) {
       setLoading(false);
       return;
     }
@@ -95,7 +98,7 @@ export default function SummaryPage() {
       setLoading(true);
     }
     const { from, to } = getDateRange(range);
-    const q = `websiteId=${selectedWebsite.id}&from=${from}&to=${to}`;
+    const q = `websiteId=${siteId}&from=${from}&to=${to}`;
 
     try {
       const [
@@ -116,6 +119,11 @@ export default function SummaryPage() {
         api.get<BrowserStat[]>(`/api/v1/analytics/browsers?${q}`),
       ]);
 
+      // Strict race condition check: if user switched to another website while this was in flight, discard!
+      if (siteId !== activeSiteIdRef.current) {
+        return;
+      }
+
       if (overviewRes.success && overviewRes.data) setOverview(overviewRes.data);
       if (timeseriesRes.success && timeseriesRes.data) setTimeseries(timeseriesRes.data);
       if (pagesRes.success && pagesRes.data) setPages(pagesRes.data);
@@ -127,9 +135,54 @@ export default function SummaryPage() {
     } catch (err) {
       console.error("Failed to load dashboard data", err);
     } finally {
-      setLoading(false);
+      if (siteId === activeSiteIdRef.current) {
+        setLoading(false);
+      }
     }
-  }, [selectedWebsite, range, getDateRange]);
+  }, [range, getDateRange]);
+
+  // Instantly handle website switcher change in Summary page
+  const prevWebsiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
+
+  useEffect(() => {
+    if (selectedWebsite?.id && selectedWebsite.id !== prevWebsiteIdRef.current) {
+      prevWebsiteIdRef.current = selectedWebsite.id;
+      activeSiteIdRef.current = selectedWebsite.id;
+      setOverview(null);
+      setTimeseries([]);
+      setPages([]);
+      setSources([]);
+      setCountries([]);
+      setDevices([]);
+      setBrowsers([]);
+      hasDataRef.current = false;
+      setLoading(true);
+
+      loadData(false, selectedWebsite.id);
+    }
+  }, [selectedWebsite?.id, loadData]);
+
+  // Listen to global website changed event for immediate 0ms update
+  useEffect(() => {
+    const handleWebsiteChanged = (e: any) => {
+      const newSite = e.detail;
+      if (newSite?.id) {
+        prevWebsiteIdRef.current = newSite.id;
+        setOverview(null);
+        setTimeseries([]);
+        setPages([]);
+        setSources([]);
+        setCountries([]);
+        setDevices([]);
+        setBrowsers([]);
+        hasDataRef.current = false;
+        setLoading(true);
+        loadData(false, newSite.id);
+      }
+    };
+    window.addEventListener("histat:website_changed", handleWebsiteChanged);
+    return () => window.removeEventListener("histat:website_changed", handleWebsiteChanged);
+  }, [loadData]);
 
   // Auto-refresh when user returns to this tab after inactivity or sleep
   useTabFocus(() => loadData(true));

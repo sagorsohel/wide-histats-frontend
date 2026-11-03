@@ -113,6 +113,11 @@ export const Header: React.FC = () => {
                             onClick={() => {
                               setSelectedWebsite(site);
                               setDropdownOpen(false);
+                              if (typeof window !== "undefined") {
+                                window.dispatchEvent(
+                                  new CustomEvent("histat:website_changed", { detail: site })
+                                );
+                              }
                             }}
                             className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-sm transition-colors ${
                               selectedWebsite.id === site.id
@@ -309,25 +314,69 @@ export const Header: React.FC = () => {
             {/* Mobile Website Selector */}
             {selectedWebsite && (
               <div className="p-3 border-b border-slate-200 bg-blue-50/50 space-y-2">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                  Current Website
-                </div>
-                <div className="flex items-center justify-between bg-white border border-slate-200 rounded-lg p-2 text-xs">
-                  <div className="flex items-center gap-2 truncate">
-                    <Globe className="w-4 h-4 text-[#1d5b9f] shrink-0" />
-                    <span className="font-bold text-slate-800 truncate">
-                      {selectedWebsite.name}
+                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <span>Current Website</span>
+                  {websites.length > 1 && (
+                    <span className="text-[9px] text-[#1d5b9f] bg-blue-100 px-1.5 py-0.5 rounded">
+                      {websites.length} Websites
                     </span>
-                  </div>
-                  <a
-                    href={`https://${selectedWebsite.domain}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#1d5b9f] hover:underline"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
+                  )}
                 </div>
+
+                {websites.length > 1 ? (
+                  <div className="max-h-48 overflow-y-auto space-y-1">
+                    {websites.map((site) => (
+                      <button
+                        key={site.id}
+                        onClick={() => {
+                          setSelectedWebsite(site);
+                          setMobileMenuOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between p-2 rounded-lg text-xs transition-colors ${
+                          selectedWebsite.id === site.id
+                            ? "bg-white border-2 border-[#1d5b9f] text-[#1d5b9f] font-bold shadow-xs"
+                            : "bg-white/80 border border-slate-200 text-slate-700 hover:bg-white"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 truncate text-left">
+                          <Globe
+                            className={`w-3.5 h-3.5 shrink-0 ${
+                              selectedWebsite.id === site.id
+                                ? "text-[#1d5b9f]"
+                                : "text-slate-400"
+                            }`}
+                          />
+                          <div className="truncate">
+                            <div className="truncate font-semibold">{site.name}</div>
+                            <div className="text-[10px] text-slate-400 truncate font-mono">
+                              {site.domain}
+                            </div>
+                          </div>
+                        </div>
+                        {selectedWebsite.id === site.id && (
+                          <Check className="w-4 h-4 text-[#1d5b9f] shrink-0 ml-1.5" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between bg-white border border-slate-200 rounded-lg p-2 text-xs">
+                    <div className="flex items-center gap-2 truncate">
+                      <Globe className="w-4 h-4 text-[#1d5b9f] shrink-0" />
+                      <span className="font-bold text-slate-800 truncate">
+                        {selectedWebsite.name}
+                      </span>
+                    </div>
+                    <a
+                      href={`https://${selectedWebsite.domain}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#1d5b9f] hover:underline"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                )}
 
                 {/* Tracking Code Action */}
                 <button

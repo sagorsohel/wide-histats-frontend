@@ -69,6 +69,11 @@ export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const setSelectedWebsite = (website: Website) => {
     dispatch(setSelectedWebsiteAction(website));
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("histat:website_changed", { detail: website })
+      );
+    }
   };
 
   const createWebsite = async (

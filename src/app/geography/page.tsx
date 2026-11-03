@@ -34,19 +34,28 @@ export default function GeographyPage() {
   }, []);
 
   const hasDataRef = React.useRef(false);
+  const activeSiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
+  activeSiteIdRef.current = selectedWebsite?.id || null;
 
-  const loadGeoData = useCallback(async (isSilent = false) => {
-    if (!selectedWebsite) return;
+  const loadGeoData = useCallback(async (isSilent = false, overrideSiteId?: string) => {
+    const siteId = overrideSiteId || activeSiteIdRef.current;
+    if (!siteId) return;
     if (!isSilent && !hasDataRef.current) {
       setLoading(true);
     }
     const { from, to } = getDateRange(range);
-    const q = `websiteId=${selectedWebsite.id}&from=${from}&to=${to}&limit=50`;
+    const q = `websiteId=${siteId}&from=${from}&to=${to}&limit=50`;
 
     try {
       const res = await api.get<{ countries: CountryStat[]; cities: CityStat[] }>(
         `/api/v1/analytics/geography?${q}`
       );
+
+      // Strict race condition check: if user switched website while this was in flight, discard!
+      if (siteId !== activeSiteIdRef.current) {
+        return;
+      }
+
       if (res.success && res.data) {
         setCountries(res.data.countries || []);
         setCities(res.data.cities || []);
@@ -55,12 +64,63 @@ export default function GeographyPage() {
     } catch (err) {
       console.error(err);
     } finally {
-      setLoading(false);
+      if (siteId === activeSiteIdRef.current) {
+        setLoading(false);
+      }
     }
-  }, [selectedWebsite, range, getDateRange]);
+  }, [range, getDateRange]);
+
+  // Instantly handle website switcher change in Geography page
+  const prevWebsiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
+
+  useEffect(() => {
+    if (selectedWebsite?.id && selectedWebsite.id !== prevWebsiteIdRef.current) {
+      prevWebsiteIdRef.current = selectedWebsite.id;
+      activeSiteIdRef.current = selectedWebsite.id;
+      setCountries([]);
+      setCities([]);
+      hasDataRef.current = false;
+      setLoading(true);
+      loadGeoData(false, selectedWebsite.id);
+    }
+  }, [selectedWebsite?.id, loadGeoData]);
+
+  // Listen to global website changed event for immediate 0ms update
+  useEffect(() => {
+    const handleWebsiteChanged = (e: any) => {
+      const newSite = e.detail;
+      if (newSite?.id) {
+        prevWebsiteIdRef.current = newSite.id;
+        setCountries([]);
+        setCities([]);
+        hasDataRef.current = false;
+        setLoading(true);
+        loadGeoData(false, newSite.id);
+      }
+    };
+    window.addEventListener("histat:website_changed", handleWebsiteChanged);
+    return () => window.removeEventListener("histat:website_changed", handleWebsiteChanged);
+  }, [loadGeoData]);
 
   // Auto-refresh when user returns to this tab
   useTabFocus(() => loadGeoData(true));
+
+  // Silent sync on socket reconnect or network restore
+  useEffect(() => {
+    const handleSilentSync = () => {
+      if (selectedWebsite) {
+        loadGeoData(true);
+      }
+    };
+    window.addEventListener("histat:socket_sync", handleSilentSync);
+    window.addEventListener("online", handleSilentSync);
+    window.addEventListener("focus", handleSilentSync);
+    return () => {
+      window.removeEventListener("histat:socket_sync", handleSilentSync);
+      window.removeEventListener("online", handleSilentSync);
+      window.removeEventListener("focus", handleSilentSync);
+    };
+  }, [selectedWebsite, loadGeoData]);
 
   useEffect(() => {
     loadGeoData(hasDataRef.current);

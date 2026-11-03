@@ -1,22 +1,51 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useWebsite } from "@/context/WebsiteContext";
 import { api } from "@/lib/api";
-import { SourcesData } from "@/types/analytics";
+import { SourcesData, DetailedReferrerStat, ReferrerSummaryComparison } from "@/types/analytics";
 import {
   DateRangePicker,
   RangeOption,
 } from "@/components/analytics/DateRangePicker";
-import { Compass, Search, Share2, Link as LinkIcon, Target } from "lucide-react";
+import {
+  Compass,
+  Search,
+  ExternalLink,
+  Link as LinkIcon,
+  Target,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  CheckCircle2,
+  Share2,
+} from "lucide-react";
+import { WebsiteFavicon } from "@/components/common/WebsiteFavicon";
 import { ReferrerBrandIcon } from "@/components/common/BrandIcons";
 import { useTabFocus } from "@/hooks/useTabFocus";
+
+type SortField = "rank" | "referrerUrl" | "newVisitors" | "visitors" | "pageviews" | "ppv" | "avgDuration" | "bounceRate";
+type SortDirection = "asc" | "desc";
 
 export default function SourcesPage() {
   const { selectedWebsite } = useWebsite();
   const [range, setRange] = useState<RangeOption>("7d");
+  const [calendarMode, setCalendarMode] = useState<"daily" | "monthly">("daily");
+  const [viewFilter, setViewFilter] = useState<"normal" | "range" | "compare">("normal");
+  const [showNewAndLost, setShowNewAndLost] = useState(false);
   const [data, setData] = useState<SourcesData | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Search & Pagination & Sorting state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortField, setSortField] = useState<SortField>("visitors");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(50);
 
   const getDateRange = useCallback((option: RangeOption) => {
     const now = new Date();
@@ -26,6 +55,7 @@ export default function SourcesPage() {
       from.setDate(from.getDate() - 1);
       from.setHours(0, 0, 0, 0);
       now.setDate(now.getDate() - 1);
+      now.setHours(23, 59, 59, 999);
     } else if (option === "7d") from.setDate(from.getDate() - 7);
     else if (option === "30d") from.setDate(from.getDate() - 30);
 
@@ -43,7 +73,7 @@ export default function SourcesPage() {
       setLoading(true);
     }
     const { from, to } = getDateRange(range);
-    const q = `websiteId=${siteId}&from=${from}&to=${to}&limit=50`;
+    const q = `websiteId=${siteId}&from=${from}&to=${to}&limit=100`;
 
     try {
       const res = await api.get<SourcesData>(`/api/v1/analytics/sources?${q}`);
@@ -124,172 +154,751 @@ export default function SourcesPage() {
     return () => clearInterval(interval);
   }, [loadSources]);
 
-  const totalSessions =
-    data?.sources.reduce((sum, s) => sum + s.sessions, 0) || 1;
+  // Reset pagination when search or filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, range, rowsPerPage]);
+
+  // Handle column sorting
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("desc");
+    }
+  };
+
+  // Filtered and sorted detailed referrers
+  const filteredReferrers = useMemo(() => {
+    let list = (data?.detailedReferrers || []) as DetailedReferrerStat[];
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      list = list.filter((r) => r.referrerUrl.toLowerCase().includes(query));
+    }
+
+    if (showNewAndLost) {
+      // Filter referrers with new visitors
+      list = list.filter((r) => r.newVisitors > 0);
+    }
+
+    return [...list].sort((a, b) => {
+      let valA: any = a[sortField];
+      let valB: any = b[sortField];
+
+      if (sortField === "referrerUrl") {
+        valA = a.referrerUrl.toLowerCase();
+        valB = b.referrerUrl.toLowerCase();
+        return sortDirection === "asc"
+          ? valA.localeCompare(valB)
+          : valB.localeCompare(valA);
+      }
+
+      valA = Number(valA || 0);
+      valB = Number(valB || 0);
+      return sortDirection === "asc" ? valA - valB : valB - valA;
+    });
+  }, [data?.detailedReferrers, searchQuery, showNewAndLost, sortField, sortDirection]);
+
+  // Pagination calculation
+  const totalRows = filteredReferrers.length;
+  const totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
+  const paginatedReferrers = useMemo(() => {
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    return filteredReferrers.slice(startIndex, startIndex + rowsPerPage);
+  }, [filteredReferrers, currentPage, rowsPerPage]);
+
+  // Comparison Summary Data
+  const summary: ReferrerSummaryComparison = data?.referrerSummary || {
+    totalPageviews: 0,
+    refPageviews: 0,
+    pageviewsPct: 0,
+    totalVisitors: 0,
+    refVisitors: 0,
+    visitorsPct: 0,
+    totalNewVisitors: 0,
+    refNewVisitors: 0,
+    newVisitorsPct: 0,
+    totalPpv: 0,
+    refPpv: 0,
+    ppvDiffPct: 0,
+  };
+
+  // Calendar mini grid days
+  const now = new Date();
+  const currentMonthName = now.toLocaleString("default", { month: "short" });
+  const currentDay = now.getDate();
 
   return (
-    <div className="space-y-6">
-      {/* Top Banner */}
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+      {/* Page Title & Navigation Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Traffic Sources & Attribution
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Where your visitors originated: Organic Search, Social, Referrals, and Campaigns
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#1d5b9f] to-[#144275] flex items-center justify-center text-white shadow-md shadow-blue-900/10">
+            <Compass className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+              Referring Sites Summary
+            </h1>
+            <p className="text-xs text-slate-500 font-medium">
+              Detailed referrer URL telemetry, bounce rates, pages per visit & visitor attribution
+            </p>
+          </div>
         </div>
 
         <DateRangePicker selectedRange={range} onChange={setRange} />
       </div>
 
-      {/* Main Channels Breakdown */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
-        <h3 className="font-bold text-base text-slate-900 mb-4">Traffic Channels</h3>
+      {/* TOP SECTION: HISTATS SUMMARY TABLE + CALENDAR CONTROLS */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        {/* LEFT: Histats Summary Comparison Table (8 cols on lg) */}
+        <div className="lg:col-span-7 xl:col-span-8 bg-white rounded-xl border border-[#c5d8eb] shadow-xs overflow-hidden">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-gradient-to-b from-[#2e6ea9] to-[#20558a] text-white text-xs font-bold border-b border-[#1b4b7c]">
+                <th className="py-2.5 px-3.5 tracking-wide text-left font-bold text-white/95">
+                  Summary
+                </th>
+                <th className="py-2.5 px-3.5 text-right tracking-wide font-bold text-white/95 w-28">
+                  Stats summary
+                </th>
+                <th className="py-2.5 px-3.5 text-right tracking-wide font-bold text-white/95 w-32">
+                  Referrer summary
+                </th>
+                <th className="py-2.5 px-3.5 text-right tracking-wide font-bold text-white/95 w-28">
+                  (%)
+                </th>
+              </tr>
+            </thead>
+            <tbody className="text-xs font-medium divide-y divide-slate-100">
+              {/* Row 1: Total page views */}
+              <tr className="hover:bg-slate-50/80 transition-colors">
+                <td className="py-2.5 px-3.5 text-slate-800 font-medium">
+                  Total page views
+                </td>
+                <td className="py-2.5 px-3.5 text-right font-bold text-slate-900 tabular-nums">
+                  {loading && !data ? "..." : summary.totalPageviews.toLocaleString()}
+                </td>
+                <td className="py-2.5 px-3.5 text-right font-bold text-slate-900 tabular-nums">
+                  {loading && !data ? "..." : summary.refPageviews.toLocaleString()}
+                </td>
+                <td className="py-2.5 px-3.5 text-right font-semibold text-[#1d5b9f] tabular-nums">
+                  {loading && !data ? "..." : `(${summary.pageviewsPct.toFixed(2)} %)`}
+                </td>
+              </tr>
 
-        {loading && (!data?.sources || data.sources.length === 0) ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div
-                key={i}
-                className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between animate-pulse space-y-3"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="h-4 w-24 bg-slate-200 rounded" />
-                  <div className="h-4 w-12 bg-slate-100 rounded" />
-                </div>
-                <div className="flex items-baseline justify-between">
-                  <div className="h-6 w-16 bg-slate-200 rounded" />
-                  <div className="h-4 w-8 bg-slate-200 rounded" />
-                </div>
-                <div className="w-full bg-slate-200 rounded-full h-1.5" />
-              </div>
-            ))}
-          </div>
-        ) : !data?.sources || data.sources.length === 0 ? (
-          <div className="py-12 text-center text-xs text-slate-400">
-            No source records found for this period.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {data.sources.map((s, idx) => {
-              const percentage = Math.round((s.sessions / totalSessions) * 100);
+              {/* Row 2: Total visitors (Iconic Soft Green Highlight in Histats) */}
+              <tr className="bg-[#eef8e8] hover:bg-[#e4f3dc] transition-colors border-y border-[#d5ebcc]">
+                <td className="py-2.5 px-3.5 text-emerald-950 font-bold flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-600 inline-block shrink-0" />
+                  Total visitors
+                </td>
+                <td className="py-2.5 px-3.5 text-right font-black text-slate-950 tabular-nums">
+                  {loading && !data ? "..." : summary.totalVisitors.toLocaleString()}
+                </td>
+                <td className="py-2.5 px-3.5 text-right font-black text-slate-950 tabular-nums">
+                  {loading && !data ? "..." : summary.refVisitors.toLocaleString()}
+                </td>
+                <td className="py-2.5 px-3.5 text-right font-bold text-[#1d5b9f] tabular-nums">
+                  {loading && !data ? "..." : `(${summary.visitorsPct.toFixed(2)} %)`}
+                </td>
+              </tr>
 
-              return (
-                <div
-                  key={idx}
-                  className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between hover:border-[#1d5b9f]/40 transition-colors"
+              {/* Row 3: Total new visitors */}
+              <tr className="hover:bg-slate-50/80 transition-colors">
+                <td className="py-2.5 px-3.5 text-slate-800 font-medium">
+                  Total new visitors
+                </td>
+                <td className="py-2.5 px-3.5 text-right font-bold text-slate-900 tabular-nums">
+                  {loading && !data ? "..." : summary.totalNewVisitors.toLocaleString()}
+                </td>
+                <td className="py-2.5 px-3.5 text-right font-bold text-slate-900 tabular-nums">
+                  {loading && !data ? "..." : summary.refNewVisitors.toLocaleString()}
+                </td>
+                <td className="py-2.5 px-3.5 text-right font-semibold text-[#1d5b9f] tabular-nums">
+                  {loading && !data ? "..." : `(${summary.newVisitorsPct.toFixed(2)} %)`}
+                </td>
+              </tr>
+
+              {/* Row 4: Page views per visit */}
+              <tr className="hover:bg-slate-50/80 transition-colors">
+                <td className="py-2.5 px-3.5 text-slate-800 font-medium">
+                  Page views per visit
+                </td>
+                <td className="py-2.5 px-3.5 text-right font-bold text-slate-900 tabular-nums">
+                  {loading && !data ? "..." : summary.totalPpv.toFixed(2)}
+                </td>
+                <td className="py-2.5 px-3.5 text-right font-bold text-slate-900 tabular-nums">
+                  {loading && !data ? "..." : summary.refPpv.toFixed(1)}
+                </td>
+                <td
+                  className={`py-2.5 px-3.5 text-right font-semibold tabular-nums ${
+                    summary.ppvDiffPct < 0 ? "text-rose-600" : "text-[#1d5b9f]"
+                  }`}
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="font-bold text-slate-800 text-sm capitalize">
-                      {s.source}
-                    </span>
-                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-blue-100 text-[#1d5b9f] border border-blue-200">
-                      {s.medium}
-                    </span>
-                  </div>
+                  {loading && !data
+                    ? "..."
+                    : `(${summary.ppvDiffPct > 0 ? "+" : ""}${summary.ppvDiffPct.toFixed(1)}%)`}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-                  <div className="flex items-baseline justify-between mb-2">
-                    <span className="text-2xl font-black text-slate-900 tabular-nums">
-                      {s.sessions}
-                    </span>
-                    <span className="text-xs font-bold text-emerald-700">
-                      {percentage}%
-                    </span>
-                  </div>
+        {/* RIGHT: Compact Histats Calendar & View Controls (4-5 cols) */}
+        <div className="lg:col-span-5 xl:col-span-4 bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
+          <div>
+            {/* Daily / Monthly toggle */}
+            <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-100">
+              <div className="inline-flex rounded-lg bg-slate-100 p-0.5 text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setCalendarMode("daily")}
+                  className={`px-3 py-1 rounded-md transition-all ${
+                    calendarMode === "daily"
+                      ? "bg-white text-slate-900 shadow-2xs font-bold"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  Daily
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCalendarMode("monthly")}
+                  className={`px-3 py-1 rounded-md transition-all ${
+                    calendarMode === "monthly"
+                      ? "bg-white text-slate-900 shadow-2xs font-bold"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  Monthly
+                </button>
+              </div>
 
-                  <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                    <div
-                      className="bg-gradient-to-r from-[#1d5b9f] to-blue-500 h-full rounded-full"
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+              <div className="flex items-center gap-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <CalendarIcon className="w-3.5 h-3.5 text-slate-400" />
+                {currentMonthName} {now.getFullYear()}
+              </div>
+            </div>
+
+            {/* Mini Calendar Day Grid */}
+            <div className="bg-slate-50/70 border border-slate-200/80 rounded-lg p-2 mb-3">
+              <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-500 mb-1 border-b border-slate-200 pb-1">
+                <span>M</span>
+                <span>T</span>
+                <span>W</span>
+                <span>T</span>
+                <span>F</span>
+                <span className="text-rose-500">S</span>
+                <span className="text-rose-500">S</span>
+              </div>
+              <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-mono">
+                {/* Sample day calendar cells matching Histats layout */}
+                <span className="text-slate-300 py-0.5">27</span>
+                <span className="text-slate-300 py-0.5">28</span>
+                <span className="text-slate-300 py-0.5">29</span>
+                <span className="text-slate-300 py-0.5">30</span>
+                <span className="text-slate-700 py-0.5">31</span>
+                <span className="text-rose-600 font-bold py-0.5">1</span>
+                <span className="text-rose-600 font-bold py-0.5">2</span>
+                <span className="text-slate-700 py-0.5">3</span>
+                <span className="text-white bg-[#1d5b9f] rounded-full font-bold py-0.5 shadow-xs">
+                  {currentDay}
+                </span>
+                <span className="text-slate-700 py-0.5">5</span>
+                <span className="text-slate-700 py-0.5">6</span>
+                <span className="text-slate-700 py-0.5">7</span>
+                <span className="text-rose-600 font-bold py-0.5">8</span>
+                <span className="text-rose-600 font-bold py-0.5">9</span>
+              </div>
+            </div>
           </div>
-        )}
+
+          {/* Bottom Action Buttons: normal, range, compare & new/lost */}
+          <div className="flex items-center justify-between gap-2 pt-1">
+            <div className="inline-flex rounded-md border border-slate-200 bg-slate-50 p-0.5 text-[11px] font-medium">
+              {(["normal", "range", "compare"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setViewFilter(mode)}
+                  className={`px-2 py-0.5 rounded capitalize transition-all ${
+                    viewFilter === mode
+                      ? "bg-white text-emerald-800 font-bold border border-emerald-400 shadow-2xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  {mode}
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowNewAndLost(!showNewAndLost)}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition-all border ${
+                showNewAndLost
+                  ? "bg-emerald-600 text-white border-emerald-700 shadow-xs"
+                  : "bg-slate-800 text-white border-slate-900 hover:bg-slate-700"
+              }`}
+            >
+              <span className="w-2.5 h-2.5 rounded-xs bg-emerald-400 border border-emerald-200 inline-block" />
+              new & lost
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Two Column Breakdown: Referring Domains & UTM Campaigns */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Referring Domains */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
-          <div className="flex items-center gap-2 mb-4">
-            <LinkIcon className="w-4 h-4 text-[#1d5b9f]" />
-            <h3 className="font-bold text-base text-slate-900">Referring Domains</h3>
+      {/* SUBHEADER CONTROLS BAR: Total rows, Page numbers, and Rows to show */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#f8fafc] border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-700">
+        <div className="flex items-center gap-4">
+          <span className="font-bold text-slate-900">
+            Total rows: <span className="font-mono text-emerald-700">{totalRows}</span>
+          </span>
+
+          {searchQuery && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-[#1d5b9f] border border-blue-200 rounded font-medium text-[11px]">
+              Filtered by: &ldquo;{searchQuery}&rdquo;
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="ml-1 text-slate-400 hover:text-slate-700 font-bold"
+              >
+                ×
+              </button>
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-4 self-end sm:self-auto">
+          {/* Pagination Jump Links */}
+          <div className="flex items-center gap-1">
+            <span className="text-slate-500 font-medium">page</span>
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setCurrentPage(p)}
+                className={`px-1.5 py-0.5 rounded font-bold text-xs transition-colors ${
+                  currentPage === p
+                    ? "text-[#1d5b9f] underline"
+                    : "text-slate-600 hover:text-[#1d5b9f]"
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+            {totalPages > 5 && <span className="text-slate-400">...</span>}
           </div>
 
-          {loading && (!data?.referrers || data.referrers.length === 0) ? (
-            <div className="space-y-2">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs animate-pulse"
+          {/* Rows to show dropdown */}
+          <div className="flex items-center gap-1.5 pl-3 border-l border-slate-300">
+            <span className="text-slate-500 font-medium">Rows to show</span>
+            <select
+              value={rowsPerPage}
+              onChange={(e) => setRowsPerPage(Number(e.target.value))}
+              className="bg-white border border-slate-300 text-slate-800 font-semibold rounded px-2 py-1 text-xs focus:ring-1 focus:ring-[#1d5b9f] focus:outline-hidden cursor-pointer"
+            >
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* THE MAIN REFERRING SITES TABLE (Matches user screenshot) */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[760px]">
+            <thead>
+              <tr className="bg-[#e9edf3] text-slate-800 text-xs font-bold border-b border-slate-300 select-none">
+                {/* Rank */}
+                <th
+                  onClick={() => handleSort("rank")}
+                  className="py-2.5 px-3 text-center w-16 cursor-pointer hover:bg-slate-200 transition-colors"
                 >
-                  <div className="h-3.5 w-44 bg-slate-200 rounded" />
-                  <div className="h-3.5 w-10 bg-slate-200 rounded" />
-                </div>
-              ))}
-            </div>
-          ) : !data?.referrers || data.referrers.length === 0 ? (
-            <div className="py-12 text-center text-xs text-slate-400">
-              No external referrer URLs.
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {data.referrers.map((r, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs"
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Rank</span>
+                    {sortField === "rank" && (
+                      <span className="text-slate-500">{sortDirection === "asc" ? "▲" : "▼"}</span>
+                    )}
+                  </div>
+                </th>
+
+                {/* Referrer url + Inline Search Box */}
+                <th className="py-2 px-3 text-left min-w-[260px]">
+                  <div className="flex items-center justify-between gap-2">
+                    <span
+                      onClick={() => handleSort("referrerUrl")}
+                      className="cursor-pointer hover:underline"
+                    >
+                      Referrer url
+                    </span>
+
+                    {/* Inline Search Filter Input (From Screenshot) */}
+                    <div className="relative flex items-center">
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search..."
+                        className="w-32 sm:w-40 bg-white border border-slate-300 rounded px-2 py-0.5 text-[11px] font-normal text-slate-800 focus:outline-hidden focus:border-[#1d5b9f] focus:ring-1 focus:ring-[#1d5b9f] placeholder:text-slate-400"
+                      />
+                      <Search className="w-3 h-3 text-slate-400 absolute right-1.5 pointer-events-none" />
+                    </div>
+                  </div>
+                </th>
+
+                {/* New Vis. */}
+                <th
+                  onClick={() => handleSort("newVisitors")}
+                  className="py-2.5 px-3 text-right w-24 cursor-pointer hover:bg-slate-200 transition-colors"
                 >
-                  <div className="flex items-center gap-2 truncate max-w-[280px]">
-                    <ReferrerBrandIcon referrer={r.referrer} size={16} />
-                    <span className="text-slate-700 truncate font-mono">
-                      {r.referrer}
+                  <div className="flex items-center justify-end gap-1">
+                    <span>New Vis.</span>
+                    {sortField === "newVisitors" && (
+                      <span className="text-slate-500">{sortDirection === "asc" ? "▲" : "▼"}</span>
+                    )}
+                  </div>
+                </th>
+
+                {/* Visitors (Active sort default in screenshot) */}
+                <th
+                  onClick={() => handleSort("visitors")}
+                  className="py-2.5 px-3 text-right w-24 cursor-pointer bg-slate-200/90 text-slate-900 transition-colors"
+                >
+                  <div className="flex items-center justify-end gap-1">
+                    <span className="font-extrabold">Visitors</span>
+                    <span className="text-slate-700 font-bold">
+                      {sortField === "visitors" ? (sortDirection === "asc" ? "▲" : "▼") : "▼"}
                     </span>
                   </div>
-                  <span className="font-bold text-slate-900 tabular-nums">{r.count}</span>
-                </div>
-              ))}
+                </th>
+
+                {/* Pages V. */}
+                <th
+                  onClick={() => handleSort("pageviews")}
+                  className="py-2.5 px-3 text-right w-24 cursor-pointer hover:bg-slate-200 transition-colors"
+                >
+                  <div className="flex items-center justify-end gap-1">
+                    <span>Pages V.</span>
+                    {sortField === "pageviews" && (
+                      <span className="text-slate-500">{sortDirection === "asc" ? "▲" : "▼"}</span>
+                    )}
+                  </div>
+                </th>
+
+                {/* Ppv */}
+                <th
+                  onClick={() => handleSort("ppv")}
+                  className="py-2.5 px-3 text-right w-20 cursor-pointer hover:bg-slate-200 transition-colors"
+                >
+                  <div className="flex items-center justify-end gap-1">
+                    <span>Ppv</span>
+                    {sortField === "ppv" && (
+                      <span className="text-slate-500">{sortDirection === "asc" ? "▲" : "▼"}</span>
+                    )}
+                  </div>
+                </th>
+
+                {/* Tpp */}
+                <th
+                  onClick={() => handleSort("avgDuration")}
+                  className="py-2.5 px-3 text-right w-20 cursor-pointer hover:bg-slate-200 transition-colors"
+                >
+                  <div className="flex items-center justify-end gap-1">
+                    <span>Tpp</span>
+                    {sortField === "avgDuration" && (
+                      <span className="text-slate-500">{sortDirection === "asc" ? "▲" : "▼"}</span>
+                    )}
+                  </div>
+                </th>
+
+                {/* bounce */}
+                <th
+                  onClick={() => handleSort("bounceRate")}
+                  className="py-2.5 px-3 text-right w-20 cursor-pointer hover:bg-slate-200 transition-colors"
+                >
+                  <div className="flex items-center justify-end gap-1">
+                    <span>bounce</span>
+                    {sortField === "bounceRate" && (
+                      <span className="text-slate-500">{sortDirection === "asc" ? "▲" : "▼"}</span>
+                    )}
+                  </div>
+                </th>
+              </tr>
+            </thead>
+
+            <tbody className="text-xs divide-y divide-slate-100">
+              {loading && (!data?.detailedReferrers || data.detailedReferrers.length === 0) ? (
+                // Skeleton loading rows
+                Array.from({ length: 8 }).map((_, idx) => (
+                  <tr key={idx} className="animate-pulse">
+                    <td className="py-3 px-3 text-center">
+                      <div className="h-4 w-6 bg-slate-200 rounded mx-auto" />
+                    </td>
+                    <td className="py-3 px-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-slate-200 rounded" />
+                        <div className="h-4 w-48 bg-slate-200 rounded" />
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 text-right">
+                      <div className="h-4 w-12 bg-slate-200 rounded ml-auto" />
+                    </td>
+                    <td className="py-3 px-3 text-right">
+                      <div className="h-4 w-12 bg-slate-200 rounded ml-auto" />
+                    </td>
+                    <td className="py-3 px-3 text-right">
+                      <div className="h-4 w-12 bg-slate-200 rounded ml-auto" />
+                    </td>
+                    <td className="py-3 px-3 text-right">
+                      <div className="h-4 w-8 bg-slate-200 rounded ml-auto" />
+                    </td>
+                    <td className="py-3 px-3 text-right">
+                      <div className="h-4 w-8 bg-slate-200 rounded ml-auto" />
+                    </td>
+                    <td className="py-3 px-3 text-right">
+                      <div className="h-4 w-10 bg-slate-200 rounded ml-auto" />
+                    </td>
+                  </tr>
+                ))
+              ) : paginatedReferrers.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-xs text-slate-400">
+                    No referring sites matching criteria.
+                  </td>
+                </tr>
+              ) : (
+                paginatedReferrers.map((ref, idx) => {
+                  const isEven = idx % 2 === 0;
+                  const isUpTrend = ref.trend === "up";
+
+                  return (
+                    <tr
+                      key={ref.referrerUrl + idx}
+                      className={`${
+                        isEven ? "bg-white" : "bg-[#fbfcff]"
+                      } hover:bg-[#eef5fc] transition-colors`}
+                    >
+                      {/* Rank with Up/Down Trend Arrow */}
+                      <td className="py-2.5 px-3 text-center font-bold tabular-nums">
+                        <div className="inline-flex items-center gap-1">
+                          {isUpTrend ? (
+                            <span className="text-emerald-600 text-[11px] font-black">▲</span>
+                          ) : (
+                            <span className="text-rose-500 text-[11px] font-black">▼</span>
+                          )}
+                          <span className="text-slate-800">{ref.rank}</span>
+                        </div>
+                      </td>
+
+                      {/* Referrer url with Icon & External Link */}
+                      <td className="py-2.5 px-3">
+                        <div className="flex items-center gap-2 max-w-[420px] truncate">
+                          {/* External link button */}
+                          <a
+                            href={ref.fullUrl || `https://${ref.referrerUrl}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-slate-400 hover:text-[#1d5b9f] transition-colors shrink-0"
+                            title={`Open ${ref.referrerUrl} in new tab`}
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+
+                          {/* Favicon */}
+                          <WebsiteFavicon domain={ref.referrerUrl} size={14} className="shrink-0" />
+
+                          {/* Domain name */}
+                          <a
+                            href={ref.fullUrl || `https://${ref.referrerUrl}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold text-slate-900 hover:text-[#1d5b9f] hover:underline truncate"
+                            title={ref.referrerUrl}
+                          >
+                            {ref.referrerUrl}
+                          </a>
+                        </div>
+                      </td>
+
+                      {/* New Vis. */}
+                      <td className="py-2.5 px-3 text-right font-bold text-slate-900 tabular-nums">
+                        {ref.newVisitors.toLocaleString()}
+                      </td>
+
+                      {/* Visitors */}
+                      <td className="py-2.5 px-3 text-right font-black text-slate-950 tabular-nums bg-slate-50/50">
+                        {ref.visitors.toLocaleString()}
+                      </td>
+
+                      {/* Pages V. */}
+                      <td className="py-2.5 px-3 text-right font-bold text-slate-900 tabular-nums">
+                        {ref.pageviews.toLocaleString()}
+                      </td>
+
+                      {/* Ppv */}
+                      <td className="py-2.5 px-3 text-right font-semibold text-slate-700 tabular-nums">
+                        {ref.ppv.toFixed(1)}
+                      </td>
+
+                      {/* Tpp (Formatted as 31", 1'2", etc.) */}
+                      <td className="py-2.5 px-3 text-right font-mono text-slate-700 tabular-nums">
+                        {ref.tpp}
+                      </td>
+
+                      {/* bounce (%) */}
+                      <td className="py-2.5 px-3 text-right font-semibold text-slate-800 tabular-nums">
+                        {ref.bounceRate.toFixed(1)}%
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Table Footer with Pagination Controls */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-[#f8fafc] border-t border-slate-200 text-xs text-slate-600">
+          <div>
+            Showing{" "}
+            <span className="font-bold text-slate-900">
+              {totalRows === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1}
+            </span>{" "}
+            to{" "}
+            <span className="font-bold text-slate-900">
+              {Math.min(currentPage * rowsPerPage, totalRows)}
+            </span>{" "}
+            of <span className="font-bold text-slate-900">{totalRows}</span> referrer domains
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              disabled={currentPage <= 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="p-1.5 rounded border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              title="Previous page"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+            </button>
+
+            <span className="px-2 font-semibold text-slate-800">
+              Page {currentPage} of {totalPages}
+            </span>
+
+            <button
+              type="button"
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="p-1.5 rounded border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              title="Next page"
+            >
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* SECONDARY SECTION: TRAFFIC CHANNELS & UTM CAMPAIGNS */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+        {/* Main Channels Breakdown */}
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Share2 className="w-4 h-4 text-[#1d5b9f]" />
+              <h3 className="font-bold text-sm text-slate-900">Traffic Medium / Channels</h3>
+            </div>
+            <span className="text-[11px] font-semibold text-slate-500">
+              Total: {data?.sources?.length || 0} channels
+            </span>
+          </div>
+
+          {!data?.sources || data.sources.length === 0 ? (
+            <div className="py-8 text-center text-xs text-slate-400">
+              No channel records detected.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {data.sources.slice(0, 6).map((s, idx) => {
+                const totalSess = summary.totalPageviews || 1;
+                const pct = Math.round((s.sessions / totalSess) * 100);
+
+                return (
+                  <div
+                    key={idx}
+                    className="p-3 rounded-lg bg-slate-50 border border-slate-200/90 flex flex-col justify-between"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-bold text-slate-800 text-xs capitalize truncate">
+                        {s.source}
+                      </span>
+                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-100 text-[#1d5b9f]">
+                        {s.medium}
+                      </span>
+                    </div>
+
+                    <div className="flex items-baseline justify-between mb-1.5">
+                      <span className="text-lg font-black text-slate-900 tabular-nums">
+                        {s.sessions.toLocaleString()}
+                      </span>
+                      <span className="text-[11px] font-bold text-emerald-700">
+                        {s.visitors.toLocaleString()} vis
+                      </span>
+                    </div>
+
+                    <div className="w-full bg-slate-200 rounded-full h-1 overflow-hidden">
+                      <div
+                        className="bg-gradient-to-r from-[#1d5b9f] to-blue-500 h-full rounded-full"
+                        style={{ width: `${Math.min(100, Math.max(5, pct))}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
 
         {/* UTM Campaigns */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
-          <div className="flex items-center gap-2 mb-4">
-            <Target className="w-4 h-4 text-emerald-600" />
-            <h3 className="font-bold text-base text-slate-900">UTM Campaigns</h3>
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Target className="w-4 h-4 text-emerald-600" />
+              <h3 className="font-bold text-sm text-slate-900">UTM Campaigns</h3>
+            </div>
+            <span className="text-[11px] font-semibold text-slate-500">
+              Total: {data?.campaigns?.length || 0} campaigns
+            </span>
           </div>
 
-          {loading && (!data?.campaigns || data.campaigns.length === 0) ? (
-            <div className="space-y-2">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs animate-pulse"
-                >
-                  <div className="h-3.5 w-36 bg-slate-200 rounded" />
-                  <div className="h-3.5 w-14 bg-slate-200 rounded" />
-                </div>
-              ))}
-            </div>
-          ) : !data?.campaigns || data.campaigns.length === 0 ? (
-            <div className="py-12 text-center text-xs text-slate-500">
-              No active UTM campaigns detected in this window. Add <code className="px-1 text-[#1d5b9f] font-mono bg-blue-50 rounded">?utm_campaign=...</code> to your marketing links.
+          {!data?.campaigns || data.campaigns.length === 0 ? (
+            <div className="py-8 text-center text-xs text-slate-400">
+              No active UTM marketing campaigns in this range. Add{" "}
+              <code className="px-1 text-[#1d5b9f] font-mono bg-blue-50 rounded">
+                ?utm_campaign=...
+              </code>{" "}
+              to your links.
             </div>
           ) : (
             <div className="space-y-2">
-              {data.campaigns.map((c, i) => (
+              {data.campaigns.slice(0, 5).map((c, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs"
+                  className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs"
                 >
-                  <span className="text-emerald-700 font-semibold truncate">
+                  <span className="text-emerald-700 font-semibold truncate max-w-[220px]">
                     {c.campaign}
                   </span>
-                  <span className="font-bold text-slate-900 tabular-nums">{c.sessions} visits</span>
+                  <span className="font-bold text-slate-900 tabular-nums">
+                    {c.sessions.toLocaleString()} visits
+                  </span>
                 </div>
               ))}
             </div>

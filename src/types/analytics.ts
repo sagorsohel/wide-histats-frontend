@@ -124,9 +124,40 @@ export interface CampaignStat {
   sessions: number;
 }
 
+export interface DetailedReferrerStat {
+  rank: number;
+  trend: "up" | "down" | "same";
+  referrerUrl: string;
+  fullUrl?: string;
+  newVisitors: number;
+  visitors: number;
+  pageviews: number;
+  ppv: number;
+  avgDuration: number;
+  tpp: string;
+  bounceRate: number;
+}
+
+export interface ReferrerSummaryComparison {
+  totalPageviews: number;
+  refPageviews: number;
+  pageviewsPct: number;
+  totalVisitors: number;
+  refVisitors: number;
+  visitorsPct: number;
+  totalNewVisitors: number;
+  refNewVisitors: number;
+  newVisitorsPct: number;
+  totalPpv: number;
+  refPpv: number;
+  ppvDiffPct: number;
+}
+
 export interface SourcesData {
   sources: SourceStat[];
   referrers: ReferrerStat[];
+  detailedReferrers?: DetailedReferrerStat[];
+  referrerSummary?: ReferrerSummaryComparison;
   campaigns: CampaignStat[];
 }
 

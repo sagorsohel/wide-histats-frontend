@@ -33,9 +33,13 @@ export default function PagesReportPage() {
     return { from: from.toISOString(), to: now.toISOString() };
   }, []);
 
-  const loadPageData = useCallback(async () => {
+  const hasDataRef = React.useRef(false);
+
+  const loadPageData = useCallback(async (isSilent = false) => {
     if (!selectedWebsite) return;
-    setLoading(true);
+    if (!isSilent && !hasDataRef.current) {
+      setLoading(true);
+    }
     const { from, to } = getDateRange(range);
     const q = `websiteId=${selectedWebsite.id}&from=${from}&to=${to}&limit=50`;
 
@@ -49,6 +53,7 @@ export default function PagesReportPage() {
       if (pRes.success && pRes.data) setPages(pRes.data);
       if (landRes.success && landRes.data) setLandingPages(landRes.data);
       if (exitRes.success && exitRes.data) setExitPages(exitRes.data);
+      hasDataRef.current = true;
     } catch (err) {
       console.error(err);
     } finally {
@@ -57,15 +62,13 @@ export default function PagesReportPage() {
   }, [selectedWebsite, range, getDateRange]);
 
   // Auto-refresh when user returns to this tab
-  useTabFocus(loadPageData);
+  useTabFocus(() => loadPageData(true));
 
   useEffect(() => {
-    loadPageData();
+    loadPageData(hasDataRef.current);
     const interval = setInterval(() => {
-      if (typeof document !== "undefined" && document.visibilityState === "visible") {
-        loadPageData();
-      }
-    }, 20000);
+      loadPageData(true);
+    }, 15000);
     return () => clearInterval(interval);
   }, [loadPageData]);
 

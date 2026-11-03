@@ -83,13 +83,17 @@ export default function SummaryPage() {
     };
   }, []);
 
-  const loadData = useCallback(async () => {
+  const hasDataRef = React.useRef(false);
+
+  const loadData = useCallback(async (isSilent = false) => {
     if (!selectedWebsite) {
       setLoading(false);
       return;
     }
 
-    setLoading(true);
+    if (!isSilent && !hasDataRef.current) {
+      setLoading(true);
+    }
     const { from, to } = getDateRange(range);
     const q = `websiteId=${selectedWebsite.id}&from=${from}&to=${to}`;
 
@@ -119,6 +123,7 @@ export default function SummaryPage() {
       if (geoRes.success && geoRes.data?.countries) setCountries(geoRes.data.countries);
       if (devicesRes.success && devicesRes.data) setDevices(devicesRes.data);
       if (browsersRes.success && browsersRes.data) setBrowsers(browsersRes.data);
+      hasDataRef.current = true;
     } catch (err) {
       console.error("Failed to load dashboard data", err);
     } finally {
@@ -127,15 +132,31 @@ export default function SummaryPage() {
   }, [selectedWebsite, range, getDateRange]);
 
   // Auto-refresh when user returns to this tab after inactivity or sleep
-  useTabFocus(loadData);
+  useTabFocus(() => loadData(true));
 
+  // Silent sync on socket reconnect or network restore
   useEffect(() => {
-    loadData();
+    const handleSilentSync = () => {
+      loadData(true);
+    };
+
+    window.addEventListener("histat:socket_sync", handleSilentSync);
+    window.addEventListener("online", handleSilentSync);
+    window.addEventListener("focus", handleSilentSync);
+
+    return () => {
+      window.removeEventListener("histat:socket_sync", handleSilentSync);
+      window.removeEventListener("online", handleSilentSync);
+      window.removeEventListener("focus", handleSilentSync);
+    };
+  }, [loadData]);
+
+  // Silent background auto-reload interval (runs continuously without user noticing)
+  useEffect(() => {
+    loadData(hasDataRef.current);
     const interval = setInterval(() => {
-      if (typeof document !== "undefined" && document.visibilityState === "visible") {
-        loadData();
-      }
-    }, 20000);
+      loadData(true);
+    }, 12000);
     return () => clearInterval(interval);
   }, [loadData]);
 

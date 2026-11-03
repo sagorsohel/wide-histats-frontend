@@ -33,9 +33,13 @@ export default function DevicesReportPage() {
     return { from: from.toISOString(), to: now.toISOString() };
   }, []);
 
-  const loadData = useCallback(async () => {
+  const hasDataRef = React.useRef(false);
+
+  const loadData = useCallback(async (isSilent = false) => {
     if (!selectedWebsite) return;
-    setLoading(true);
+    if (!isSilent && !hasDataRef.current) {
+      setLoading(true);
+    }
     const { from, to } = getDateRange(range);
     const q = `websiteId=${selectedWebsite.id}&from=${from}&to=${to}`;
 
@@ -49,6 +53,7 @@ export default function DevicesReportPage() {
       if (devRes.success && devRes.data) setDevices(devRes.data);
       if (brRes.success && brRes.data) setBrowsers(brRes.data);
       if (osRes.success && osRes.data) setOsList(osRes.data);
+      hasDataRef.current = true;
     } catch (err) {
       console.error(err);
     } finally {
@@ -57,15 +62,13 @@ export default function DevicesReportPage() {
   }, [selectedWebsite, range, getDateRange]);
 
   // Auto-refresh when user returns to this tab
-  useTabFocus(loadData);
+  useTabFocus(() => loadData(true));
 
   useEffect(() => {
-    loadData();
+    loadData(hasDataRef.current);
     const interval = setInterval(() => {
-      if (typeof document !== "undefined" && document.visibilityState === "visible") {
-        loadData();
-      }
-    }, 20000);
+      loadData(true);
+    }, 15000);
     return () => clearInterval(interval);
   }, [loadData]);
 

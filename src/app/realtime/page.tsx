@@ -79,12 +79,20 @@ export default function RealtimeHistatsPage() {
     [currentTime]
   );
 
-  const loadRealtime = useCallback(async () => {
+  const hasInitialDataRef = React.useRef(false);
+
+  const loadRealtime = useCallback(async (isSilent = false) => {
     if (!selectedWebsite) {
       setLoading(false);
       return;
     }
     if (isPaused) return;
+
+    // Only show loading state if we have no data yet; never flicker or disrupt on background sync
+    if (!isSilent && !hasInitialDataRef.current) {
+      setLoading(true);
+    }
+
     try {
       const res = await api.get<RealtimeData>(
         `/api/v1/analytics/realtime?websiteId=${selectedWebsite.id}`
@@ -92,6 +100,8 @@ export default function RealtimeHistatsPage() {
       if (res.success && res.data) {
         const realtimeData = res.data;
         setData(realtimeData);
+        hasInitialDataRef.current = true;
+
         if (realtimeData.recentPageviews && realtimeData.recentPageviews.length > 0) {
           setRecentHits((prev) => {
             const map = new Map<string, RealtimeRecentHit>();
@@ -114,23 +124,49 @@ export default function RealtimeHistatsPage() {
     }
   }, [selectedWebsite, isPaused]);
 
-  // Auto-reconnect and refresh immediately when user returns to this tab
+  // Silent auto-sync on tab wake, network restore, or socket reconnection
   useTabFocus(() => {
     if (selectedWebsite) {
       subscribeToWebsite(selectedWebsite.id);
-      loadRealtime();
+      loadRealtime(true);
     }
   });
 
   useEffect(() => {
-    loadRealtime();
-    const interval = setInterval(() => {
-      if (typeof document !== "undefined" && document.visibilityState === "visible") {
-        loadRealtime();
+    const handleSilentSync = () => {
+      if (selectedWebsite) {
+        subscribeToWebsite(selectedWebsite.id);
+        loadRealtime(true);
       }
-    }, 3000);
+    };
+
+    window.addEventListener("histat:socket_sync", handleSilentSync);
+    window.addEventListener("online", handleSilentSync);
+    window.addEventListener("focus", handleSilentSync);
+
+    return () => {
+      window.removeEventListener("histat:socket_sync", handleSilentSync);
+      window.removeEventListener("online", handleSilentSync);
+      window.removeEventListener("focus", handleSilentSync);
+    };
+  }, [selectedWebsite, loadRealtime]);
+
+  // Silent background auto-reload interval (runs continuously without user noticing)
+  useEffect(() => {
+    loadRealtime(hasInitialDataRef.current);
+    const interval = setInterval(() => {
+      if (selectedWebsite && !isPaused) {
+        // Self-healing: if socket disconnected in background, ensure it reconnects
+        const s = getSocket();
+        if (s && !s.connected) {
+          s.connect();
+          subscribeToWebsite(selectedWebsite.id);
+        }
+        loadRealtime(true);
+      }
+    }, 4000);
     return () => clearInterval(interval);
-  }, [loadRealtime]);
+  }, [loadRealtime, selectedWebsite, isPaused]);
 
   // Socket.IO real-time listener (Instant "Sathe Sathe" updates)
   useEffect(() => {

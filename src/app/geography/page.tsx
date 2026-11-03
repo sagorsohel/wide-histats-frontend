@@ -33,9 +33,13 @@ export default function GeographyPage() {
     return { from: from.toISOString(), to: now.toISOString() };
   }, []);
 
-  const loadGeoData = useCallback(async () => {
+  const hasDataRef = React.useRef(false);
+
+  const loadGeoData = useCallback(async (isSilent = false) => {
     if (!selectedWebsite) return;
-    setLoading(true);
+    if (!isSilent && !hasDataRef.current) {
+      setLoading(true);
+    }
     const { from, to } = getDateRange(range);
     const q = `websiteId=${selectedWebsite.id}&from=${from}&to=${to}&limit=50`;
 
@@ -46,6 +50,7 @@ export default function GeographyPage() {
       if (res.success && res.data) {
         setCountries(res.data.countries || []);
         setCities(res.data.cities || []);
+        hasDataRef.current = true;
       }
     } catch (err) {
       console.error(err);
@@ -55,15 +60,13 @@ export default function GeographyPage() {
   }, [selectedWebsite, range, getDateRange]);
 
   // Auto-refresh when user returns to this tab
-  useTabFocus(loadGeoData);
+  useTabFocus(() => loadGeoData(true));
 
   useEffect(() => {
-    loadGeoData();
+    loadGeoData(hasDataRef.current);
     const interval = setInterval(() => {
-      if (typeof document !== "undefined" && document.visibilityState === "visible") {
-        loadGeoData();
-      }
-    }, 20000);
+      loadGeoData(true);
+    }, 15000);
     return () => clearInterval(interval);
   }, [loadGeoData]);
 

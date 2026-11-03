@@ -31,9 +31,13 @@ export default function SourcesPage() {
     return { from: from.toISOString(), to: now.toISOString() };
   }, []);
 
-  const loadSources = useCallback(async () => {
+  const hasDataRef = React.useRef(false);
+
+  const loadSources = useCallback(async (isSilent = false) => {
     if (!selectedWebsite) return;
-    setLoading(true);
+    if (!isSilent && !hasDataRef.current) {
+      setLoading(true);
+    }
     const { from, to } = getDateRange(range);
     const q = `websiteId=${selectedWebsite.id}&from=${from}&to=${to}&limit=50`;
 
@@ -41,6 +45,7 @@ export default function SourcesPage() {
       const res = await api.get<SourcesData>(`/api/v1/analytics/sources?${q}`);
       if (res.success && res.data) {
         setData(res.data);
+        hasDataRef.current = true;
       }
     } catch (err) {
       console.error(err);
@@ -50,15 +55,13 @@ export default function SourcesPage() {
   }, [selectedWebsite, range, getDateRange]);
 
   // Auto-refresh when user returns to this tab
-  useTabFocus(loadSources);
+  useTabFocus(() => loadSources(true));
 
   useEffect(() => {
-    loadSources();
+    loadSources(hasDataRef.current);
     const interval = setInterval(() => {
-      if (typeof document !== "undefined" && document.visibilityState === "visible") {
-        loadSources();
-      }
-    }, 20000);
+      loadSources(true);
+    }, 15000);
     return () => clearInterval(interval);
   }, [loadSources]);
 

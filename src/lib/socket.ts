@@ -28,6 +28,9 @@ export const getSocket = (): Socket => {
       if (currentSubscribedWebsiteId) {
         socket?.emit("subscribe:website", currentSubscribedWebsiteId);
       }
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("histat:socket_sync"));
+      }
     });
 
     socket.on("disconnect", (reason) => {
@@ -51,6 +54,7 @@ export const getSocket = (): Socket => {
             socket.emit("subscribe:website", currentSubscribedWebsiteId);
           }
         }
+        window.dispatchEvent(new CustomEvent("histat:socket_sync"));
       }
     };
 

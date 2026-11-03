@@ -95,28 +95,7 @@ export default function RealtimeHistatsPage() {
         if (realtimeData.recentPageviews && realtimeData.recentPageviews.length > 0) {
           setRecentHits((prev) => {
             const map = new Map<string, RealtimeRecentHit>();
-            const prevIds = new Set(prev.map((h) => h.id));
             prev.forEach((h) => map.set(h.id, h));
-
-            const newArrivals = realtimeData.recentPageviews.filter((h) => !prevIds.has(h.id));
-            if (!isInitialLoad.current && newArrivals.length > 0) {
-              const newMap: Record<string, boolean> = {};
-              newArrivals.forEach((h) => {
-                newMap[h.id] = true;
-              });
-              setAnimatingHitIds((old) => ({ ...old, ...newMap }));
-              setTimeout(() => {
-                setAnimatingHitIds((old) => {
-                  const next = { ...old };
-                  newArrivals.forEach((h) => delete next[h.id]);
-                  return next;
-                });
-              }, 2500);
-            }
-            if (isInitialLoad.current) {
-              isInitialLoad.current = false;
-            }
-
             realtimeData.recentPageviews.forEach((h) => map.set(h.id, h));
             return Array.from(map.values())
               .sort((a, b) => new Date(b.viewedAt).getTime() - new Date(a.viewedAt).getTime())
@@ -598,14 +577,10 @@ export default function RealtimeHistatsPage() {
                     No recent visitor hits recorded yet
                   </div>
                 ) : (
-                  filteredHits.slice(0, 10).map((hit, idx) => {
-                  const isAnimating = Boolean(animatingHitIds[hit.id]);
-                  return (
+                  filteredHits.slice(0, 10).map((hit, idx) => (
                     <div
                       key={hit.id || idx}
-                      className={`px-3 py-1.5 flex items-center justify-between hover:bg-[#f6f9fc] transition-colors gap-2 text-[11px] ${
-                        isAnimating ? "animate-stream-drop" : ""
-                      }`}
+                      className="px-3 py-1.5 flex items-center justify-between hover:bg-[#f6f9fc] transition-colors gap-2 text-[11px]"
                     >
                       {/* Time Badge in classic Histats seconds quote format e.g. 1", 19" */}
                       <div className="flex items-center gap-2 min-w-[32px] text-right font-bold text-[#1b62b7] shrink-0 font-mono">
@@ -647,9 +622,8 @@ export default function RealtimeHistatsPage() {
                         {getDeviceIcon(hit.deviceType, hit.os)}
                       </div>
                     </div>
-                  );
-                })
-              )}
+                  ))
+                )}
               </div>
             </div>
 

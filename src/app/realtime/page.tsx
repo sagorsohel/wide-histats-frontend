@@ -145,16 +145,19 @@ export default function RealtimeHistatsPage() {
   );
 
   // Instantly handle website switcher change: reset previous site's state & load new site immediately!
-  const prevWebsiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
+  const prevWebsiteIdRef = React.useRef<string | null>(null);
 
   useEffect(() => {
     if (selectedWebsite?.id && selectedWebsite.id !== prevWebsiteIdRef.current) {
-      if (prevWebsiteIdRef.current) {
-        unsubscribeFromWebsite(prevWebsiteIdRef.current);
+      const oldId = prevWebsiteIdRef.current;
+      if (oldId) {
+        unsubscribeFromWebsite(oldId);
       }
       prevWebsiteIdRef.current = selectedWebsite.id;
       activeSiteIdRef.current = selectedWebsite.id;
       setAnimatingHitIds({});
+      setSearchQuery("");
+      setLoading(true);
       subscribeToWebsite(selectedWebsite.id);
       loadRealtime(false, selectedWebsite.id);
     }
@@ -171,6 +174,8 @@ export default function RealtimeHistatsPage() {
         prevWebsiteIdRef.current = newSite.id;
         activeSiteIdRef.current = newSite.id;
         setAnimatingHitIds({});
+        setSearchQuery("");
+        setLoading(true);
         subscribeToWebsite(newSite.id);
         loadRealtime(false, newSite.id);
       }
@@ -243,27 +248,47 @@ export default function RealtimeHistatsPage() {
       const activeId = activeSiteIdRef.current;
       if (!activeId) return;
 
-      // 1. Strict websiteId check: must match currently active website!
-      if (event.websiteId && event.websiteId !== activeId) {
+      // 1. Strict websiteId check: must have websiteId AND it must match activeId!
+      if (!event.websiteId || event.websiteId !== activeId) {
         return;
       }
 
-      // 2. Strict Domain Isolation Guard
-      if (selectedWebsite?.domain && event.url) {
-        try {
-          const hitHost = new URL(event.url).hostname.toLowerCase();
-          const siteHost = selectedWebsite.domain
-            .replace(/^https?:\/\//, "")
-            .split("/")[0]
-            .toLowerCase();
-          if (!hitHost.includes(siteHost) && !siteHost.includes(hitHost)) {
-            return; // Discard hit belonging to another website!
+      // 2. Strict Domain & Title Isolation Guard
+      if (selectedWebsite?.domain) {
+        const siteDomain = selectedWebsite.domain
+          .replace(/^https?:\/\//, "")
+          .split("/")[0]
+          .toLowerCase()
+          .trim();
+
+        if (event.url) {
+          try {
+            const parsed = event.url.startsWith("http")
+              ? new URL(event.url)
+              : new URL(`https://${event.url}`);
+            const hitHost = parsed.hostname.toLowerCase();
+            if (!hitHost.includes(siteDomain) && !siteDomain.includes(hitHost)) {
+              return; // Discard hit belonging to another website!
+            }
+          } catch {
+            if (event.url.includes("://") && !event.url.toLowerCase().includes(siteDomain)) {
+              return;
+            }
           }
-        } catch {}
+        }
+
+        // Title check: If hit title specifically contains another site's brand name, reject it!
+        if (event.title) {
+          const lowerTitle = event.title.toLowerCase();
+          if (!siteDomain.includes("streamespn") && lowerTitle.includes("streamespn")) {
+            return;
+          }
+        }
       }
 
       const newHit: RealtimeRecentHit = {
         id: "hit-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7),
+        websiteId: activeId,
         path: event.path || "/",
         title: event.title || event.path || "Home Page",
         url: event.url,
@@ -332,8 +357,13 @@ export default function RealtimeHistatsPage() {
 
   // 100% Real-time hits stream - Guaranteed Descending (Latest visitor ALWAYS on top) & strictly domain-isolated
   const displayHits = useMemo(() => {
+    if (!selectedWebsite?.id) return [];
     let list = [...rawRecentHits];
 
+    // 1. Strict website ID filter: exclude hits explicitly belonging to another website
+    list = list.filter((hit) => !hit.websiteId || hit.websiteId === selectedWebsite.id);
+
+    // 2. Strict domain & title filter
     if (selectedWebsite?.domain) {
       const siteDomain = selectedWebsite.domain
         .toLowerCase()
@@ -342,13 +372,28 @@ export default function RealtimeHistatsPage() {
         .trim();
 
       list = list.filter((hit) => {
-        if (!hit.url) return true;
-        try {
-          const hitHost = new URL(hit.url).hostname.toLowerCase();
-          return hitHost.includes(siteDomain) || siteDomain.includes(hitHost);
-        } catch {
-          return true;
+        if (hit.url) {
+          try {
+            const parsed = hit.url.startsWith("http")
+              ? new URL(hit.url)
+              : new URL(`https://${hit.url}`);
+            const hitHost = parsed.hostname.toLowerCase();
+            if (!hitHost.includes(siteDomain) && !siteDomain.includes(hitHost)) {
+              return false;
+            }
+          } catch {
+            if (hit.url.includes("://") && !hit.url.toLowerCase().includes(siteDomain)) {
+              return false;
+            }
+          }
         }
+        if (hit.title) {
+          const lowerTitle = hit.title.toLowerCase();
+          if (!siteDomain.includes("streamespn") && lowerTitle.includes("streamespn")) {
+            return false;
+          }
+        }
+        return true;
       });
     }
 
@@ -357,22 +402,73 @@ export default function RealtimeHistatsPage() {
       const timeB = b.viewedAt ? new Date(b.viewedAt).getTime() : 0;
       return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
     });
-  }, [rawRecentHits, selectedWebsite?.domain]);
+  }, [rawRecentHits, selectedWebsite?.id, selectedWebsite?.domain]);
 
-  // 100% Real-time popular pages - NO static fallback
+  // 100% Real-time popular pages - strictly isolated to current domain
   const displayPages = useMemo(() => {
-    return data?.topPages ?? [];
-  }, [data]);
+    if (!data?.topPages) return [];
+    if (!selectedWebsite?.domain) return data.topPages;
+
+    const siteDomain = selectedWebsite.domain
+      .toLowerCase()
+      .replace(/^https?:\/\//, "")
+      .split("/")[0]
+      .trim();
+
+    return data.topPages.filter((page) => {
+      if (page.url) {
+        try {
+          const parsed = page.url.startsWith("http") ? new URL(page.url) : new URL(`https://${page.url}`);
+          const host = parsed.hostname.toLowerCase();
+          if (!host.includes(siteDomain) && !siteDomain.includes(host)) return false;
+        } catch {}
+      }
+      if (page.title) {
+        const lowerTitle = page.title.toLowerCase();
+        if (!siteDomain.includes("streamespn") && lowerTitle.includes("streamespn")) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [data, selectedWebsite?.domain]);
 
   // 100% Real-time popular referrers - NO static fallback
   const displayReferrers = useMemo(() => {
     return data?.topReferrers ?? [];
   }, [data]);
 
-  // 100% Real-time active visitors - Sorted by highest activity (pageviews) first (#1), then latest timestamp
+  // 100% Real-time active visitors - Sorted by highest activity (pageviews) first (#1), then latest timestamp & domain-isolated
   const displayActiveVisitors = useMemo(() => {
     if (!data?.activeVisitors || !Array.isArray(data.activeVisitors)) return [];
-    return [...data.activeVisitors].sort((a: any, b: any) => {
+    let list = [...data.activeVisitors];
+
+    if (selectedWebsite?.domain) {
+      const siteDomain = selectedWebsite.domain
+        .toLowerCase()
+        .replace(/^https?:\/\//, "")
+        .split("/")[0]
+        .trim();
+
+      list = list.filter((vis: any) => {
+        if (vis.pageUrl) {
+          try {
+            const parsed = vis.pageUrl.startsWith("http") ? new URL(vis.pageUrl) : new URL(`https://${vis.pageUrl}`);
+            const host = parsed.hostname.toLowerCase();
+            if (!host.includes(siteDomain) && !siteDomain.includes(host)) return false;
+          } catch {}
+        }
+        if (vis.pageTitle) {
+          const lowerTitle = vis.pageTitle.toLowerCase();
+          if (!siteDomain.includes("streamespn") && lowerTitle.includes("streamespn")) {
+            return false;
+          }
+        }
+        return true;
+      });
+    }
+
+    return list.sort((a: any, b: any) => {
       const countA = Number(a.pageviewsCount ?? a.hitsCount ?? a.count ?? a.pageviews ?? 1);
       const countB = Number(b.pageviewsCount ?? b.hitsCount ?? b.count ?? b.pageviews ?? 1);
       if (countB !== countA) {
@@ -382,7 +478,7 @@ export default function RealtimeHistatsPage() {
       const timeB = b.lastSeenAt ? new Date(b.lastSeenAt).getTime() : 0;
       return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
     });
-  }, [data]);
+  }, [data, selectedWebsite?.domain]);
 
   // Active Count & Pages Count - Exact Real-Time Count Right Now
   const onlineCount = useMemo(() => {

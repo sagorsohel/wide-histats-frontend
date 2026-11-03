@@ -61,6 +61,7 @@ export interface RealtimeRecentHit {
   visitorKey?: string;
   ip?: string;
   hitsCount?: number;
+  websiteId?: string;
 }
 
 export interface RealtimeData {

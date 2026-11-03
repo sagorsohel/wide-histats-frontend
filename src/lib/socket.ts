@@ -97,3 +97,20 @@ export const unsubscribeFromWebsite = (websiteId: string) => {
   }
 };
 
+export const reconnectSocketWithToken = () => {
+  if (typeof window === "undefined") return;
+  const token = localStorage.getItem("accessToken") || "";
+  const s = getSocket();
+  if (s) {
+    s.auth = { token };
+    if (s.connected) {
+      s.emit("auth:token", token);
+      s.disconnect();
+    }
+    s.connect();
+    if (currentSubscribedWebsiteId) {
+      s.emit("subscribe:website", currentSubscribedWebsiteId);
+    }
+  }
+};
+

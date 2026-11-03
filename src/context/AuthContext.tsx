@@ -9,6 +9,8 @@ import {
   fetchCurrentUser,
   logoutUser,
 } from "@/store/slices/authSlice";
+import { fetchWebsites, setWebsites, setSelectedWebsite } from "@/store/slices/websiteSlice";
+import { reconnectSocketWithToken } from "@/lib/socket";
 
 interface AuthContextType {
   user: User | null;
@@ -27,21 +29,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     // Background validation of session on mount
-    dispatch(fetchCurrentUser());
+    dispatch(fetchCurrentUser()).then((res) => {
+      if (fetchCurrentUser.fulfilled.match(res) && res.payload) {
+        reconnectSocketWithToken();
+        dispatch(fetchWebsites());
+      }
+    });
   }, [dispatch]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     const result = await dispatch(loginUser({ email, password }));
-    return loginUser.fulfilled.match(result);
+    if (loginUser.fulfilled.match(result)) {
+      reconnectSocketWithToken();
+      await dispatch(fetchWebsites());
+      return true;
+    }
+    return false;
   };
 
   const register = async (name: string, email: string, password: string): Promise<boolean> => {
     const result = await dispatch(registerUser({ name, email, password }));
-    return registerUser.fulfilled.match(result);
+    if (registerUser.fulfilled.match(result)) {
+      reconnectSocketWithToken();
+      await dispatch(fetchWebsites());
+      return true;
+    }
+    return false;
   };
 
   const logout = async () => {
     await dispatch(logoutUser(false));
+    dispatch(setWebsites([]));
+    dispatch(setSelectedWebsite(null));
+    reconnectSocketWithToken();
   };
 
   const quickDemoLogin = async (): Promise<boolean> => {

@@ -109,14 +109,16 @@ export const websiteSlice = createSlice({
         const matched = action.payload.find((w) => w.id === currentId);
         if (matched) {
           state.selectedWebsite = matched;
-          if (typeof window !== "undefined") {
-            localStorage.setItem("histat_selected_website", JSON.stringify(matched));
-          }
-        } else if (!state.selectedWebsite) {
+        } else {
           state.selectedWebsite = action.payload[0];
-          if (typeof window !== "undefined") {
-            localStorage.setItem("histat_selected_website", JSON.stringify(action.payload[0]));
-          }
+        }
+        if (typeof window !== "undefined") {
+          localStorage.setItem("histat_selected_website", JSON.stringify(state.selectedWebsite));
+        }
+      } else {
+        state.selectedWebsite = null;
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("histat_selected_website");
         }
       }
     });

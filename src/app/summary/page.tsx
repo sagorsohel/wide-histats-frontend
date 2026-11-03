@@ -142,7 +142,7 @@ export default function SummaryPage() {
   }, [range, getDateRange]);
 
   // Instantly handle website switcher change in Summary page
-  const prevWebsiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
+  const prevWebsiteIdRef = React.useRef<string | null>(null);
 
   useEffect(() => {
     if (selectedWebsite?.id && selectedWebsite.id !== prevWebsiteIdRef.current) {

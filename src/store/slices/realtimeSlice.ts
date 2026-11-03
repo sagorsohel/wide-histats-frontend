@@ -36,6 +36,7 @@ export const realtimeSlice = createSlice({
       const incomingHits = data.recentPageviews
         ? data.recentPageviews
             .slice()
+            .map((h) => ({ ...h, websiteId }))
             .sort(
               (a, b) =>
                 new Date(b.viewedAt).getTime() - new Date(a.viewedAt).getTime()
@@ -62,6 +63,8 @@ export const realtimeSlice = createSlice({
     ) => {
       const { websiteId, activeCount, activeCount5m, activeCount15m, activeVisitors } =
         action.payload;
+      if (!websiteId) return;
+
       const current = state.byWebsite[websiteId];
       if (current?.data) {
         if (activeCount !== undefined) current.data.activeCount = activeCount;
@@ -78,6 +81,8 @@ export const realtimeSlice = createSlice({
       const { websiteId, hit } = action.payload;
       if (!websiteId) return;
 
+      const hitWithSite: RealtimeRecentHit = { ...hit, websiteId };
+
       if (!state.byWebsite[websiteId]) {
         state.byWebsite[websiteId] = {
           data: null,
@@ -87,8 +92,8 @@ export const realtimeSlice = createSlice({
       }
 
       const existingHits = state.byWebsite[websiteId].recentHits;
-      const filtered = existingHits.filter((h) => h.id !== hit.id);
-      state.byWebsite[websiteId].recentHits = [hit, ...filtered]
+      const filtered = existingHits.filter((h) => h.id !== hitWithSite.id);
+      state.byWebsite[websiteId].recentHits = [hitWithSite, ...filtered]
         .sort((a, b) => new Date(b.viewedAt).getTime() - new Date(a.viewedAt).getTime())
         .slice(0, 50);
 

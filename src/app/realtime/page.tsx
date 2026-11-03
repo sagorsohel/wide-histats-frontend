@@ -98,7 +98,11 @@ export default function RealtimeHistatsPage() {
             prev.forEach((h) => map.set(h.id, h));
             realtimeData.recentPageviews.forEach((h) => map.set(h.id, h));
             return Array.from(map.values())
-              .sort((a, b) => new Date(b.viewedAt).getTime() - new Date(a.viewedAt).getTime())
+              .sort((a, b) => {
+                const timeA = a.viewedAt ? new Date(a.viewedAt).getTime() : 0;
+                const timeB = b.viewedAt ? new Date(b.viewedAt).getTime() : 0;
+                return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
+              })
               .slice(0, 50);
           });
         }
@@ -172,8 +176,17 @@ export default function RealtimeHistatsPage() {
           hitsCount: event.hitsCount || 1,
         };
 
-        // 1. Immediately push new hit to recent hits at index 0
-        setRecentHits((prev) => [newHit, ...prev.filter((h) => h.id !== newHit.id)].slice(0, 50));
+        // 1. Immediately push new hit to recent hits at index 0 (Latest visitor on top)
+        setRecentHits((prev) => {
+          const list = [newHit, ...prev.filter((h) => h.id !== newHit.id)];
+          return list
+            .sort((a, b) => {
+              const timeA = a.viewedAt ? new Date(a.viewedAt).getTime() : 0;
+              const timeB = b.viewedAt ? new Date(b.viewedAt).getTime() : 0;
+              return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
+            })
+            .slice(0, 50);
+        });
         setAnimatingHitIds((prev) => ({ ...prev, [newHit.id]: true }));
         setTimeout(() => {
           setAnimatingHitIds((prev) => {
@@ -272,9 +285,13 @@ export default function RealtimeHistatsPage() {
     [baseWebsiteUrl]
   );
 
-  // 100% Real-time hits stream - NO static fallback
+  // 100% Real-time hits stream - Guaranteed Descending (Latest visitor ALWAYS on top)
   const displayHits = useMemo(() => {
-    return recentHits;
+    return [...recentHits].sort((a, b) => {
+      const timeA = a.viewedAt ? new Date(a.viewedAt).getTime() : 0;
+      const timeB = b.viewedAt ? new Date(b.viewedAt).getTime() : 0;
+      return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
+    });
   }, [recentHits]);
 
   // 100% Real-time popular pages - NO static fallback

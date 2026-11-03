@@ -332,10 +332,12 @@ export const TwitterXIcon: React.FC<IconProps> = ({ size = 16, className = "" })
  */
 export const BrowserIcon: React.FC<{
   browser?: string;
+  os?: string;
   size?: number;
   className?: string;
-}> = ({ browser, size = 15, className = "" }) => {
+}> = ({ browser, os, size = 15, className = "" }) => {
   const b = (browser || "").toLowerCase().trim();
+  const o = (os || "").toLowerCase().trim();
 
   if (b.includes("chrome") || b.includes("chromium") || b.includes("crios")) {
     return <ChromeIcon size={size} className={className} />;
@@ -359,7 +361,15 @@ export const BrowserIcon: React.FC<{
     return <BraveIcon size={size} className={className} />;
   }
 
-  return <DefaultBrowserIcon size={size} className={className} />;
+  // Smart fallback based on OS (iOS/Mac -> Safari, Android/Windows -> Chrome)
+  if (o.includes("ios") || o.includes("iphone") || o.includes("ipad") || o.includes("mac") || o.includes("apple")) {
+    return <SafariIcon size={size} className={className} />;
+  }
+  if (o.includes("android") || o.includes("windows") || o.includes("linux")) {
+    return <ChromeIcon size={size} className={className} />;
+  }
+
+  return <ChromeIcon size={size} className={className} />;
 };
 
 /**

@@ -409,8 +409,8 @@ export default function RealtimeHistatsPage() {
     );
   };
 
-  const getBrowserIcon = (browser?: string) => {
-    return <BrowserIcon browser={browser} size={15} />;
+  const getBrowserIcon = (browser?: string, os?: string) => {
+    return <BrowserIcon browser={browser} os={os} size={15} />;
   };
 
   const formatVisitorIp = useCallback((vis: any) => {
@@ -680,9 +680,11 @@ export default function RealtimeHistatsPage() {
                         </span>
                       </div>
 
-                      {/* Browser / Referrer icon & Device icon */}
+                      {/* Browser & Device/OS icon */}
                       <div className="flex items-center gap-2 shrink-0">
-                        {getReferrerOrBrowserIcon(hit.browser, hit.referrer)}
+                        <span title={`Browser: ${hit.browser || "Browser"}`} className="inline-flex items-center shrink-0">
+                          <BrowserIcon browser={hit.browser} os={hit.os} size={15} />
+                        </span>
                         {getDeviceIcon(hit.deviceType, hit.os)}
                       </div>
                     </div>
@@ -969,7 +971,9 @@ export default function RealtimeHistatsPage() {
 
                             <div className="flex items-center gap-2 text-slate-500">
                               <CountryFlag code={vis.countryCode} />
-                              <span className="text-xs">{getBrowserIcon(vis.browser)}</span>
+                              <span className="inline-flex items-center" title={`Browser: ${vis.browser || "Browser"}`}>
+                                {getBrowserIcon(vis.browser, vis.os)}
+                              </span>
                               {getDeviceIcon(vis.deviceType, vis.os)}
                             </div>
                           </div>

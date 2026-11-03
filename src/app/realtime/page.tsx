@@ -11,6 +11,7 @@ import {
   OsIcon,
   ReferrerBrandIcon,
 } from "@/components/common/BrandIcons";
+import { WebsiteFavicon } from "@/components/common/WebsiteFavicon";
 import { useAppDispatch, useAppSelector } from "@/store";
 import {
   setRealtimeData,
@@ -457,6 +458,7 @@ export default function RealtimeHistatsPage() {
             title={mounted ? baseWebsiteUrl : ""}
             className="text-white hover:underline font-bold text-[13px] flex items-center gap-1.5 group cursor-pointer"
           >
+            <WebsiteFavicon domain={selectedWebsite?.domain} size={16} />
             <span suppressHydrationWarning>
               {mounted
                 ? selectedWebsite?.domain ||
@@ -653,7 +655,7 @@ export default function RealtimeHistatsPage() {
 
                       {/* Page Title & Link */}
                       <div className="flex-1 flex items-center gap-1.5 truncate max-w-[580px] lg:max-w-[700px] min-w-0">
-                        <ExternalLink className="w-3 h-3 text-slate-400 shrink-0" />
+                        <WebsiteFavicon url={hit.url} domain={selectedWebsite?.domain} size={15} />
                         <a
                           href={getFullUrl(hit.url, hit.path)}
                           target="_blank"
@@ -732,7 +734,7 @@ export default function RealtimeHistatsPage() {
                               {page.count}
                             </span>
                             <div className="flex items-center gap-1.5 truncate flex-1 min-w-0">
-                              <ExternalLink className="w-3 h-3 text-slate-400 shrink-0" />
+                              <WebsiteFavicon url={page.url} domain={selectedWebsite?.domain} size={14} />
                               <a
                                 href={pageUrl}
                                 target="_blank"
@@ -980,7 +982,7 @@ export default function RealtimeHistatsPage() {
 
                           {/* Second line: visited path */}
                           <div className="flex items-center gap-1 text-[10px] text-slate-500 truncate pl-6">
-                            <ExternalLink className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                            <WebsiteFavicon url={vis.pageUrl} domain={selectedWebsite?.domain} size={12} />
                             <a
                               href={getFullUrl(vis.pageUrl, vis.currentPath)}
                               target="_blank"
@@ -1120,9 +1122,9 @@ export default function RealtimeHistatsPage() {
                           </div>
                         </div>
 
-                        {/* Row 2: [↗] Page Title and URL */}
+                        {/* Row 2: Page Title and URL with Favicon */}
                         <div className="flex items-center gap-1.5 truncate text-xs">
-                          <ExternalLink className="w-3.5 h-3.5 text-[#1b62b7] shrink-0" />
+                          <WebsiteFavicon url={hit.url} domain={selectedWebsite?.domain} size={15} />
                           <a
                             href={getFullUrl(hit.url, hit.path)}
                             target="_blank"
@@ -1178,19 +1180,22 @@ export default function RealtimeHistatsPage() {
                       <tr key={i} className="hover:bg-slate-50">
                         <td className="py-2 px-3 font-bold text-[#e65100] font-mono">{formatElapsedTime(h.viewedAt)}</td>
                         <td className="py-2 px-3 max-w-[340px] truncate">
-                          <a
-                            href={getFullUrl(h.url, h.path)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title={getFullUrl(h.url, h.path)}
-                            className="font-medium text-slate-800 hover:text-[#1b62b7] hover:underline block truncate group"
-                          >
-                            <span className="group-hover:hidden truncate block">{h.title || h.path}</span>
-                            <span className="hidden group-hover:block truncate font-mono text-[#1b62b7] text-[10px]">
-                              {getFullUrl(h.url, h.path)}
-                            </span>
-                          </a>
-                          <div className="text-[10px] text-slate-400 font-mono truncate">{h.path}</div>
+                          <div className="flex items-center gap-1.5 truncate">
+                            <WebsiteFavicon url={h.url} domain={selectedWebsite?.domain} size={14} />
+                            <a
+                              href={getFullUrl(h.url, h.path)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={getFullUrl(h.url, h.path)}
+                              className="font-medium text-slate-800 hover:text-[#1b62b7] hover:underline truncate group flex-1"
+                            >
+                              <span className="group-hover:hidden truncate block">{h.title || h.path}</span>
+                              <span className="hidden group-hover:block truncate font-mono text-[#1b62b7] text-[10px]">
+                                {getFullUrl(h.url, h.path)}
+                              </span>
+                            </a>
+                          </div>
+                          <div className="text-[10px] text-slate-400 font-mono truncate pl-5">{h.path}</div>
                         </td>
                         <td className="py-2 px-3">
                           <div className="flex items-center gap-1.5">
@@ -1359,7 +1364,7 @@ export default function RealtimeHistatsPage() {
                   <div key={idx} className="py-2 flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2 max-w-[800px] truncate flex-1 min-w-0">
                       <span className="w-6 font-bold text-[#1b62b7] text-right">{page.count}</span>
-                      <ExternalLink className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <WebsiteFavicon url={page.url} domain={selectedWebsite?.domain} size={15} />
                       <a
                         href={pageUrl}
                         target="_blank"

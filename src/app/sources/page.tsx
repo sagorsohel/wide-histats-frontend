@@ -9,6 +9,7 @@ import {
   RangeOption,
 } from "@/components/analytics/DateRangePicker";
 import { Compass, Search, Share2, Link as LinkIcon, Target } from "lucide-react";
+import { ReferrerBrandIcon } from "@/components/common/BrandIcons";
 import { useTabFocus } from "@/hooks/useTabFocus";
 
 export default function SourcesPage() {
@@ -242,9 +243,12 @@ export default function SourcesPage() {
                   key={i}
                   className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs"
                 >
-                  <span className="text-slate-700 truncate font-mono max-w-[280px]">
-                    {r.referrer}
-                  </span>
+                  <div className="flex items-center gap-2 truncate max-w-[280px]">
+                    <ReferrerBrandIcon referrer={r.referrer} size={16} />
+                    <span className="text-slate-700 truncate font-mono">
+                      {r.referrer}
+                    </span>
+                  </div>
                   <span className="font-bold text-slate-900 tabular-nums">{r.count}</span>
                 </div>
               ))}

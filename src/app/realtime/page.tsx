@@ -6,6 +6,11 @@ import { api } from "@/lib/api";
 import { getSocket, subscribeToWebsite, unsubscribeFromWebsite } from "@/lib/socket";
 import { RealtimeData, ActiveVisitor, RealtimeRecentHit } from "@/types/analytics";
 import { CountryFlag, getCountryName } from "@/components/common/CountryFlag";
+import {
+  BrowserIcon,
+  OsIcon,
+  ReferrerBrandIcon,
+} from "@/components/common/BrandIcons";
 import { useAppDispatch, useAppSelector } from "@/store";
 import {
   setRealtimeData,
@@ -389,53 +394,23 @@ export default function RealtimeHistatsPage() {
 
 
   const getDeviceIcon = (device?: string, os?: string) => {
-    const d = (device || "").toLowerCase();
-    const o = (os || "").toLowerCase();
-    if (d === "mobile" || o.includes("android") || o.includes("ios") || o.includes("iphone")) {
-      return (
-        <span title={`Mobile (${os || "Phone"})`} className="inline-flex items-center">
-          <Smartphone className="w-3.5 h-3.5 text-emerald-600 inline-block stroke-[1.75]" />
-        </span>
-      );
-    }
-    if (d === "tablet" || o.includes("ipad")) {
-      return (
-        <span title={`Tablet (${os || "Tablet"})`} className="inline-flex items-center">
-          <Tablet className="w-3.5 h-3.5 text-purple-600 inline-block stroke-[1.75]" />
-        </span>
-      );
-    }
     return (
-      <span title={`Desktop (${os || "Computer"})`} className="inline-flex items-center">
-        <Monitor className="w-3.5 h-3.5 text-blue-600 inline-block stroke-[1.75]" />
+      <span title={`${device || "Device"} (${os || "Platform"})`} className="inline-flex items-center shrink-0">
+        <OsIcon os={os} deviceType={device} size={15} />
       </span>
     );
   };
 
   const getReferrerOrBrowserIcon = (browser?: string, referrer?: string | null) => {
-    const b = (browser || "").toLowerCase();
-    const r = (referrer || "").toLowerCase();
-    if (b.includes("safari") || r.includes("google") || r.includes("bing") || r.includes("search")) {
-      return (
-        <span title="Safari / Search Referrer" className="inline-flex items-center">
-          <Compass className="w-3.5 h-3.5 text-amber-600 shrink-0 stroke-[1.75]" />
-        </span>
-      );
-    }
     return (
-      <span title="Direct / Web" className="inline-flex items-center">
-        <Globe className="w-3.5 h-3.5 text-cyan-600 shrink-0 stroke-[1.75]" />
+      <span title={referrer ? `Referrer: ${referrer}` : `Browser: ${browser || "Web"}`} className="inline-flex items-center shrink-0">
+        <ReferrerBrandIcon referrer={referrer} browser={browser} size={15} />
       </span>
     );
   };
 
   const getBrowserIcon = (browser?: string) => {
-    const b = (browser || "").toLowerCase();
-    if (b.includes("chrome")) return "🌐";
-    if (b.includes("firefox")) return "🦊";
-    if (b.includes("safari")) return "🧭";
-    if (b.includes("edge")) return "🌊";
-    return "🌐";
+    return <BrowserIcon browser={browser} size={15} />;
   };
 
   const formatVisitorIp = useCallback((vis: any) => {
@@ -816,6 +791,7 @@ export default function RealtimeHistatsPage() {
                               {ref.count}
                             </span>
                             <div className="flex items-center gap-1.5 truncate flex-1 min-w-0">
+                              <ReferrerBrandIcon referrer={ref.referrer} size={14} />
                               <ExternalLink className="w-3 h-3 text-slate-400 shrink-0" />
                               {isUrl ? (
                                 <a
@@ -1119,23 +1095,23 @@ export default function RealtimeHistatsPage() {
                           {/* Visitor Phone / Device Badge */}
                           <div className="flex items-center gap-1.5 ml-auto text-xs shrink-0">
                             {hit.deviceType === "mobile" ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded shadow-2xs">
-                                <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded shadow-2xs">
+                                <OsIcon os={hit.os} deviceType="mobile" size={13} />
                                 <span>Mobile ({hit.os})</span>
                               </span>
                             ) : hit.deviceType === "tablet" ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-1.5 py-0.2 rounded shadow-2xs">
-                                <Tablet className="w-3.5 h-3.5 text-purple-600" />
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded shadow-2xs">
+                                <OsIcon os={hit.os} deviceType="tablet" size={13} />
                                 <span>Tablet</span>
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded shadow-2xs">
-                                <Monitor className="w-3.5 h-3.5 text-blue-600" />
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded shadow-2xs">
+                                <OsIcon os={hit.os} deviceType="desktop" size={13} />
                                 <span>Desktop ({hit.os})</span>
                               </span>
                             )}
-                            <span className="text-xs" title={`${hit.browser} on ${hit.os}`}>
-                              {getBrowserIcon(hit.browser)}
+                            <span className="inline-flex items-center p-0.5 bg-white border border-slate-200 rounded shadow-2xs" title={`${hit.browser} on ${hit.os}`}>
+                              <BrowserIcon browser={hit.browser} size={15} />
                             </span>
                           </div>
                         </div>
@@ -1235,9 +1211,12 @@ export default function RealtimeHistatsPage() {
                         </td>
                         <td className="py-2 px-3 whitespace-nowrap">
                           <div className="flex items-center gap-1.5">
+                            <span className="inline-flex items-center" title={h.browser}>
+                              <BrowserIcon browser={h.browser} size={15} />
+                            </span>
                             {getDeviceIcon(h.deviceType, h.os)}
                             <span className="capitalize text-slate-700 font-medium">
-                              {h.deviceType === "mobile" ? "Mobile" : h.deviceType === "tablet" ? "Tablet" : "Desktop"} ({h.os})
+                              {h.browser || "Web"} on {h.os || "OS"}
                             </span>
                           </div>
                         </td>
@@ -1300,16 +1279,19 @@ export default function RealtimeHistatsPage() {
                         </span>
                         <span className="text-slate-900 font-bold text-[13px]">{formatVisitorIp(vis)}</span>
                         {vis.deviceType === "mobile" ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded">
-                            <Smartphone className="w-3 h-3 text-emerald-600" />
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded shadow-2xs">
+                            <OsIcon os={vis.os} deviceType="mobile" size={12} />
                             <span>Mobile ({vis.os})</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded">
-                            <Monitor className="w-3 h-3 text-blue-600" />
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded shadow-2xs">
+                            <OsIcon os={vis.os} deviceType="desktop" size={12} />
                             <span>Desktop ({vis.os})</span>
                           </span>
                         )}
+                        <span className="inline-flex items-center p-0.5 bg-white border border-slate-200 rounded shadow-2xs" title={`${vis.browser} on ${vis.os}`}>
+                          <BrowserIcon browser={vis.browser} size={14} />
+                        </span>
                         <span className="text-[10px] px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded font-bold">Active</span>
                       </div>
                       <div className="text-[11px] text-slate-500 mt-0.5">
@@ -1430,6 +1412,7 @@ export default function RealtimeHistatsPage() {
                   <div key={idx} className="py-2 flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2 max-w-[800px] truncate">
                       <span className="w-6 font-bold text-[#1b62b7] text-right">{ref.count}</span>
+                      <ReferrerBrandIcon referrer={ref.referrer} size={15} />
                       <ExternalLink className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       {isUrl ? (
                         <a

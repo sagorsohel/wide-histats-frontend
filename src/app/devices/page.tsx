@@ -9,6 +9,7 @@ import {
   RangeOption,
 } from "@/components/analytics/DateRangePicker";
 import { Monitor, Smartphone, Tablet, Globe, Cpu } from "lucide-react";
+import { BrowserIcon, OsIcon } from "@/components/common/BrandIcons";
 import { useTabFocus } from "@/hooks/useTabFocus";
 
 export default function DevicesReportPage() {
@@ -233,7 +234,10 @@ export default function DevicesReportPage() {
                 return (
                   <div key={i} className="space-y-1">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-800">{b.browser}</span>
+                      <div className="flex items-center gap-2">
+                        <BrowserIcon browser={b.browser} size={16} />
+                        <span className="font-semibold text-slate-800">{b.browser}</span>
+                      </div>
                       <div className="flex items-center gap-3">
                         <span className="font-bold text-slate-900 tabular-nums">{b.sessions} visits</span>
                         <span className="text-[#1d5b9f] font-bold w-10 text-right">{percentage}%</span>
@@ -285,7 +289,10 @@ export default function DevicesReportPage() {
                 return (
                   <div key={i} className="space-y-1">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-800">{o.os}</span>
+                      <div className="flex items-center gap-2">
+                        <OsIcon os={o.os} size={15} />
+                        <span className="font-semibold text-slate-800">{o.os}</span>
+                      </div>
                       <div className="flex items-center gap-3">
                         <span className="font-bold text-slate-900 tabular-nums">{o.sessions} visits</span>
                         <span className="text-emerald-700 font-bold w-10 text-right">{percentage}%</span>

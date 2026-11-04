@@ -25,8 +25,9 @@ export const getSocket = (): Socket => {
     });
 
     socket.on("connect", () => {
+      const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") || "" : "";
       if (currentSubscribedWebsiteId) {
-        socket?.emit("subscribe:website", currentSubscribedWebsiteId);
+        socket?.emit("subscribe:website", { websiteId: currentSubscribedWebsiteId, token });
       }
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("histat:socket_sync"));
@@ -34,15 +35,24 @@ export const getSocket = (): Socket => {
     });
 
     socket.on("disconnect", (reason) => {
-      // If server or transport disconnected while backgrounded, auto-reconnect
-      if (reason === "io server disconnect" || reason === "transport close") {
+      // If server or transport disconnected while backgrounded, auto-reconnect immediately
+      if (reason === "io server disconnect" || reason === "transport close" || reason === "ping timeout") {
         setTimeout(() => {
           socket?.connect();
-        }, 1000);
+        }, 800);
       }
     });
 
-    // Auto-reconnect & resubscribe when tab regains focus or becomes visible
+    // 10-second active heartbeat ping to keep connection alive indefinitely
+    setInterval(() => {
+      if (socket?.connected) {
+        socket.emit("ping:heartbeat", { t: Date.now() });
+      } else if (socket && typeof document !== "undefined" && document.visibilityState === "visible") {
+        socket.connect();
+      }
+    }, 10000);
+
+    // Auto-reconnect & resubscribe when tab wakes up after long sleep (20+ minutes)
     const handleWakeup = () => {
       if (typeof document !== "undefined" && document.visibilityState === "visible") {
         const token = localStorage.getItem("accessToken") || "";
@@ -51,10 +61,11 @@ export const getSocket = (): Socket => {
           if (!socket.connected) {
             socket.connect();
           } else if (currentSubscribedWebsiteId) {
-            socket.emit("subscribe:website", currentSubscribedWebsiteId);
+            socket.emit("subscribe:website", { websiteId: currentSubscribedWebsiteId, token });
           }
         }
         window.dispatchEvent(new CustomEvent("histat:socket_sync"));
+        window.dispatchEvent(new CustomEvent("histat:silent_system_refresh"));
       }
     };
 

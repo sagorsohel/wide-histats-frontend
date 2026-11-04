@@ -5,6 +5,7 @@ import { Website } from "@/types/analytics";
 import { useAppDispatch, useAppSelector } from "@/store";
 import {
   fetchWebsites,
+  setWebsites,
   createNewWebsite,
   setSelectedWebsite as setSelectedWebsiteAction,
   openTrackingModal as openTrackingModalAction,
@@ -46,6 +47,23 @@ export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (user) {
       dispatch(fetchWebsites());
     }
+  }, [user, dispatch]);
+
+  // 15-second silent full system auto-sync in background (zero visual disturbance)
+  useEffect(() => {
+    if (!user) return;
+    const timer = setInterval(async () => {
+      try {
+        const res = await api.get<Website[]>("/api/v1/websites", { skipCache: true });
+        if (res.success && res.data) {
+          dispatch(setWebsites(res.data));
+        }
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("histat:silent_system_refresh"));
+        }
+      } catch {}
+    }, 15000);
+    return () => clearInterval(timer);
   }, [user, dispatch]);
 
   useTabFocus(() => {

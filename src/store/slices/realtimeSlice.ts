@@ -67,40 +67,25 @@ export const realtimeSlice = createSlice({
 
       if (!state.byWebsite[websiteId]) {
         state.byWebsite[websiteId] = {
-          data: {
-            activeCount: activeCount ?? 0,
-            activeCount5m: activeCount5m ?? 0,
-            activeCount15m: activeCount15m ?? 0,
-            activeVisitors: activeVisitors ?? [],
-            todayVisitors: 0,
-            todayPageviews: 0,
-            totalVisitors: 0,
-            totalPageviews: 0,
-            browsingPagesCount: activeVisitors?.length || 0,
-            topPages: [],
-            topReferrers: [],
-            recentPageviews: [],
-            countries: [],
-            devices: {},
-            sources: {},
-          } as any,
+          data: null,
           recentHits: [],
           lastUpdated: Date.now(),
         };
       } else {
         const current = state.byWebsite[websiteId];
-        if (!current.data) {
-          current.data = {
-            activeCount: activeCount ?? 0,
-            activeCount5m: activeCount5m ?? 0,
-            activeCount15m: activeCount15m ?? 0,
-            activeVisitors: activeVisitors ?? [],
-          } as any;
-        } else {
-          if (activeCount !== undefined) current.data.activeCount = activeCount;
-          if (activeCount5m !== undefined) current.data.activeCount5m = activeCount5m;
-          if (activeCount15m !== undefined) current.data.activeCount15m = activeCount15m;
-          if (activeVisitors !== undefined) current.data.activeVisitors = activeVisitors;
+        if (current.data) {
+          if (activeCount !== undefined && (activeCount > 0 || !current.data.activeCount)) {
+            current.data.activeCount = activeCount;
+          }
+          if (activeCount5m !== undefined && (activeCount5m > 0 || !current.data.activeCount5m)) {
+            current.data.activeCount5m = activeCount5m;
+          }
+          if (activeCount15m !== undefined && (activeCount15m > 0 || !current.data.activeCount15m)) {
+            current.data.activeCount15m = activeCount15m;
+          }
+          if (activeVisitors !== undefined && activeVisitors.length > 0) {
+            current.data.activeVisitors = activeVisitors;
+          }
         }
       }
     },

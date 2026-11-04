@@ -191,3 +191,29 @@ export interface OsStat {
   sessions: number;
   visitors: number;
 }
+
+export interface TrafficHourlyPoint {
+  hour: number;
+  time: string;
+  visitors: number;
+  pageviews: number;
+  firstTimeVisitors: number;
+  ppv: number;
+  newvisPct: number;
+  bounceRate: number;
+  visitorsPct: number;
+}
+
+export interface TrafficStatsData {
+  date: string;
+  dateFormatted: string;
+  dateFull: string;
+  totalPageviews: number;
+  totalVisitors: number;
+  firstTimeVisitors: number;
+  pagesPerVisit: number;
+  newVisitorsRatio: number;
+  avgBounceRate: number;
+  hourly: TrafficHourlyPoint[];
+}
+

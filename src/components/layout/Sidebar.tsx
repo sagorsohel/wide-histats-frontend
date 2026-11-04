@@ -16,6 +16,7 @@ import {
   Layers,
   Search,
   Sliders,
+  TrendingUp,
 } from "lucide-react";
 
 interface NavGroup {
@@ -33,6 +34,7 @@ export const NAV_GROUPS: NavGroup[] = [
     title: "Traffic",
     items: [
       { href: "/summary", label: "Summary", icon: BarChart3 },
+      { href: "/traffic-stats", label: "Traffic stats", icon: TrendingUp },
       { href: "/realtime", label: "Users online", icon: Activity, badge: "Live" },
     ],
   },

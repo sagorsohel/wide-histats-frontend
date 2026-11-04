@@ -3,8 +3,16 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useWebsite } from "@/context/WebsiteContext";
 import { api } from "@/lib/api";
-import { getSocket, subscribeToWebsite, unsubscribeFromWebsite } from "@/lib/socket";
-import { RealtimeData, ActiveVisitor, RealtimeRecentHit } from "@/types/analytics";
+import {
+  getSocket,
+  subscribeToWebsite,
+  unsubscribeFromWebsite,
+} from "@/lib/socket";
+import {
+  RealtimeData,
+  ActiveVisitor,
+  RealtimeRecentHit,
+} from "@/types/analytics";
 import { CountryFlag, getCountryName } from "@/components/common/CountryFlag";
 import {
   BrowserIcon,
@@ -50,12 +58,14 @@ export default function RealtimeHistatsPage() {
   const { selectedWebsite, openTrackingModal } = useWebsite();
 
   // Active website ID ref to completely prevent race conditions
-  const activeSiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
+  const activeSiteIdRef = React.useRef<string | null>(
+    selectedWebsite?.id || null,
+  );
   activeSiteIdRef.current = selectedWebsite?.id || null;
 
   // Realtime state strictly isolated by websiteId in Redux!
   const currentSiteRealtime = useAppSelector(
-    (state) => state.realtime.byWebsite[selectedWebsite?.id || ""]
+    (state) => state.realtime.byWebsite[selectedWebsite?.id || ""],
   );
   const data = currentSiteRealtime?.data || null;
   const rawRecentHits = currentSiteRealtime?.recentHits || [];
@@ -74,7 +84,9 @@ export default function RealtimeHistatsPage() {
   const [currentTime, setCurrentTime] = useState<number>(() => Date.now());
 
   // Track IDs of newly arrived hits for the smooth slide-down stack animation
-  const [animatingHitIds, setAnimatingHitIds] = useState<Record<string, boolean>>({});
+  const [animatingHitIds, setAnimatingHitIds] = useState<
+    Record<string, boolean>
+  >({});
   const isInitialLoad = React.useRef(true);
 
   // 1-second live ticker for exact real-time elapsed seconds
@@ -98,12 +110,12 @@ export default function RealtimeHistatsPage() {
       const mins = Math.floor(diffSec / 60);
       const remSec = diffSec % 60;
       if (mins < 60) {
-        return `${mins}'${remSec > 0 ? (remSec < 10 ? `0${remSec}"` : `${remSec}"`) : ''}`;
+        return `${mins}'${remSec > 0 ? (remSec < 10 ? `0${remSec}"` : `${remSec}"`) : ""}`;
       }
       const hrs = Math.floor(mins / 60);
       return `${hrs}h`;
     },
-    [currentTime]
+    [currentTime],
   );
 
   const loadRealtime = useCallback(
@@ -122,7 +134,7 @@ export default function RealtimeHistatsPage() {
 
       try {
         const res = await api.get<RealtimeData>(
-          `/api/v1/analytics/realtime?websiteId=${siteId}`
+          `/api/v1/analytics/realtime?websiteId=${siteId}`,
         );
 
         // Strict race condition guard: If user switched website while this request was in flight, discard!
@@ -141,14 +153,17 @@ export default function RealtimeHistatsPage() {
         }
       }
     },
-    [isPaused, currentSiteRealtime?.data, dispatch]
+    [isPaused, currentSiteRealtime?.data, dispatch],
   );
 
   // Instantly handle website switcher change: reset previous site's state & load new site immediately!
   const prevWebsiteIdRef = React.useRef<string | null>(null);
 
   useEffect(() => {
-    if (selectedWebsite?.id && selectedWebsite.id !== prevWebsiteIdRef.current) {
+    if (
+      selectedWebsite?.id &&
+      selectedWebsite.id !== prevWebsiteIdRef.current
+    ) {
       const oldId = prevWebsiteIdRef.current;
       if (oldId) {
         unsubscribeFromWebsite(oldId);
@@ -168,7 +183,10 @@ export default function RealtimeHistatsPage() {
     const handleWebsiteChanged = (e: any) => {
       const newSite = e.detail;
       if (newSite?.id) {
-        if (prevWebsiteIdRef.current && prevWebsiteIdRef.current !== newSite.id) {
+        if (
+          prevWebsiteIdRef.current &&
+          prevWebsiteIdRef.current !== newSite.id
+        ) {
           unsubscribeFromWebsite(prevWebsiteIdRef.current);
         }
         prevWebsiteIdRef.current = newSite.id;
@@ -181,7 +199,11 @@ export default function RealtimeHistatsPage() {
       }
     };
     window.addEventListener("histat:website_changed", handleWebsiteChanged);
-    return () => window.removeEventListener("histat:website_changed", handleWebsiteChanged);
+    return () =>
+      window.removeEventListener(
+        "histat:website_changed",
+        handleWebsiteChanged,
+      );
   }, [loadRealtime]);
 
   // Silent auto-sync on tab wake, network restore, or socket reconnection
@@ -267,11 +289,17 @@ export default function RealtimeHistatsPage() {
               ? new URL(event.url)
               : new URL(`https://${event.url}`);
             const hitHost = parsed.hostname.toLowerCase();
-            if (!hitHost.includes(siteDomain) && !siteDomain.includes(hitHost)) {
+            if (
+              !hitHost.includes(siteDomain) &&
+              !siteDomain.includes(hitHost)
+            ) {
               return; // Discard hit belonging to another website!
             }
           } catch {
-            if (event.url.includes("://") && !event.url.toLowerCase().includes(siteDomain)) {
+            if (
+              event.url.includes("://") &&
+              !event.url.toLowerCase().includes(siteDomain)
+            ) {
               return;
             }
           }
@@ -280,14 +308,21 @@ export default function RealtimeHistatsPage() {
         // Title check: If hit title specifically contains another site's brand name, reject it!
         if (event.title) {
           const lowerTitle = event.title.toLowerCase();
-          if (!siteDomain.includes("streamespn") && lowerTitle.includes("streamespn")) {
+          if (
+            !siteDomain.includes("streamespn") &&
+            lowerTitle.includes("streamespn")
+          ) {
             return;
           }
         }
       }
 
       const newHit: RealtimeRecentHit = {
-        id: "hit-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7),
+        id:
+          "hit-" +
+          Date.now() +
+          "-" +
+          Math.random().toString(36).substring(2, 7),
         websiteId: activeId,
         path: event.path || "/",
         title: event.title || event.path || "Home Page",
@@ -300,7 +335,8 @@ export default function RealtimeHistatsPage() {
         browser: event.browser || "Chrome",
         os: event.os || "Windows",
         deviceType: event.deviceType || "desktop",
-        visitorKey: event.visitorKey || "vis-" + Math.floor(Math.random() * 10000),
+        visitorKey:
+          event.visitorKey || "vis-" + Math.floor(Math.random() * 10000),
         ip: event.ip || "127.0.0.1",
         hitsCount: event.hitsCount || 1,
       };
@@ -352,7 +388,7 @@ export default function RealtimeHistatsPage() {
       const cleanPath = path.startsWith("/") ? path : `/${path}`;
       return `${baseWebsiteUrl}${cleanPath}`;
     },
-    [baseWebsiteUrl]
+    [baseWebsiteUrl],
   );
 
   // 100% Real-time hits stream - Guaranteed Descending (Latest visitor ALWAYS on top) & strictly domain-isolated
@@ -361,7 +397,9 @@ export default function RealtimeHistatsPage() {
     let list = [...rawRecentHits];
 
     // 1. Strict website ID filter: hits MUST have websiteId AND it must match selectedWebsite.id
-    list = list.filter((hit) => hit.websiteId && hit.websiteId === selectedWebsite.id);
+    list = list.filter(
+      (hit) => hit.websiteId && hit.websiteId === selectedWebsite.id,
+    );
 
     // 2. Strict domain & title filter
     if (selectedWebsite?.domain) {
@@ -378,18 +416,27 @@ export default function RealtimeHistatsPage() {
               ? new URL(hit.url)
               : new URL(`https://${hit.url}`);
             const hitHost = parsed.hostname.toLowerCase();
-            if (!hitHost.includes(siteDomain) && !siteDomain.includes(hitHost)) {
+            if (
+              !hitHost.includes(siteDomain) &&
+              !siteDomain.includes(hitHost)
+            ) {
               return false;
             }
           } catch {
-            if (hit.url.includes("://") && !hit.url.toLowerCase().includes(siteDomain)) {
+            if (
+              hit.url.includes("://") &&
+              !hit.url.toLowerCase().includes(siteDomain)
+            ) {
               return false;
             }
           }
         }
         if (hit.title) {
           const lowerTitle = hit.title.toLowerCase();
-          if (!siteDomain.includes("streamespn") && lowerTitle.includes("streamespn")) {
+          if (
+            !siteDomain.includes("streamespn") &&
+            lowerTitle.includes("streamespn")
+          ) {
             return false;
           }
         }
@@ -418,14 +465,20 @@ export default function RealtimeHistatsPage() {
     return data.topPages.filter((page) => {
       if (page.url) {
         try {
-          const parsed = page.url.startsWith("http") ? new URL(page.url) : new URL(`https://${page.url}`);
+          const parsed = page.url.startsWith("http")
+            ? new URL(page.url)
+            : new URL(`https://${page.url}`);
           const host = parsed.hostname.toLowerCase();
-          if (!host.includes(siteDomain) && !siteDomain.includes(host)) return false;
+          if (!host.includes(siteDomain) && !siteDomain.includes(host))
+            return false;
         } catch {}
       }
       if (page.title) {
         const lowerTitle = page.title.toLowerCase();
-        if (!siteDomain.includes("streamespn") && lowerTitle.includes("streamespn")) {
+        if (
+          !siteDomain.includes("streamespn") &&
+          lowerTitle.includes("streamespn")
+        ) {
           return false;
         }
       }
@@ -453,14 +506,20 @@ export default function RealtimeHistatsPage() {
       list = list.filter((vis: any) => {
         if (vis.pageUrl) {
           try {
-            const parsed = vis.pageUrl.startsWith("http") ? new URL(vis.pageUrl) : new URL(`https://${vis.pageUrl}`);
+            const parsed = vis.pageUrl.startsWith("http")
+              ? new URL(vis.pageUrl)
+              : new URL(`https://${vis.pageUrl}`);
             const host = parsed.hostname.toLowerCase();
-            if (!host.includes(siteDomain) && !siteDomain.includes(host)) return false;
+            if (!host.includes(siteDomain) && !siteDomain.includes(host))
+              return false;
           } catch {}
         }
         if (vis.pageTitle) {
           const lowerTitle = vis.pageTitle.toLowerCase();
-          if (!siteDomain.includes("streamespn") && lowerTitle.includes("streamespn")) {
+          if (
+            !siteDomain.includes("streamespn") &&
+            lowerTitle.includes("streamespn")
+          ) {
             return false;
           }
         }
@@ -469,8 +528,12 @@ export default function RealtimeHistatsPage() {
     }
 
     return list.sort((a: any, b: any) => {
-      const countA = Number(a.pageviewsCount ?? a.hitsCount ?? a.count ?? a.pageviews ?? 1);
-      const countB = Number(b.pageviewsCount ?? b.hitsCount ?? b.count ?? b.pageviews ?? 1);
+      const countA = Number(
+        a.pageviewsCount ?? a.hitsCount ?? a.count ?? a.pageviews ?? 1,
+      );
+      const countB = Number(
+        b.pageviewsCount ?? b.hitsCount ?? b.count ?? b.pageviews ?? 1,
+      );
       if (countB !== countA) {
         return countB - countA; // Highest pageviews on top (#1)
       }
@@ -489,18 +552,28 @@ export default function RealtimeHistatsPage() {
     return data?.browsingPagesCount ?? data?.topPages?.length ?? 0;
   }, [data]);
 
-
   const getDeviceIcon = (device?: string, os?: string) => {
     return (
-      <span title={`${device || "Device"} (${os || "Platform"})`} className="inline-flex items-center shrink-0">
+      <span
+        title={`${device || "Device"} (${os || "Platform"})`}
+        className="inline-flex items-center shrink-0"
+      >
         <OsIcon os={os} deviceType={device} size={15} />
       </span>
     );
   };
 
-  const getReferrerOrBrowserIcon = (browser?: string, referrer?: string | null) => {
+  const getReferrerOrBrowserIcon = (
+    browser?: string,
+    referrer?: string | null,
+  ) => {
     return (
-      <span title={referrer ? `Referrer: ${referrer}` : `Browser: ${browser || "Web"}`} className="inline-flex items-center shrink-0">
+      <span
+        title={
+          referrer ? `Referrer: ${referrer}` : `Browser: ${browser || "Web"}`
+        }
+        className="inline-flex items-center shrink-0"
+      >
         <ReferrerBrandIcon referrer={referrer} browser={browser} size={15} />
       </span>
     );
@@ -538,7 +611,7 @@ export default function RealtimeHistatsPage() {
         (h.country || "").toLowerCase().includes(q) ||
         (h.city || "").toLowerCase().includes(q) ||
         (h.ip || "").toLowerCase().includes(q) ||
-        (h.visitorKey || "").toLowerCase().includes(q)
+        (h.visitorKey || "").toLowerCase().includes(q),
     );
   }, [displayHits, searchQuery]);
 
@@ -558,7 +631,9 @@ export default function RealtimeHistatsPage() {
             <span suppressHydrationWarning>
               {mounted
                 ? selectedWebsite?.domain ||
-                  (baseWebsiteUrl ? baseWebsiteUrl.replace(/^https?:\/\//, "") : "")
+                  (baseWebsiteUrl
+                    ? baseWebsiteUrl.replace(/^https?:\/\//, "")
+                    : "")
                 : ""}
             </span>
             <ExternalLink className="w-3.5 h-3.5 text-blue-200 group-hover:text-white" />
@@ -591,7 +666,9 @@ export default function RealtimeHistatsPage() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
               </span>
-              <span className="text-white/95 font-semibold text-sm">Users online:</span>
+              <span className="text-white/95 font-semibold text-sm">
+                Users online:
+              </span>
             </div>
             {loading && !data ? (
               <div className="h-8 w-14 rounded bg-white/25 animate-pulse inline-block" />
@@ -609,7 +686,9 @@ export default function RealtimeHistatsPage() {
         {/* Right: Today's Total Visitors, Today's Pageviews, Browsing Pages, and Pause/Play */}
         <div className="flex items-center gap-4 text-xs">
           <div className="text-right border-r border-blue-400/30 pr-3 hidden sm:block">
-            <span className="text-blue-200 text-[10px] block font-medium">Total Users Today</span>
+            <span className="text-blue-200 text-[10px] block font-medium">
+              Total Users Today
+            </span>
             {loading && !data ? (
               <div className="h-4 w-12 bg-white/25 rounded animate-pulse mt-0.5 ml-auto" />
             ) : (
@@ -620,7 +699,9 @@ export default function RealtimeHistatsPage() {
           </div>
 
           <div className="text-right border-r border-blue-400/30 pr-3 hidden sm:block">
-            <span className="text-blue-200 text-[10px] block font-medium">Total Views Today</span>
+            <span className="text-blue-200 text-[10px] block font-medium">
+              Total Views Today
+            </span>
             {loading && !data ? (
               <div className="h-4 w-12 bg-white/25 rounded animate-pulse mt-0.5 ml-auto" />
             ) : (
@@ -631,7 +712,9 @@ export default function RealtimeHistatsPage() {
           </div>
 
           <div className="text-right">
-            <span className="text-blue-200 text-[10px] block font-medium">browsing:</span>
+            <span className="text-blue-200 text-[10px] block font-medium">
+              browsing:
+            </span>
             {loading && !data ? (
               <div className="h-4 w-14 bg-white/25 rounded animate-pulse mt-0.5 ml-auto" />
             ) : (
@@ -650,7 +733,11 @@ export default function RealtimeHistatsPage() {
                 : "bg-[#184277] text-white border-blue-400 hover:bg-[#133765]"
             }`}
           >
-            {isPaused ? <Play className="w-3.5 h-3.5 fill-current" /> : <Pause className="w-3.5 h-3.5 fill-current" />}
+            {isPaused ? (
+              <Play className="w-3.5 h-3.5 fill-current" />
+            ) : (
+              <Pause className="w-3.5 h-3.5 fill-current" />
+            )}
           </button>
         </div>
       </div>
@@ -702,7 +789,9 @@ export default function RealtimeHistatsPage() {
             {/* Top Box: Recent Hits Stream */}
             <div className="bg-white border border-[#cbd6e2] rounded-xs shadow-2xs overflow-hidden">
               <div className="bg-[#f0f4f9] px-3 py-1.5 border-b border-[#d2dce6] flex items-center justify-between">
-                <span className="font-bold text-slate-800 text-[12px]">Recent</span>
+                <span className="font-bold text-slate-800 text-[12px]">
+                  Recent
+                </span>
                 <button
                   onClick={() => setShowSearch(!showSearch)}
                   className="text-slate-500 hover:text-slate-800"
@@ -751,7 +840,11 @@ export default function RealtimeHistatsPage() {
 
                       {/* Page Title & Link */}
                       <div className="flex-1 flex items-center gap-1.5 truncate max-w-[580px] lg:max-w-[700px] min-w-0">
-                        <WebsiteFavicon url={hit.url} domain={selectedWebsite?.domain} size={15} />
+                        <WebsiteFavicon
+                          url={hit.url}
+                          domain={selectedWebsite?.domain}
+                          size={15}
+                        />
                         <a
                           href={getFullUrl(hit.url, hit.path)}
                           target="_blank"
@@ -774,14 +867,24 @@ export default function RealtimeHistatsPage() {
                         <span className="truncate">
                           {hit.city && hit.city !== hit.countryCode
                             ? hit.city
-                            : getCountryName(hit.countryCode, hit.country || "Online")}
+                            : getCountryName(
+                                hit.countryCode,
+                                hit.country || "Online",
+                              )}
                         </span>
                       </div>
 
                       {/* Browser & Device/OS icon */}
                       <div className="flex items-center gap-2 shrink-0">
-                        <span title={`Browser: ${hit.browser || "Browser"}`} className="inline-flex items-center shrink-0">
-                          <BrowserIcon browser={hit.browser} os={hit.os} size={15} />
+                        <span
+                          title={`Browser: ${hit.browser || "Browser"}`}
+                          className="inline-flex items-center shrink-0"
+                        >
+                          <BrowserIcon
+                            browser={hit.browser}
+                            os={hit.os}
+                            size={15}
+                          />
                         </span>
                         {getDeviceIcon(hit.deviceType, hit.os)}
                       </div>
@@ -798,7 +901,9 @@ export default function RealtimeHistatsPage() {
                 {/* Box 1: Popular Pages */}
                 <div className="bg-white border border-[#cbd6e2] rounded-xs shadow-2xs overflow-hidden">
                   <div className="bg-[#f0f4f9] px-3 py-1.5 border-b border-[#d2dce6] flex items-center justify-between">
-                    <span className="font-bold text-slate-800 text-[12px]">Popular pages</span>
+                    <span className="font-bold text-slate-800 text-[12px]">
+                      Popular pages
+                    </span>
                     <Search className="w-3.5 h-3.5 text-slate-400 cursor-pointer" />
                   </div>
 
@@ -830,7 +935,11 @@ export default function RealtimeHistatsPage() {
                               {page.count}
                             </span>
                             <div className="flex items-center gap-1.5 truncate flex-1 min-w-0">
-                              <WebsiteFavicon url={page.url} domain={selectedWebsite?.domain} size={14} />
+                              <WebsiteFavicon
+                                url={page.url}
+                                domain={selectedWebsite?.domain}
+                                size={14}
+                              />
                               <a
                                 href={pageUrl}
                                 target="_blank"
@@ -856,7 +965,9 @@ export default function RealtimeHistatsPage() {
                 {/* Box 2: Popular Referrers */}
                 <div className="bg-white border border-[#cbd6e2] rounded-xs shadow-2xs overflow-hidden">
                   <div className="bg-[#f0f4f9] px-3 py-1.5 border-b border-[#d2dce6] flex items-center justify-between">
-                    <span className="font-bold text-slate-800 text-[12px]">Popular referrer</span>
+                    <span className="font-bold text-slate-800 text-[12px]">
+                      Popular referrer
+                    </span>
                     <Search className="w-3.5 h-3.5 text-slate-400 cursor-pointer" />
                   </div>
 
@@ -891,7 +1002,10 @@ export default function RealtimeHistatsPage() {
                               {ref.count}
                             </span>
                             <div className="flex items-center gap-1.5 truncate flex-1 min-w-0">
-                              <ReferrerBrandIcon referrer={ref.referrer} size={14} />
+                              <ReferrerBrandIcon
+                                referrer={ref.referrer}
+                                size={14}
+                              />
                               <ExternalLink className="w-3 h-3 text-slate-400 shrink-0" />
                               {isUrl ? (
                                 <a
@@ -922,7 +1036,9 @@ export default function RealtimeHistatsPage() {
                 {/* Box 3: Geolocation World Map (Histats Authentic Look) */}
                 <div className="bg-white border border-[#cbd6e2] rounded-xs shadow-2xs overflow-hidden">
                   <div className="bg-[#f0f4f9] px-3 py-1.5 border-b border-[#d2dce6] flex items-center justify-between">
-                    <span className="font-bold text-slate-800 text-[12px]">Geolocation</span>
+                    <span className="font-bold text-slate-800 text-[12px]">
+                      Geolocation
+                    </span>
                     <Search className="w-3.5 h-3.5 text-slate-400 cursor-pointer" />
                   </div>
 
@@ -931,13 +1047,17 @@ export default function RealtimeHistatsPage() {
                     {/* Zoom buttons */}
                     <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
                       <button
-                        onClick={() => setMapZoom((z) => Math.min(z + 0.2, 1.8))}
+                        onClick={() =>
+                          setMapZoom((z) => Math.min(z + 0.2, 1.8))
+                        }
                         className="w-5 h-5 bg-[#254677] text-white hover:bg-[#325b96] border border-blue-400/50 flex items-center justify-center font-bold text-xs"
                       >
                         <Plus className="w-3 h-3" />
                       </button>
                       <button
-                        onClick={() => setMapZoom((z) => Math.max(z - 0.2, 0.8))}
+                        onClick={() =>
+                          setMapZoom((z) => Math.max(z - 0.2, 0.8))
+                        }
                         className="w-5 h-5 bg-[#254677] text-white hover:bg-[#325b96] border border-blue-400/50 flex items-center justify-center font-bold text-xs"
                       >
                         <Minus className="w-3 h-3" />
@@ -987,27 +1107,105 @@ export default function RealtimeHistatsPage() {
 
                         {/* Live Histats vertical pins / bars (Yellow & Red) */}
                         {/* North America pins */}
-                        <rect x="220" y="120" width="4" height="28" fill="#facc15" />
-                        <rect x="220" y="105" width="4" height="15" fill="#ef4444" />
-                        <rect x="180" y="140" width="3" height="20" fill="#facc15" />
+                        <rect
+                          x="220"
+                          y="120"
+                          width="4"
+                          height="28"
+                          fill="#facc15"
+                        />
+                        <rect
+                          x="220"
+                          y="105"
+                          width="4"
+                          height="15"
+                          fill="#ef4444"
+                        />
+                        <rect
+                          x="180"
+                          y="140"
+                          width="3"
+                          height="20"
+                          fill="#facc15"
+                        />
 
                         {/* Europe pins */}
-                        <rect x="520" y="100" width="4" height="34" fill="#facc15" />
-                        <rect x="520" y="85" width="4" height="15" fill="#ef4444" />
-                        <rect x="540" y="110" width="3" height="22" fill="#facc15" />
-                        <rect x="500" y="120" width="3" height="18" fill="#ef4444" />
+                        <rect
+                          x="520"
+                          y="100"
+                          width="4"
+                          height="34"
+                          fill="#facc15"
+                        />
+                        <rect
+                          x="520"
+                          y="85"
+                          width="4"
+                          height="15"
+                          fill="#ef4444"
+                        />
+                        <rect
+                          x="540"
+                          y="110"
+                          width="3"
+                          height="22"
+                          fill="#facc15"
+                        />
+                        <rect
+                          x="500"
+                          y="120"
+                          width="3"
+                          height="18"
+                          fill="#ef4444"
+                        />
 
                         {/* Middle East pins */}
-                        <rect x="580" y="150" width="4" height="30" fill="#facc15" />
-                        <rect x="580" y="135" width="4" height="15" fill="#ef4444" />
+                        <rect
+                          x="580"
+                          y="150"
+                          width="4"
+                          height="30"
+                          fill="#facc15"
+                        />
+                        <rect
+                          x="580"
+                          y="135"
+                          width="4"
+                          height="15"
+                          fill="#ef4444"
+                        />
 
                         {/* Asia & SE Asia pins */}
-                        <rect x="740" y="160" width="4" height="25" fill="#facc15" />
-                        <rect x="790" y="180" width="3" height="20" fill="#facc15" />
-                        <rect x="710" y="190" width="4" height="22" fill="#ef4444" />
+                        <rect
+                          x="740"
+                          y="160"
+                          width="4"
+                          height="25"
+                          fill="#facc15"
+                        />
+                        <rect
+                          x="790"
+                          y="180"
+                          width="3"
+                          height="20"
+                          fill="#facc15"
+                        />
+                        <rect
+                          x="710"
+                          y="190"
+                          width="4"
+                          height="22"
+                          fill="#ef4444"
+                        />
 
                         {/* Australia pin */}
-                        <rect x="830" y="340" width="3" height="16" fill="#facc15" />
+                        <rect
+                          x="830"
+                          y="340"
+                          width="3"
+                          height="16"
+                          fill="#facc15"
+                        />
                       </svg>
                     </div>
 
@@ -1020,7 +1218,9 @@ export default function RealtimeHistatsPage() {
                 {/* Box 4: Most Active Visitors */}
                 <div className="bg-white border border-[#cbd6e2] rounded-xs shadow-2xs overflow-hidden">
                   <div className="bg-[#f0f4f9] px-3 py-1.5 border-b border-[#d2dce6] flex items-center justify-between">
-                    <span className="font-bold text-slate-800 text-[12px]">Most active visitors</span>
+                    <span className="font-bold text-slate-800 text-[12px]">
+                      Most active visitors
+                    </span>
                     <Search className="w-3.5 h-3.5 text-slate-400 cursor-pointer" />
                   </div>
 
@@ -1051,51 +1251,65 @@ export default function RealtimeHistatsPage() {
                         No active visitors online right now
                       </div>
                     ) : (
-                      displayActiveVisitors.slice(0, 25).map((vis: any, idx: number) => (
-                        <div
-                          key={idx}
-                          className="px-3 py-1.5 hover:bg-[#f6f9fc] text-[11px] space-y-0.5"
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-[#1b62b7] min-w-[20px] text-right">
-                                {vis.pageviewsCount ?? vis.hitsCount ?? vis.count ?? 1}
-                              </span>
-                              <div className="flex items-center gap-1.5 font-mono text-slate-800 font-semibold">
-                                <span className="text-emerald-600 font-bold">👤</span>
-                                <span>{formatVisitorIp(vis)}</span>
+                      displayActiveVisitors
+                        .slice(0, 25)
+                        .map((vis: any, idx: number) => (
+                          <div
+                            key={idx}
+                            className="px-3 py-1.5 hover:bg-[#f6f9fc] text-[11px] space-y-0.5"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-[#1b62b7] min-w-[20px] text-right">
+                                  {vis.pageviewsCount ??
+                                    vis.hitsCount ??
+                                    vis.count ??
+                                    1}
+                                </span>
+                                <div className="flex items-center gap-1.5 font-mono text-slate-800 font-semibold">
+                                  <span className="text-emerald-600 font-bold">
+                                    👤
+                                  </span>
+                                  <span>{formatVisitorIp(vis)}</span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 text-slate-500">
+                                <CountryFlag code={vis.countryCode} />
+                                <span
+                                  className="inline-flex items-center"
+                                  title={`Browser: ${vis.browser || "Browser"}`}
+                                >
+                                  {getBrowserIcon(vis.browser, vis.os)}
+                                </span>
+                                {getDeviceIcon(vis.deviceType, vis.os)}
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-2 text-slate-500">
-                              <CountryFlag code={vis.countryCode} />
-                              <span className="inline-flex items-center" title={`Browser: ${vis.browser || "Browser"}`}>
-                                {getBrowserIcon(vis.browser, vis.os)}
-                              </span>
-                              {getDeviceIcon(vis.deviceType, vis.os)}
+                            {/* Second line: visited path */}
+                            <div className="flex items-center gap-1 text-[10px] text-slate-500 truncate pl-6">
+                              <WebsiteFavicon
+                                url={vis.pageUrl}
+                                domain={selectedWebsite?.domain}
+                                size={12}
+                              />
+                              <a
+                                href={getFullUrl(vis.pageUrl, vis.currentPath)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title={getFullUrl(vis.pageUrl, vis.currentPath)}
+                                className="truncate text-slate-600 hover:text-[#1b62b7] hover:underline cursor-pointer group flex-1 min-w-0"
+                              >
+                                <span className="group-hover:hidden truncate block">
+                                  {vis.pageTitle || vis.currentPath}
+                                </span>
+                                <span className="hidden group-hover:block truncate font-mono text-[#1b62b7]">
+                                  {getFullUrl(vis.pageUrl, vis.currentPath)}
+                                </span>
+                              </a>
                             </div>
                           </div>
-
-                          {/* Second line: visited path */}
-                          <div className="flex items-center gap-1 text-[10px] text-slate-500 truncate pl-6">
-                            <WebsiteFavicon url={vis.pageUrl} domain={selectedWebsite?.domain} size={12} />
-                            <a
-                              href={getFullUrl(vis.pageUrl, vis.currentPath)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              title={getFullUrl(vis.pageUrl, vis.currentPath)}
-                              className="truncate text-slate-600 hover:text-[#1b62b7] hover:underline cursor-pointer group flex-1 min-w-0"
-                            >
-                              <span className="group-hover:hidden truncate block">
-                                {vis.pageTitle || vis.currentPath}
-                              </span>
-                              <span className="hidden group-hover:block truncate font-mono text-[#1b62b7]">
-                                {getFullUrl(vis.pageUrl, vis.currentPath)}
-                              </span>
-                            </a>
-                          </div>
-                        </div>
-                      ))
+                        ))
                     )}
                   </div>
                 </div>
@@ -1109,8 +1323,13 @@ export default function RealtimeHistatsPage() {
           <div className="bg-white border border-[#cbd6e2] rounded-xs shadow-2xs p-3 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-2">
               <div>
-                <h3 className="font-bold text-slate-800 text-sm">Full Recent Hits Stream (Real IP & Device Telemetry)</h3>
-                <p className="text-[11px] text-slate-500">Live incoming client requests with verified client IP addresses and visitor platform</p>
+                <h3 className="font-bold text-slate-800 text-sm">
+                  Full Recent Hits Stream (Real IP & Device Telemetry)
+                </h3>
+                <p className="text-[11px] text-slate-500">
+                  Live incoming client requests with verified client IP
+                  addresses and visitor platform
+                </p>
               </div>
               <input
                 type="text"
@@ -1190,7 +1409,10 @@ export default function RealtimeHistatsPage() {
                             <span className="font-medium">
                               {hit.city && hit.city !== hit.countryCode
                                 ? hit.city
-                                : getCountryName(hit.countryCode, hit.country || "-")}
+                                : getCountryName(
+                                    hit.countryCode,
+                                    hit.country || "-",
+                                  )}
                             </span>
                           </div>
 
@@ -1198,21 +1420,36 @@ export default function RealtimeHistatsPage() {
                           <div className="flex items-center gap-1.5 ml-auto text-xs shrink-0">
                             {hit.deviceType === "mobile" ? (
                               <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded shadow-2xs">
-                                <OsIcon os={hit.os} deviceType="mobile" size={13} />
+                                <OsIcon
+                                  os={hit.os}
+                                  deviceType="mobile"
+                                  size={13}
+                                />
                                 <span>Mobile ({hit.os})</span>
                               </span>
                             ) : hit.deviceType === "tablet" ? (
                               <span className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded shadow-2xs">
-                                <OsIcon os={hit.os} deviceType="tablet" size={13} />
+                                <OsIcon
+                                  os={hit.os}
+                                  deviceType="tablet"
+                                  size={13}
+                                />
                                 <span>Tablet</span>
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded shadow-2xs">
-                                <OsIcon os={hit.os} deviceType="desktop" size={13} />
+                                <OsIcon
+                                  os={hit.os}
+                                  deviceType="desktop"
+                                  size={13}
+                                />
                                 <span>Desktop ({hit.os})</span>
                               </span>
                             )}
-                            <span className="inline-flex items-center p-0.5 bg-white border border-slate-200 rounded shadow-2xs" title={`${hit.browser} on ${hit.os}`}>
+                            <span
+                              className="inline-flex items-center p-0.5 bg-white border border-slate-200 rounded shadow-2xs"
+                              title={`${hit.browser} on ${hit.os}`}
+                            >
                               <BrowserIcon browser={hit.browser} size={15} />
                             </span>
                           </div>
@@ -1220,7 +1457,11 @@ export default function RealtimeHistatsPage() {
 
                         {/* Row 2: Page Title and URL with Favicon */}
                         <div className="flex items-center gap-1.5 truncate text-xs">
-                          <WebsiteFavicon url={hit.url} domain={selectedWebsite?.domain} size={15} />
+                          <WebsiteFavicon
+                            url={hit.url}
+                            domain={selectedWebsite?.domain}
+                            size={15}
+                          />
                           <a
                             href={getFullUrl(hit.url, hit.path)}
                             target="_blank"
@@ -1236,7 +1477,9 @@ export default function RealtimeHistatsPage() {
                         {isReferrerValid && (
                           <div className="flex items-center gap-1.5 truncate text-xs pl-0.5">
                             <CornerDownRight className="w-3.5 h-3.5 text-[#16a34a] shrink-0" />
-                            <span className="font-bold text-[#16a34a] text-[11px]">ref:</span>
+                            <span className="font-bold text-[#16a34a] text-[11px]">
+                              ref:
+                            </span>
                             <ExternalLink className="w-3 h-3 text-[#1b62b7] shrink-0" />
                             <a
                               href={hit.referrer!}
@@ -1258,7 +1501,9 @@ export default function RealtimeHistatsPage() {
 
             {/* Tabular Data with Real IP */}
             <div className="pt-2">
-              <h4 className="font-bold text-slate-700 text-xs mb-2">Tabular Hits View</h4>
+              <h4 className="font-bold text-slate-700 text-xs mb-2">
+                Tabular Hits View
+              </h4>
               <div className="overflow-x-auto max-h-[380px] overflow-y-auto border border-[#cbd6e2] rounded-xs shadow-2xs">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="sticky top-0 z-10 shadow-2xs">
@@ -1274,10 +1519,16 @@ export default function RealtimeHistatsPage() {
                   <tbody className="divide-y divide-slate-100">
                     {filteredHits.map((h, i) => (
                       <tr key={i} className="hover:bg-slate-50">
-                        <td className="py-2 px-3 font-bold text-[#e65100] font-mono">{formatElapsedTime(h.viewedAt)}</td>
+                        <td className="py-2 px-3 font-bold text-[#e65100] font-mono">
+                          {formatElapsedTime(h.viewedAt)}
+                        </td>
                         <td className="py-2 px-3 max-w-[340px] truncate">
                           <div className="flex items-center gap-1.5 truncate">
-                            <WebsiteFavicon url={h.url} domain={selectedWebsite?.domain} size={14} />
+                            <WebsiteFavicon
+                              url={h.url}
+                              domain={selectedWebsite?.domain}
+                              size={14}
+                            />
                             <a
                               href={getFullUrl(h.url, h.path)}
                               target="_blank"
@@ -1285,13 +1536,17 @@ export default function RealtimeHistatsPage() {
                               title={getFullUrl(h.url, h.path)}
                               className="font-medium text-slate-800 hover:text-[#1b62b7] hover:underline truncate group flex-1"
                             >
-                              <span className="group-hover:hidden truncate block">{h.title || h.path}</span>
+                              <span className="group-hover:hidden truncate block">
+                                {h.title || h.path}
+                              </span>
                               <span className="hidden group-hover:block truncate font-mono text-[#1b62b7] text-[10px]">
                                 {getFullUrl(h.url, h.path)}
                               </span>
                             </a>
                           </div>
-                          <div className="text-[10px] text-slate-400 font-mono truncate pl-5">{h.path}</div>
+                          <div className="text-[10px] text-slate-400 font-mono truncate pl-5">
+                            {h.path}
+                          </div>
                         </td>
                         <td className="py-2 px-3">
                           <div className="flex items-center gap-1.5">
@@ -1316,7 +1571,10 @@ export default function RealtimeHistatsPage() {
                         </td>
                         <td className="py-2 px-3 whitespace-nowrap">
                           <div className="flex items-center gap-1.5">
-                            <span className="inline-flex items-center" title={h.browser}>
+                            <span
+                              className="inline-flex items-center"
+                              title={h.browser}
+                            >
                               <BrowserIcon browser={h.browser} size={15} />
                             </span>
                             {getDeviceIcon(h.deviceType, h.os)}
@@ -1369,64 +1627,88 @@ export default function RealtimeHistatsPage() {
                 </div>
               ) : (
                 displayActiveVisitors.map((vis: any, idx: number) => (
-                <div
-                  key={idx}
-                  className="p-3 border border-slate-200 rounded bg-[#f8fafc] flex items-center justify-between text-xs"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-full bg-blue-100 text-[#1b62b7] font-bold flex items-center justify-center">
-                      #{idx + 1}
-                    </span>
-                    <div>
-                      <div className="font-bold text-slate-800 font-mono flex flex-wrap items-center gap-2">
-                        <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-[#7cb342] text-white font-bold text-[10px]">
-                          i
-                        </span>
-                        <span className="text-slate-900 font-bold text-[13px]">{formatVisitorIp(vis)}</span>
-                        {vis.deviceType === "mobile" ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded shadow-2xs">
-                            <OsIcon os={vis.os} deviceType="mobile" size={12} />
-                            <span>Mobile ({vis.os})</span>
+                  <div
+                    key={idx}
+                    className="p-3 border border-slate-200 rounded bg-[#f8fafc] flex items-center justify-between text-xs"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="w-8 h-8 rounded-full bg-blue-100 text-[#1b62b7] font-bold flex items-center justify-center">
+                        #{idx + 1}
+                      </span>
+                      <div>
+                        <div className="font-bold text-slate-800 font-mono flex flex-wrap items-center gap-2">
+                          <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-[#7cb342] text-white font-bold text-[10px]">
+                            i
                           </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded shadow-2xs">
-                            <OsIcon os={vis.os} deviceType="desktop" size={12} />
-                            <span>Desktop ({vis.os})</span>
+                          <span className="text-slate-900 font-bold text-[13px]">
+                            {formatVisitorIp(vis)}
                           </span>
-                        )}
-                        <span className="inline-flex items-center p-0.5 bg-white border border-slate-200 rounded shadow-2xs" title={`${vis.browser} on ${vis.os}`}>
-                          <BrowserIcon browser={vis.browser} size={14} />
-                        </span>
-                        <span className="text-[10px] px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded font-bold">Active</span>
-                      </div>
-                      <div className="text-[11px] text-slate-500 mt-0.5">
-                        Browsing:{" "}
-                        <a
-                          href={getFullUrl(vis.pageUrl, vis.currentPath)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title={getFullUrl(vis.pageUrl, vis.currentPath)}
-                          className="font-mono text-slate-700 hover:text-[#1b62b7] hover:underline cursor-pointer group"
-                        >
-                          <span className="group-hover:hidden">{vis.pageTitle || vis.currentPath}</span>
-                          <span className="hidden group-hover:inline text-[#1b62b7]">{getFullUrl(vis.pageUrl, vis.currentPath)}</span>
-                        </a>
+                          {vis.deviceType === "mobile" ? (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded shadow-2xs">
+                              <OsIcon
+                                os={vis.os}
+                                deviceType="mobile"
+                                size={12}
+                              />
+                              <span>Mobile ({vis.os})</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded shadow-2xs">
+                              <OsIcon
+                                os={vis.os}
+                                deviceType="desktop"
+                                size={12}
+                              />
+                              <span>Desktop ({vis.os})</span>
+                            </span>
+                          )}
+                          <span
+                            className="inline-flex items-center p-0.5 bg-white border border-slate-200 rounded shadow-2xs"
+                            title={`${vis.browser} on ${vis.os}`}
+                          >
+                            <BrowserIcon browser={vis.browser} size={14} />
+                          </span>
+                          <span className="text-[10px] px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded font-bold">
+                            Active
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-0.5">
+                          Browsing:{" "}
+                          <a
+                            href={getFullUrl(vis.pageUrl, vis.currentPath)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={getFullUrl(vis.pageUrl, vis.currentPath)}
+                            className="font-mono text-slate-700 hover:text-[#1b62b7] hover:underline cursor-pointer group"
+                          >
+                            <span className="group-hover:hidden">
+                              {vis.pageTitle || vis.currentPath}
+                            </span>
+                            <span className="hidden group-hover:inline text-[#1b62b7]">
+                              {getFullUrl(vis.pageUrl, vis.currentPath)}
+                            </span>
+                          </a>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="text-right">
-                    <div className="font-bold text-[#1b62b7] text-sm">
-                      {vis.pageviewsCount ?? vis.hitsCount ?? vis.count ?? 1} Pageviews
-                    </div>
-                    <div className="text-slate-500 text-[11px] flex items-center justify-end gap-1.5 mt-0.5">
-                      <CountryFlag code={vis.countryCode} />
-                      <span>{vis.city && vis.city !== vis.countryCode ? vis.city : getCountryName(vis.countryCode, vis.country)}</span>
+                    <div className="text-right">
+                      <div className="font-bold text-[#1b62b7] text-sm">
+                        {vis.pageviewsCount ?? vis.hitsCount ?? vis.count ?? 1}{" "}
+                        Pageviews
+                      </div>
+                      <div className="text-slate-500 text-[11px] flex items-center justify-end gap-1.5 mt-0.5">
+                        <CountryFlag code={vis.countryCode} />
+                        <span>
+                          {vis.city && vis.city !== vis.countryCode
+                            ? vis.city
+                            : getCountryName(vis.countryCode, vis.country)}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
-            )}
+                ))
+              )}
             </div>
           </div>
         )}
@@ -1440,7 +1722,10 @@ export default function RealtimeHistatsPage() {
             <div className="divide-y divide-slate-100">
               {loading && displayPages.length === 0 ? (
                 [1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="py-2.5 flex items-center justify-between text-xs animate-pulse">
+                  <div
+                    key={i}
+                    className="py-2.5 flex items-center justify-between text-xs animate-pulse"
+                  >
                     <div className="flex items-center gap-2 max-w-[800px] flex-1">
                       <div className="w-6 h-4 bg-slate-200 rounded shrink-0" />
                       <div className="w-4 h-4 bg-slate-200 rounded shrink-0" />
@@ -1455,32 +1740,43 @@ export default function RealtimeHistatsPage() {
                 </div>
               ) : (
                 displayPages.map((page, idx) => {
-                const pageUrl = getFullUrl(page.url, page.path);
-                return (
-                  <div key={idx} className="py-2 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2 max-w-[800px] truncate flex-1 min-w-0">
-                      <span className="w-6 font-bold text-[#1b62b7] text-right">{page.count}</span>
-                      <WebsiteFavicon url={page.url} domain={selectedWebsite?.domain} size={15} />
-                      <a
-                        href={pageUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title={pageUrl}
-                        className="font-medium text-slate-800 hover:text-[#1b62b7] hover:underline cursor-pointer truncate group flex-1 min-w-0"
-                      >
-                        <span className="group-hover:hidden truncate block">
-                          {page.title || page.path}
+                  const pageUrl = getFullUrl(page.url, page.path);
+                  return (
+                    <div
+                      key={idx}
+                      className="py-2 flex items-center justify-between text-xs"
+                    >
+                      <div className="flex items-center gap-2 max-w-[800px] truncate flex-1 min-w-0">
+                        <span className="w-6 font-bold text-[#1b62b7] text-right">
+                          {page.count}
                         </span>
-                        <span className="hidden group-hover:block truncate font-mono text-[#1b62b7] text-[11px]">
-                          {pageUrl}
-                        </span>
-                      </a>
+                        <WebsiteFavicon
+                          url={page.url}
+                          domain={selectedWebsite?.domain}
+                          size={15}
+                        />
+                        <a
+                          href={pageUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={pageUrl}
+                          className="font-medium text-slate-800 hover:text-[#1b62b7] hover:underline cursor-pointer truncate group flex-1 min-w-0"
+                        >
+                          <span className="group-hover:hidden truncate block">
+                            {page.title || page.path}
+                          </span>
+                          <span className="hidden group-hover:block truncate font-mono text-[#1b62b7] text-[11px]">
+                            {pageUrl}
+                          </span>
+                        </a>
+                      </div>
+                      <span className="text-slate-500 font-medium text-[11px]">
+                        {page.count} active users
+                      </span>
                     </div>
-                    <span className="text-slate-500 font-medium text-[11px]">{page.count} active users</span>
-                  </div>
-                );
-              })
-            )}
+                  );
+                })
+              )}
             </div>
           </div>
         )}
@@ -1494,7 +1790,10 @@ export default function RealtimeHistatsPage() {
             <div className="divide-y divide-slate-100">
               {loading && displayReferrers.length === 0 ? (
                 [1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="py-2.5 flex items-center justify-between text-xs animate-pulse">
+                  <div
+                    key={i}
+                    className="py-2.5 flex items-center justify-between text-xs animate-pulse"
+                  >
                     <div className="flex items-center gap-2 max-w-[800px] flex-1">
                       <div className="w-6 h-4 bg-slate-200 rounded shrink-0" />
                       <div className="w-4 h-4 bg-slate-200 rounded shrink-0" />
@@ -1509,37 +1808,41 @@ export default function RealtimeHistatsPage() {
                 </div>
               ) : (
                 displayReferrers.map((ref, idx) => {
-                const isUrl =
-                  ref.referrer &&
-                  (ref.referrer.startsWith("http://") ||
-                    ref.referrer.startsWith("https://"));
-                return (
-                  <div key={idx} className="py-2 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2 max-w-[800px] truncate">
-                      <span className="w-6 font-bold text-[#1b62b7] text-right">{ref.count}</span>
-                      <ReferrerBrandIcon referrer={ref.referrer} size={15} />
-                      <ExternalLink className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      {isUrl ? (
-                        <a
-                          href={ref.referrer}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title={ref.referrer}
-                          className="font-medium text-slate-800 hover:text-[#1b62b7] hover:underline cursor-pointer truncate"
-                        >
-                          {ref.referrer}
-                        </a>
-                      ) : (
-                        <span className="font-medium text-slate-800 truncate">
-                          {ref.referrer}
+                  const isUrl =
+                    ref.referrer &&
+                    (ref.referrer.startsWith("http://") ||
+                      ref.referrer.startsWith("https://"));
+                  return (
+                    <div
+                      key={idx}
+                      className="py-2 flex items-center justify-between text-xs"
+                    >
+                      <div className="flex items-center gap-2 max-w-[800px] truncate">
+                        <span className="w-6 font-bold text-[#1b62b7] text-right">
+                          {ref.count}
                         </span>
-                      )}
+                        <ReferrerBrandIcon referrer={ref.referrer} size={15} />
+                        <ExternalLink className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        {isUrl ? (
+                          <a
+                            href={ref.referrer}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={ref.referrer}
+                            className="font-medium text-slate-800 hover:text-[#1b62b7] hover:underline cursor-pointer truncate"
+                          >
+                            {ref.referrer}
+                          </a>
+                        ) : (
+                          <span className="font-medium text-slate-800 truncate">
+                            {ref.referrer}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <span className="text-slate-400 font-mono text-[11px]">Incoming Traffic</span>
-                  </div>
-                );
-              })
-            )}
+                  );
+                })
+              )}
             </div>
           </div>
         )}
@@ -1554,12 +1857,30 @@ export default function RealtimeHistatsPage() {
             {/* Expanded World Map */}
             <div className="relative bg-[#1a3359] h-[340px] w-full rounded overflow-hidden flex items-center justify-center shadow-inner">
               <svg viewBox="0 0 1000 500" className="w-full h-full opacity-90">
-                <path d="M120,60 L280,60 L290,130 L240,180 L200,240 L160,200 L120,130 Z" fill="#415d86" />
-                <path d="M260,260 L360,280 L340,420 L280,470 L240,360 Z" fill="#415d86" />
-                <path d="M480,70 L600,60 L590,140 L520,160 L460,130 Z" fill="#415d86" />
-                <path d="M470,170 L590,170 L600,290 L550,380 L490,320 L450,220 Z" fill="#415d86" />
-                <path d="M600,60 L850,70 L870,220 L760,280 L660,220 L610,150 Z" fill="#415d86" />
-                <path d="M780,310 L890,320 L870,410 L770,390 Z" fill="#415d86" />
+                <path
+                  d="M120,60 L280,60 L290,130 L240,180 L200,240 L160,200 L120,130 Z"
+                  fill="#415d86"
+                />
+                <path
+                  d="M260,260 L360,280 L340,420 L280,470 L240,360 Z"
+                  fill="#415d86"
+                />
+                <path
+                  d="M480,70 L600,60 L590,140 L520,160 L460,130 Z"
+                  fill="#415d86"
+                />
+                <path
+                  d="M470,170 L590,170 L600,290 L550,380 L490,320 L450,220 Z"
+                  fill="#415d86"
+                />
+                <path
+                  d="M600,60 L850,70 L870,220 L760,280 L660,220 L610,150 Z"
+                  fill="#415d86"
+                />
+                <path
+                  d="M780,310 L890,320 L870,410 L770,390 Z"
+                  fill="#415d86"
+                />
 
                 {/* Live pins */}
                 <rect x="220" y="110" width="5" height="35" fill="#facc15" />
@@ -1575,44 +1896,63 @@ export default function RealtimeHistatsPage() {
 
             {/* Country ranking list */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-              {loading && (!data?.topCountries || data.topCountries.length === 0) ? (
-                [1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="p-2 border border-slate-200 rounded bg-[#f8fafc] flex items-center justify-between text-xs animate-pulse">
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-4 bg-slate-200 rounded" />
-                      <div className="h-4 w-24 bg-slate-200 rounded" />
+              {loading &&
+              (!data?.topCountries || data.topCountries.length === 0)
+                ? [1, 2, 3, 4, 5, 6].map((i) => (
+                    <div
+                      key={i}
+                      className="p-2 border border-slate-200 rounded bg-[#f8fafc] flex items-center justify-between text-xs animate-pulse"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-4 bg-slate-200 rounded" />
+                        <div className="h-4 w-24 bg-slate-200 rounded" />
+                      </div>
+                      <div className="h-4 w-14 bg-slate-200 rounded" />
                     </div>
-                    <div className="h-4 w-14 bg-slate-200 rounded" />
-                  </div>
-                ))
-              ) : (
-                (data?.topCountries && data.topCountries.length > 0
-                ? data.topCountries.slice(0, 18).map((c) => {
-                    const totalActive = onlineCount || 1;
-                    const pct = Math.min(100, Math.round((c.count / totalActive) * 100));
-                    return {
-                      name: c.country,
-                      code: c.code,
-                      visitors: c.count,
-                      pct: `${pct}%`,
-                    };
-                  })
-                : [
-                    { name: "South Africa", code: "ZA", visitors: onlineCount, pct: "100%" }
-                  ]
-              ).map((c, i) => (
-                <div key={i} className="p-2 border border-slate-200 rounded bg-[#f8fafc] flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2 truncate">
-                    <CountryFlag code={c.code} size="md" />
-                    <span className="font-semibold text-slate-800 truncate">{getCountryName(c.code, c.name)}</span>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <span className="font-bold text-[#1b62b7]">{c.visitors} online</span>
-                    <span className="text-[10px] text-slate-500 block">({c.pct})</span>
-                  </div>
-                </div>
-              ))
-            )}
+                  ))
+                : (data?.topCountries && data.topCountries.length > 0
+                    ? data.topCountries.slice(0, 18).map((c) => {
+                        const totalActive = onlineCount || 1;
+                        const pct = Math.min(
+                          100,
+                          Math.round((c.count / totalActive) * 100),
+                        );
+                        return {
+                          name: c.country,
+                          code: c.code,
+                          visitors: c.count,
+                          pct: `${pct}%`,
+                        };
+                      })
+                    : [
+                        {
+                          name: "South Africa",
+                          code: "ZA",
+                          visitors: onlineCount,
+                          pct: "100%",
+                        },
+                      ]
+                  ).map((c, i) => (
+                    <div
+                      key={i}
+                      className="p-2 border border-slate-200 rounded bg-[#f8fafc] flex items-center justify-between text-xs"
+                    >
+                      <div className="flex items-center gap-2 truncate">
+                        <CountryFlag code={c.code} size="md" />
+                        <span className="font-semibold text-slate-800 truncate">
+                          {getCountryName(c.code, c.name)}
+                        </span>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className="font-bold text-[#1b62b7]">
+                          {c.visitors} online
+                        </span>
+                        <span className="text-[10px] text-slate-500 block">
+                          ({c.pct})
+                        </span>
+                      </div>
+                    </div>
+                  ))}
             </div>
           </div>
         )}

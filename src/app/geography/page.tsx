@@ -12,12 +12,23 @@ import { Globe2, MapPin, Info, ArrowUpRight } from "lucide-react";
 import { CountryFlag } from "@/components/common/CountryFlag";
 import { useTabFocus } from "@/hooks/useTabFocus";
 
+// Module-level memory cache for 0ms instant display when navigating to Geolocation
+let memoryGeoCache: {
+  siteId: string;
+  range: RangeOption;
+  countries: CountryStat[];
+  cities: CityStat[];
+} | null = null;
+
 export default function GeographyPage() {
   const { selectedWebsite } = useWebsite();
-  const [range, setRange] = useState<RangeOption>("today");
-  const [countries, setCountries] = useState<CountryStat[]>([]);
-  const [cities, setCities] = useState<CityStat[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  const isCached = !!(selectedWebsite?.id && memoryGeoCache?.siteId === selectedWebsite.id && memoryGeoCache.countries.length > 0);
+
+  const [range, setRange] = useState<RangeOption>(() => (isCached && memoryGeoCache ? memoryGeoCache.range : "today"));
+  const [countries, setCountries] = useState<CountryStat[]>(() => (isCached && memoryGeoCache ? memoryGeoCache.countries : []));
+  const [cities, setCities] = useState<CityStat[]>(() => (isCached && memoryGeoCache ? memoryGeoCache.cities : []));
+  const [loading, setLoading] = useState(!isCached);
 
   const getDateRange = useCallback((option: RangeOption) => {
     const now = new Date();
@@ -33,7 +44,7 @@ export default function GeographyPage() {
     return { from: from.toISOString(), to: now.toISOString() };
   }, []);
 
-  const hasDataRef = React.useRef(false);
+  const hasDataRef = React.useRef(isCached);
   const activeSiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
   activeSiteIdRef.current = selectedWebsite?.id || null;
 
@@ -60,6 +71,14 @@ export default function GeographyPage() {
         setCountries(res.data.countries || []);
         setCities(res.data.cities || []);
         hasDataRef.current = true;
+
+        // Save in module cache for 0ms instant display on subsequent link navigation
+        memoryGeoCache = {
+          siteId,
+          range,
+          countries: res.data.countries || [],
+          cities: res.data.cities || [],
+        };
       }
     } catch (err) {
       console.error(err);
@@ -77,10 +96,13 @@ export default function GeographyPage() {
     if (selectedWebsite?.id && selectedWebsite.id !== prevWebsiteIdRef.current) {
       prevWebsiteIdRef.current = selectedWebsite.id;
       activeSiteIdRef.current = selectedWebsite.id;
+      memoryGeoCache = null;
       setCountries([]);
       setCities([]);
       hasDataRef.current = false;
       setLoading(true);
+      loadGeoData(false, selectedWebsite.id);
+    } else if (selectedWebsite?.id && !hasDataRef.current) {
       loadGeoData(false, selectedWebsite.id);
     }
   }, [selectedWebsite?.id, loadGeoData]);

@@ -13,6 +13,7 @@ import {
 import { useAuth } from "./AuthContext";
 import { subscribeToWebsite, unsubscribeFromWebsite } from "@/lib/socket";
 import { useTabFocus } from "@/hooks/useTabFocus";
+import { api } from "@/lib/api";
 
 interface WebsiteContextType {
   websites: Website[];
@@ -68,6 +69,8 @@ export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [selectedWebsite?.id]);
 
   const setSelectedWebsite = (website: Website) => {
+    // Clear in-memory API cache so new website receives fresh data immediately
+    api.clearCache();
     dispatch(setSelectedWebsiteAction(website));
     if (typeof window !== "undefined") {
       window.dispatchEvent(

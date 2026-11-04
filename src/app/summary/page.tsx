@@ -37,20 +37,35 @@ import Link from "next/link";
 import { formatNumber, formatDuration } from "@/lib/utils";
 import { useTabFocus } from "@/hooks/useTabFocus";
 
+// Module-level cache so returning to Summary page renders in 0ms without waiting or skeleton flash
+let memorySummaryCache: {
+  siteId: string;
+  range: RangeOption;
+  overview: OverviewStats | null;
+  timeseries: TimeseriesPoint[];
+  pages: PageStat[];
+  sources: SourceStat[];
+  countries: CountryStat[];
+  devices: DeviceStat[];
+  browsers: BrowserStat[];
+} | null = null;
+
 export default function SummaryPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { selectedWebsite, websites } = useWebsite();
 
-  const [range, setRange] = useState<RangeOption>("today");
-  const [overview, setOverview] = useState<OverviewStats | null>(null);
-  const [timeseries, setTimeseries] = useState<TimeseriesPoint[]>([]);
-  const [pages, setPages] = useState<PageStat[]>([]);
-  const [sources, setSources] = useState<SourceStat[]>([]);
-  const [countries, setCountries] = useState<CountryStat[]>([]);
-  const [devices, setDevices] = useState<DeviceStat[]>([]);
-  const [browsers, setBrowsers] = useState<BrowserStat[]>([]);
-  const [loading, setLoading] = useState(true);
+  const isCached = !!(selectedWebsite?.id && memorySummaryCache?.siteId === selectedWebsite.id && memorySummaryCache.overview);
+
+  const [range, setRange] = useState<RangeOption>(() => (isCached && memorySummaryCache ? memorySummaryCache.range : "today"));
+  const [overview, setOverview] = useState<OverviewStats | null>(() => (isCached && memorySummaryCache ? memorySummaryCache.overview : null));
+  const [timeseries, setTimeseries] = useState<TimeseriesPoint[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.timeseries : []));
+  const [pages, setPages] = useState<PageStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.pages : []));
+  const [sources, setSources] = useState<SourceStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.sources : []));
+  const [countries, setCountries] = useState<CountryStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.countries : []));
+  const [devices, setDevices] = useState<DeviceStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.devices : []));
+  const [browsers, setBrowsers] = useState<BrowserStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.browsers : []));
+  const [loading, setLoading] = useState(!isCached);
 
   // Protected route check
   useEffect(() => {
@@ -83,7 +98,7 @@ export default function SummaryPage() {
     };
   }, []);
 
-  const hasDataRef = React.useRef(false);
+  const hasDataRef = React.useRef(isCached);
   const activeSiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
   activeSiteIdRef.current = selectedWebsite?.id || null;
 
@@ -132,6 +147,19 @@ export default function SummaryPage() {
       if (devicesRes.success && devicesRes.data) setDevices(devicesRes.data);
       if (browsersRes.success && browsersRes.data) setBrowsers(browsersRes.data);
       hasDataRef.current = true;
+
+      // Save to memory cache for 0ms instant reload on next link visit
+      memorySummaryCache = {
+        siteId,
+        range,
+        overview: overviewRes.data || null,
+        timeseries: timeseriesRes.data || [],
+        pages: pagesRes.data || [],
+        sources: sourcesRes.data?.sources || [],
+        countries: geoRes.data?.countries || [],
+        devices: devicesRes.data || [],
+        browsers: browsersRes.data || [],
+      };
     } catch (err) {
       console.error("Failed to load dashboard data", err);
     } finally {
@@ -142,12 +170,13 @@ export default function SummaryPage() {
   }, [range, getDateRange]);
 
   // Instantly handle website switcher change in Summary page
-  const prevWebsiteIdRef = React.useRef<string | null>(null);
+  const prevWebsiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
 
   useEffect(() => {
     if (selectedWebsite?.id && selectedWebsite.id !== prevWebsiteIdRef.current) {
       prevWebsiteIdRef.current = selectedWebsite.id;
       activeSiteIdRef.current = selectedWebsite.id;
+      memorySummaryCache = null;
       setOverview(null);
       setTimeseries([]);
       setPages([]);
@@ -158,6 +187,8 @@ export default function SummaryPage() {
       hasDataRef.current = false;
       setLoading(true);
 
+      loadData(false, selectedWebsite.id);
+    } else if (selectedWebsite?.id && !hasDataRef.current) {
       loadData(false, selectedWebsite.id);
     }
   }, [selectedWebsite?.id, loadData]);

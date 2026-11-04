@@ -38,7 +38,8 @@ export const Header: React.FC = () => {
   }, [pathname]);
 
   const isAuthPage = pathname === "/" || pathname === "/login";
-  const isControlPanel = pathname === "/control-panel" || pathname === "/websites";
+  const isControlPanel =
+    pathname === "/control-panel" || pathname === "/websites";
 
   const { user, logout } = useAuth();
   const { websites, selectedWebsite, setSelectedWebsite, openTrackingModal } =
@@ -143,22 +144,6 @@ export const Header: React.FC = () => {
               <Code className="w-3.5 h-3.5" />
               <span>Tracking Code</span>
             </button>
-          )}
-
-          {/* Live Visitor Indicator (Only when inside a website) */}
-          {mounted && !isAuthPage && !isControlPanel && selectedWebsite && (
-            <Link
-              href="/realtime"
-              className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold hover:bg-emerald-100 transition-all shrink-0"
-            >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
-              </span>
-              <span className="tabular-nums">
-                {selectedWebsite.activeVisitors || 1} <span className="hidden sm:inline">online</span>
-              </span>
-            </Link>
           )}
 
           {/* User Account Dropdown */}
@@ -283,8 +268,12 @@ export const Header: React.FC = () => {
                   <div className="flex items-center gap-2 truncate">
                     <Globe className="w-4 h-4 text-[#1d5b9f] shrink-0" />
                     <div className="truncate">
-                      <div className="font-bold text-slate-800 truncate">{selectedWebsite.name}</div>
-                      <div className="text-[10px] text-slate-400 font-mono truncate">{selectedWebsite.domain}</div>
+                      <div className="font-bold text-slate-800 truncate">
+                        {selectedWebsite.name}
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-mono truncate">
+                        {selectedWebsite.domain}
+                      </div>
                     </div>
                   </div>
                   <a

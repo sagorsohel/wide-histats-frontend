@@ -10,6 +10,31 @@ export interface ApiResponse<T = any> {
 class ApiClient {
   private isRefreshing = false;
   private refreshPromise: Promise<string | null> | null = null;
+  private cache = new Map<string, { data: ApiResponse<any>; timestamp: number; ttl: number }>();
+
+  public clearCache(filter?: string) {
+    if (filter) {
+      const keysToDelete: string[] = [];
+      this.cache.forEach((_, key) => {
+        if (key.includes(filter)) {
+          keysToDelete.push(key);
+        }
+      });
+      keysToDelete.forEach((k) => this.cache.delete(k));
+    } else {
+      this.cache.clear();
+    }
+  }
+
+  public getCached<T = any>(endpoint: string): ApiResponse<T> | null {
+    const entry = this.cache.get(endpoint);
+    if (!entry) return null;
+    if (Date.now() - entry.timestamp > entry.ttl) {
+      this.cache.delete(endpoint);
+      return null;
+    }
+    return entry.data as ApiResponse<T>;
+  }
 
   public getAccessToken(): string | null {
     if (typeof window === "undefined") return null;
@@ -65,6 +90,7 @@ class ApiClient {
 
   public clearAuth() {
     if (typeof window === "undefined") return;
+    this.clearCache();
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("histat_user");
@@ -177,25 +203,69 @@ class ApiClient {
     }
   }
 
-  get<T = any>(endpoint: string) {
-    return this.request<T>(endpoint, { method: "GET" });
+  async get<T = any>(
+    endpoint: string,
+    options?: { skipCache?: boolean; ttlMs?: number }
+  ): Promise<ApiResponse<T>> {
+    // 0ms instant return if valid response is cached in RAM
+    if (!options?.skipCache) {
+      const cached = this.getCached<T>(endpoint);
+      if (cached) {
+        return cached;
+      }
+    }
+
+    const res = await this.request<T>(endpoint, { method: "GET" });
+
+    // Cache successful GET responses in memory
+    if (res.success) {
+      let ttl = options?.ttlMs;
+      if (!ttl) {
+        if (endpoint.includes("/analytics/realtime")) {
+          ttl = 3000; // 3 seconds for realtime
+        } else if (endpoint.includes("/websites")) {
+          ttl = 60000; // 1 minute for website telemetry / control panel
+        } else if (endpoint.includes("/analytics/")) {
+          ttl = 30000; // 30 seconds for analytics reports
+        } else {
+          ttl = 15000; // 15 seconds default
+        }
+      }
+
+      this.cache.set(endpoint, {
+        data: res,
+        timestamp: Date.now(),
+        ttl,
+      });
+
+      // Keep cache size bounded
+      if (this.cache.size > 200) {
+        const oldestKey = this.cache.keys().next().value;
+        if (oldestKey) this.cache.delete(oldestKey);
+      }
+    }
+
+    return res;
   }
 
-  post<T = any>(endpoint: string, body?: any) {
+  async post<T = any>(endpoint: string, body?: any) {
+    this.clearCache();
     return this.request<T>(endpoint, {
       method: "POST",
       body: body ? JSON.stringify(body) : undefined,
     });
   }
 
-  patch<T = any>(endpoint: string, body?: any) {
+  async patch<T = any>(endpoint: string, body?: any) {
+    this.clearCache();
     return this.request<T>(endpoint, {
       method: "PATCH",
       body: body ? JSON.stringify(body) : undefined,
     });
   }
 
-  delete<T = any>(endpoint: string) {
+  async delete<T = any>(endpoint: string) {
+    this.clearCache();
     return this.request<T>(endpoint, { method: "DELETE" });
   }
 }

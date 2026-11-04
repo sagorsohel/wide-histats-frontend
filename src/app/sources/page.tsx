@@ -29,16 +29,27 @@ import { ReferrerBrandIcon } from "@/components/common/BrandIcons";
 import { useTabFocus } from "@/hooks/useTabFocus";
 import { HistatsCalendar, CustomDateWindow } from "@/components/analytics/HistatsCalendar";
 
+// Module-level memory cache for 0ms instant display when navigating to Referring Sites
+let memorySourcesCache: {
+  siteId: string;
+  range: RangeOption;
+  customWindow: CustomDateWindow | null;
+  data: SourcesData | null;
+} | null = null;
+
 type SortField = "rank" | "referrerUrl" | "newVisitors" | "visitors" | "pageviews" | "ppv" | "avgDuration" | "bounceRate";
 type SortDirection = "asc" | "desc";
 
 export default function SourcesPage() {
   const { selectedWebsite } = useWebsite();
-  const [range, setRange] = useState<RangeOption>("today");
-  const [customWindow, setCustomWindow] = useState<CustomDateWindow | null>(null);
+
+  const isCached = !!(selectedWebsite?.id && memorySourcesCache?.siteId === selectedWebsite.id && memorySourcesCache.data);
+
+  const [range, setRange] = useState<RangeOption>(() => (isCached && memorySourcesCache ? memorySourcesCache.range : "today"));
+  const [customWindow, setCustomWindow] = useState<CustomDateWindow | null>(() => (isCached && memorySourcesCache ? memorySourcesCache.customWindow : null));
   const [showNewAndLost, setShowNewAndLost] = useState(false);
-  const [data, setData] = useState<SourcesData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<SourcesData | null>(() => (isCached && memorySourcesCache ? memorySourcesCache.data : null));
+  const [loading, setLoading] = useState(!isCached);
 
   // Search & Pagination & Sorting state
   const [searchQuery, setSearchQuery] = useState("");
@@ -62,7 +73,7 @@ export default function SourcesPage() {
     return { from: from.toISOString(), to: now.toISOString() };
   }, []);
 
-  const hasDataRef = React.useRef(false);
+  const hasDataRef = React.useRef(isCached);
   const activeSiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
   activeSiteIdRef.current = selectedWebsite?.id || null;
 
@@ -103,6 +114,14 @@ export default function SourcesPage() {
         if (res.success && res.data) {
           setData(res.data);
           hasDataRef.current = true;
+
+          // Save in module cache for 0ms instant display on subsequent link navigation
+          memorySourcesCache = {
+            siteId,
+            range,
+            customWindow: win || null,
+            data: res.data,
+          };
         }
       } catch (err) {
         console.error(err);
@@ -135,9 +154,12 @@ export default function SourcesPage() {
     if (selectedWebsite?.id && selectedWebsite.id !== prevWebsiteIdRef.current) {
       prevWebsiteIdRef.current = selectedWebsite.id;
       activeSiteIdRef.current = selectedWebsite.id;
+      memorySourcesCache = null;
       setData(null);
       hasDataRef.current = false;
       setLoading(true);
+      loadSources(false, selectedWebsite.id);
+    } else if (selectedWebsite?.id && !hasDataRef.current) {
       loadSources(false, selectedWebsite.id);
     }
   }, [selectedWebsite?.id, loadSources]);

@@ -422,17 +422,8 @@ export default function SummaryPage() {
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <KpiCard
-          title="Active Online"
-          value={overview?.activeVisitors || 0}
-          subtitle="Visitors active right now"
-          icon={Activity}
-          highlight
-          badge={{ text: "LIVE", positive: true }}
-          loading={loading && !overview}
-        />
+      {/* KPI Cards Grid (Active Online removed per user request) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <KpiCard
           title="Period Visitors"
           value={formatNumber(overview?.uniqueVisitors || 0)}

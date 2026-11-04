@@ -813,11 +813,12 @@ export default function RealtimeHistatsPage() {
                         <div className="w-3 h-3 bg-slate-200 rounded shrink-0" />
                         <div className="h-3.5 bg-slate-200 rounded w-2/3 max-w-[460px]" />
                       </div>
-                      <div className="flex items-center gap-1.5 w-28 shrink-0">
+                      <div className="hidden sm:flex items-center gap-1.5 w-28 shrink-0">
                         <div className="w-4 h-3 bg-slate-200 rounded shrink-0" />
                         <div className="h-3.5 w-16 bg-slate-200 rounded" />
                       </div>
-                      <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                        <div className="w-4 h-3 bg-slate-200 rounded shrink-0 sm:hidden" />
                         <div className="w-3.5 h-3.5 bg-slate-200 rounded-full" />
                         <div className="w-3.5 h-3.5 bg-slate-200 rounded-full" />
                       </div>
@@ -861,8 +862,8 @@ export default function RealtimeHistatsPage() {
                         </a>
                       </div>
 
-                      {/* Geolocation Country & City */}
-                      <div className="flex items-center gap-1.5 text-slate-600 shrink-0 min-w-[130px] justify-start">
+                      {/* Geolocation Country & City (Visible on desktop/tablet, hidden on mobile phone) */}
+                      <div className="hidden sm:flex items-center gap-1.5 text-slate-600 shrink-0 min-w-[120px] max-w-[160px] justify-start text-[11px]">
                         <CountryFlag code={hit.countryCode} />
                         <span className="truncate">
                           {hit.city && hit.city !== hit.countryCode
@@ -874,8 +875,24 @@ export default function RealtimeHistatsPage() {
                         </span>
                       </div>
 
-                      {/* Browser & Device/OS icon */}
-                      <div className="flex items-center gap-2 shrink-0">
+                      {/* Right side: Country flag (on phone) + Browser icon + Device/OS icon */}
+                      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                        {/* On phone: show Country Flag on the right side with browser and OS icons */}
+                        <span
+                          className="sm:hidden inline-flex items-center shrink-0"
+                          title={
+                            hit.city && hit.city !== hit.countryCode
+                              ? hit.city
+                              : getCountryName(
+                                  hit.countryCode,
+                                  hit.country || "Online",
+                                )
+                          }
+                        >
+                          <CountryFlag code={hit.countryCode} />
+                        </span>
+
+                        {/* Browser Icon */}
                         <span
                           title={`Browser: ${hit.browser || "Browser"}`}
                           className="inline-flex items-center shrink-0"
@@ -886,7 +903,14 @@ export default function RealtimeHistatsPage() {
                             size={15}
                           />
                         </span>
-                        {getDeviceIcon(hit.deviceType, hit.os)}
+
+                        {/* Device / OS Icon */}
+                        <span
+                          className="inline-flex items-center shrink-0"
+                          title={`OS: ${hit.os || "OS"}`}
+                        >
+                          {getDeviceIcon(hit.deviceType, hit.os)}
+                        </span>
                       </div>
                     </div>
                   ))
@@ -1406,7 +1430,7 @@ export default function RealtimeHistatsPage() {
                           {/* Country Flag & Location */}
                           <div className="flex items-center gap-1.5 text-slate-700 text-xs shrink-0">
                             <CountryFlag code={hit.countryCode} />
-                            <span className="font-medium">
+                            <span className="font-medium hidden sm:inline truncate max-w-[140px]">
                               {hit.city && hit.city !== hit.countryCode
                                 ? hit.city
                                 : getCountryName(

@@ -13,7 +13,7 @@ import { useTabFocus } from "@/hooks/useTabFocus";
 
 export default function PagesReportPage() {
   const { selectedWebsite } = useWebsite();
-  const [range, setRange] = useState<RangeOption>("7d");
+  const [range, setRange] = useState<RangeOption>("today");
   const [pages, setPages] = useState<PageStat[]>([]);
   const [landingPages, setLandingPages] = useState<{ path: string; sessions: number }[]>([]);
   const [exitPages, setExitPages] = useState<{ path: string; sessions: number }[]>([]);

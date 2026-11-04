@@ -42,7 +42,7 @@ export default function SummaryPage() {
   const { user, loading: authLoading } = useAuth();
   const { selectedWebsite, websites } = useWebsite();
 
-  const [range, setRange] = useState<RangeOption>("7d");
+  const [range, setRange] = useState<RangeOption>("today");
   const [overview, setOverview] = useState<OverviewStats | null>(null);
   const [timeseries, setTimeseries] = useState<TimeseriesPoint[]>([]);
   const [pages, setPages] = useState<PageStat[]>([]);

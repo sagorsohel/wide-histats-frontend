@@ -14,7 +14,7 @@ import { useTabFocus } from "@/hooks/useTabFocus";
 
 export default function GeographyPage() {
   const { selectedWebsite } = useWebsite();
-  const [range, setRange] = useState<RangeOption>("7d");
+  const [range, setRange] = useState<RangeOption>("today");
   const [countries, setCountries] = useState<CountryStat[]>([]);
   const [cities, setCities] = useState<CityStat[]>([]);
   const [loading, setLoading] = useState(true);

@@ -14,7 +14,7 @@ import { useTabFocus } from "@/hooks/useTabFocus";
 
 export default function DevicesReportPage() {
   const { selectedWebsite } = useWebsite();
-  const [range, setRange] = useState<RangeOption>("7d");
+  const [range, setRange] = useState<RangeOption>("today");
   const [devices, setDevices] = useState<DeviceStat[]>([]);
   const [browsers, setBrowsers] = useState<BrowserStat[]>([]);
   const [osList, setOsList] = useState<OsStat[]>([]);

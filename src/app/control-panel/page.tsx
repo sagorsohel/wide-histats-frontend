@@ -18,6 +18,8 @@ import {
   Globe,
   Code,
   Check,
+  AlertTriangle,
+  Trash2,
 } from "lucide-react";
 
 export default function ControlPanelPage() {
@@ -39,6 +41,8 @@ export default function ControlPanelPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [deleteConfirmSite, setDeleteConfirmSite] = useState<Website | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Dynamic live snapshot time
   const [snapshotTime, setSnapshotTime] = useState<string>(() =>
@@ -126,24 +130,22 @@ export default function ControlPanelPage() {
     }
   };
 
-  const handleDelete = async (websiteId: string, websiteName: string) => {
-    if (
-      !confirm(
-        `Are you sure you want to delete "${websiteName}"? All analytics and visitor records for this website will be permanently removed.`
-      )
-    ) {
-      return;
-    }
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirmSite) return;
+    setDeleting(true);
 
     try {
-      const res = await api.delete(`/api/v1/websites/${websiteId}`);
+      const res = await api.delete(`/api/v1/websites/${deleteConfirmSite.id}`);
       if (res.success) {
         await reloadWebsites();
+        setDeleteConfirmSite(null);
       } else {
         alert(res.message || "Failed to delete website.");
       }
     } catch (err: any) {
       alert(err.message || "Failed to delete website.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -378,7 +380,7 @@ export default function ControlPanelPage() {
 
                   {/* 5. Delete Website (Red Cross) */}
                   <button
-                    onClick={() => handleDelete(site.id, site.name)}
+                    onClick={() => setDeleteConfirmSite(site)}
                     title={`Delete ${site.name}`}
                     className="p-1 rounded text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
                   >
@@ -475,6 +477,57 @@ export default function ControlPanelPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal for deleting website */}
+      {deleteConfirmSite && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-fade-in">
+          <div className="relative w-full max-w-md rounded-2xl border border-slate-200 bg-white shadow-2xl p-6 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 shrink-0">
+                <AlertTriangle className="w-5 h-5 text-rose-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-extrabold text-base text-slate-900">
+                  Delete Website
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Are you sure you want to delete <b className="text-slate-900">{deleteConfirmSite.name}</b> (<span className="font-mono text-[#1d5b9f]">{deleteConfirmSite.domain}</span>)?
+                </p>
+              </div>
+              <button
+                onClick={() => setDeleteConfirmSite(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs leading-relaxed">
+              All analytics data, visitor logs, hourly traffic stats, and sessions for this website will be permanently removed. This action cannot be undone.
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmSite(null)}
+                disabled={deleting}
+                className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold cursor-pointer transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                disabled={deleting}
+                className="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm cursor-pointer transition-all disabled:opacity-50"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>{deleting ? "Deleting..." : "Delete Website"}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

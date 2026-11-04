@@ -5,6 +5,8 @@ export interface Website {
   trackingId: string;
   status: "active" | "paused";
   isPublic: boolean;
+  timezone?: string;
+  country?: string;
   createdAt: string;
   activeVisitors?: number;
   usersOnline?: number;

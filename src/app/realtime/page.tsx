@@ -1794,9 +1794,6 @@ export default function RealtimeHistatsPage() {
                           </span>
                         </a>
                       </div>
-                      <span className="text-slate-500 font-medium text-[11px]">
-                        {page.count} active users
-                      </span>
                     </div>
                   );
                 })

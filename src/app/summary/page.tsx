@@ -18,6 +18,7 @@ import {
 import {
   DateRangePicker,
   RangeOption,
+  CustomDateWindow,
 } from "@/components/analytics/DateRangePicker";
 import { KpiCard } from "@/components/analytics/KpiCard";
 import { VisitorChart } from "@/components/analytics/VisitorChart";
@@ -58,6 +59,7 @@ export default function SummaryPage() {
   const isCached = !!(selectedWebsite?.id && memorySummaryCache?.siteId === selectedWebsite.id && memorySummaryCache.overview);
 
   const [range, setRange] = useState<RangeOption>(() => (isCached && memorySummaryCache ? memorySummaryCache.range : "today"));
+  const [customWindow, setCustomWindow] = useState<CustomDateWindow | null>(null);
   const [overview, setOverview] = useState<OverviewStats | null>(() => (isCached && memorySummaryCache ? memorySummaryCache.overview : null));
   const [timeseries, setTimeseries] = useState<TimeseriesPoint[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.timeseries : []));
   const [pages, setPages] = useState<PageStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.pages : []));
@@ -102,7 +104,7 @@ export default function SummaryPage() {
   const activeSiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
   activeSiteIdRef.current = selectedWebsite?.id || null;
 
-  const loadData = useCallback(async (isSilent = false, overrideSiteId?: string) => {
+  const loadData = useCallback(async (isSilent = false, overrideSiteId?: string, overrideWindow?: CustomDateWindow | null) => {
     const siteId = overrideSiteId || activeSiteIdRef.current;
     if (!siteId) {
       setLoading(false);
@@ -112,7 +114,18 @@ export default function SummaryPage() {
     if (!isSilent && !hasDataRef.current) {
       setLoading(true);
     }
-    const { from, to } = getDateRange(range);
+    const win = overrideWindow !== undefined ? overrideWindow : customWindow;
+    let from: string;
+    let to: string;
+
+    if (win) {
+      from = win.from;
+      to = win.to;
+    } else {
+      const dates = getDateRange(range);
+      from = dates.from;
+      to = dates.to;
+    }
     const q = `websiteId=${siteId}&from=${from}&to=${to}`;
 
     try {
@@ -167,7 +180,20 @@ export default function SummaryPage() {
         setLoading(false);
       }
     }
-  }, [range, getDateRange]);
+  }, [range, customWindow, getDateRange]);
+
+  const handleRangeChange = (r: RangeOption) => {
+    setRange(r);
+    setCustomWindow(null);
+    hasDataRef.current = false;
+    loadData(false, undefined, null);
+  };
+
+  const handleCustomRangeChange = (win: CustomDateWindow | null) => {
+    setCustomWindow(win);
+    hasDataRef.current = false;
+    loadData(false, undefined, win);
+  };
 
   // Instantly handle website switcher change in Summary page
   const prevWebsiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
@@ -336,7 +362,12 @@ export default function SummaryPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <DateRangePicker selectedRange={range} onChange={setRange} />
+          <DateRangePicker
+            selectedRange={range}
+            onChange={handleRangeChange}
+            customWindow={customWindow}
+            onCustomRangeChange={handleCustomRangeChange}
+          />
         </div>
       </div>
 

@@ -7,6 +7,7 @@ import { PageStat } from "@/types/analytics";
 import {
   DateRangePicker,
   RangeOption,
+  CustomDateWindow,
 } from "@/components/analytics/DateRangePicker";
 import { FileText, LogIn, LogOut, ExternalLink } from "lucide-react";
 import { useTabFocus } from "@/hooks/useTabFocus";
@@ -26,6 +27,7 @@ export default function PagesReportPage() {
   const isCached = !!(selectedWebsite?.id && memoryPagesCache?.siteId === selectedWebsite.id && memoryPagesCache.pages.length > 0);
 
   const [range, setRange] = useState<RangeOption>(() => (isCached && memoryPagesCache ? memoryPagesCache.range : "today"));
+  const [customWindow, setCustomWindow] = useState<CustomDateWindow | null>(null);
   const [pages, setPages] = useState<PageStat[]>(() => (isCached && memoryPagesCache ? memoryPagesCache.pages : []));
   const [landingPages, setLandingPages] = useState<{ path: string; sessions: number }[]>(() => (isCached && memoryPagesCache ? memoryPagesCache.landingPages : []));
   const [exitPages, setExitPages] = useState<{ path: string; sessions: number }[]>(() => (isCached && memoryPagesCache ? memoryPagesCache.exitPages : []));
@@ -49,13 +51,23 @@ export default function PagesReportPage() {
   const activeSiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
   activeSiteIdRef.current = selectedWebsite?.id || null;
 
-  const loadPageData = useCallback(async (isSilent = false, overrideSiteId?: string) => {
+  const loadPageData = useCallback(async (isSilent = false, overrideSiteId?: string, overrideWindow?: CustomDateWindow | null) => {
     const siteId = overrideSiteId || activeSiteIdRef.current;
     if (!siteId) return;
     if (!isSilent && !hasDataRef.current) {
       setLoading(true);
     }
-    const { from, to } = getDateRange(range);
+    const win = overrideWindow !== undefined ? overrideWindow : customWindow;
+    let from: string;
+    let to: string;
+    if (win) {
+      from = win.from;
+      to = win.to;
+    } else {
+      const dates = getDateRange(range);
+      from = dates.from;
+      to = dates.to;
+    }
     const q = `websiteId=${siteId}&from=${from}&to=${to}&limit=50`;
 
     try {
@@ -90,7 +102,20 @@ export default function PagesReportPage() {
         setLoading(false);
       }
     }
-  }, [range, getDateRange]);
+  }, [range, customWindow, getDateRange]);
+
+  const handleRangeChange = (r: RangeOption) => {
+    setRange(r);
+    setCustomWindow(null);
+    hasDataRef.current = false;
+    loadPageData(false, undefined, null);
+  };
+
+  const handleCustomRangeChange = (win: CustomDateWindow | null) => {
+    setCustomWindow(win);
+    hasDataRef.current = false;
+    loadPageData(false, undefined, win);
+  };
 
   // Instantly handle website switcher change in Pages report
   const prevWebsiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
@@ -175,7 +200,12 @@ export default function PagesReportPage() {
           </p>
         </div>
 
-        <DateRangePicker selectedRange={range} onChange={setRange} />
+        <DateRangePicker
+          selectedRange={range}
+          onChange={handleRangeChange}
+          customWindow={customWindow}
+          onCustomRangeChange={handleCustomRangeChange}
+        />
       </div>
 
       {/* Top Pages Table */}

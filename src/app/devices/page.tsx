@@ -7,6 +7,7 @@ import { DeviceStat, BrowserStat, OsStat } from "@/types/analytics";
 import {
   DateRangePicker,
   RangeOption,
+  CustomDateWindow,
 } from "@/components/analytics/DateRangePicker";
 import { Monitor, Smartphone, Tablet, Globe, Cpu } from "lucide-react";
 import { BrowserIcon, OsIcon } from "@/components/common/BrandIcons";
@@ -27,6 +28,7 @@ export default function DevicesReportPage() {
   const isCached = !!(selectedWebsite?.id && memoryDevicesCache?.siteId === selectedWebsite.id && memoryDevicesCache.devices.length > 0);
 
   const [range, setRange] = useState<RangeOption>(() => (isCached && memoryDevicesCache ? memoryDevicesCache.range : "today"));
+  const [customWindow, setCustomWindow] = useState<CustomDateWindow | null>(null);
   const [devices, setDevices] = useState<DeviceStat[]>(() => (isCached && memoryDevicesCache ? memoryDevicesCache.devices : []));
   const [browsers, setBrowsers] = useState<BrowserStat[]>(() => (isCached && memoryDevicesCache ? memoryDevicesCache.browsers : []));
   const [osList, setOsList] = useState<OsStat[]>(() => (isCached && memoryDevicesCache ? memoryDevicesCache.osList : []));
@@ -50,13 +52,23 @@ export default function DevicesReportPage() {
   const activeSiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
   activeSiteIdRef.current = selectedWebsite?.id || null;
 
-  const loadData = useCallback(async (isSilent = false, overrideSiteId?: string) => {
+  const loadData = useCallback(async (isSilent = false, overrideSiteId?: string, overrideWindow?: CustomDateWindow | null) => {
     const siteId = overrideSiteId || activeSiteIdRef.current;
     if (!siteId) return;
     if (!isSilent && !hasDataRef.current) {
       setLoading(true);
     }
-    const { from, to } = getDateRange(range);
+    const win = overrideWindow !== undefined ? overrideWindow : customWindow;
+    let from: string;
+    let to: string;
+    if (win) {
+      from = win.from;
+      to = win.to;
+    } else {
+      const dates = getDateRange(range);
+      from = dates.from;
+      to = dates.to;
+    }
     const q = `websiteId=${siteId}&from=${from}&to=${to}`;
 
     try {
@@ -91,7 +103,20 @@ export default function DevicesReportPage() {
         setLoading(false);
       }
     }
-  }, [range, getDateRange]);
+  }, [range, customWindow, getDateRange]);
+
+  const handleRangeChange = (r: RangeOption) => {
+    setRange(r);
+    setCustomWindow(null);
+    hasDataRef.current = false;
+    loadData(false, undefined, null);
+  };
+
+  const handleCustomRangeChange = (win: CustomDateWindow | null) => {
+    setCustomWindow(win);
+    hasDataRef.current = false;
+    loadData(false, undefined, win);
+  };
 
   // Instantly handle website switcher change in Devices page
   const prevWebsiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
@@ -175,7 +200,12 @@ export default function DevicesReportPage() {
           </p>
         </div>
 
-        <DateRangePicker selectedRange={range} onChange={setRange} />
+        <DateRangePicker
+          selectedRange={range}
+          onChange={handleRangeChange}
+          customWindow={customWindow}
+          onCustomRangeChange={handleCustomRangeChange}
+        />
       </div>
 
       {/* Device Categories Cards */}

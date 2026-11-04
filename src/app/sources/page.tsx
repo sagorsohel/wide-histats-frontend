@@ -134,7 +134,7 @@ export default function SourcesPage() {
     [range, customWindow, getDateRange]
   );
 
-  const handleCalendarDateChange = (win: CustomDateWindow) => {
+  const handleCalendarDateChange = (win: CustomDateWindow | null) => {
     setCustomWindow(win);
     hasDataRef.current = false;
     loadSources(false, undefined, win);
@@ -300,23 +300,11 @@ export default function SourcesPage() {
 
         {/* RESTORE PREVIOUS DESKTOP HEADER CONTROLS (hidden on mobile, visible on desktop lg:flex) */}
         <div className="hidden lg:flex items-center gap-2">
-          {customWindow?.label && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-[#1d5b9f] border border-blue-200 rounded-lg text-xs font-bold">
-              <CalendarIcon className="w-3.5 h-3.5" />
-              {customWindow.label}
-              <button
-                type="button"
-                onClick={() => handleRangeChange("today")}
-                className="text-slate-400 hover:text-slate-700 ml-1 font-bold"
-                title="Reset to today"
-              >
-                ×
-              </button>
-            </span>
-          )}
           <DateRangePicker
             selectedRange={customWindow ? ("today" as RangeOption) : range}
             onChange={handleRangeChange}
+            customWindow={customWindow}
+            onCustomRangeChange={handleCalendarDateChange}
           />
         </div>
       </div>

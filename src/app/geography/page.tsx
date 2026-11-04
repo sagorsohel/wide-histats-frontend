@@ -7,6 +7,7 @@ import { CountryStat, CityStat } from "@/types/analytics";
 import {
   DateRangePicker,
   RangeOption,
+  CustomDateWindow,
 } from "@/components/analytics/DateRangePicker";
 import { Globe2, MapPin, Info, ArrowUpRight } from "lucide-react";
 import { CountryFlag } from "@/components/common/CountryFlag";
@@ -26,6 +27,7 @@ export default function GeographyPage() {
   const isCached = !!(selectedWebsite?.id && memoryGeoCache?.siteId === selectedWebsite.id && memoryGeoCache.countries.length > 0);
 
   const [range, setRange] = useState<RangeOption>(() => (isCached && memoryGeoCache ? memoryGeoCache.range : "today"));
+  const [customWindow, setCustomWindow] = useState<CustomDateWindow | null>(null);
   const [countries, setCountries] = useState<CountryStat[]>(() => (isCached && memoryGeoCache ? memoryGeoCache.countries : []));
   const [cities, setCities] = useState<CityStat[]>(() => (isCached && memoryGeoCache ? memoryGeoCache.cities : []));
   const [loading, setLoading] = useState(!isCached);
@@ -48,13 +50,23 @@ export default function GeographyPage() {
   const activeSiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
   activeSiteIdRef.current = selectedWebsite?.id || null;
 
-  const loadGeoData = useCallback(async (isSilent = false, overrideSiteId?: string) => {
+  const loadGeoData = useCallback(async (isSilent = false, overrideSiteId?: string, overrideWindow?: CustomDateWindow | null) => {
     const siteId = overrideSiteId || activeSiteIdRef.current;
     if (!siteId) return;
     if (!isSilent && !hasDataRef.current) {
       setLoading(true);
     }
-    const { from, to } = getDateRange(range);
+    const win = overrideWindow !== undefined ? overrideWindow : customWindow;
+    let from: string;
+    let to: string;
+    if (win) {
+      from = win.from;
+      to = win.to;
+    } else {
+      const dates = getDateRange(range);
+      from = dates.from;
+      to = dates.to;
+    }
     const q = `websiteId=${siteId}&from=${from}&to=${to}&limit=50`;
 
     try {
@@ -87,7 +99,20 @@ export default function GeographyPage() {
         setLoading(false);
       }
     }
-  }, [range, getDateRange]);
+  }, [range, customWindow, getDateRange]);
+
+  const handleRangeChange = (r: RangeOption) => {
+    setRange(r);
+    setCustomWindow(null);
+    hasDataRef.current = false;
+    loadGeoData(false, undefined, null);
+  };
+
+  const handleCustomRangeChange = (win: CustomDateWindow | null) => {
+    setCustomWindow(win);
+    hasDataRef.current = false;
+    loadGeoData(false, undefined, win);
+  };
 
   // Instantly handle website switcher change in Geography page
   const prevWebsiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
@@ -173,7 +198,12 @@ export default function GeographyPage() {
           </p>
         </div>
 
-        <DateRangePicker selectedRange={range} onChange={setRange} />
+        <DateRangePicker
+          selectedRange={range}
+          onChange={handleRangeChange}
+          customWindow={customWindow}
+          onCustomRangeChange={handleCustomRangeChange}
+        />
       </div>
 
       {/* Privacy Notice Alert per specification */}

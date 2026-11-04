@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Website } from "@/types/analytics";
-import { Copy, Check, X, Code, Globe, Laptop } from "lucide-react";
+import { Copy, Check, X, Code, Globe } from "lucide-react";
 
 interface TrackingSnippetModalProps {
   website: Website | null;
@@ -14,7 +14,6 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
   onClose,
 }) => {
   const [copied, setCopied] = useState(false);
-  const [mode, setMode] = useState<"production" | "local">("production");
 
   if (!website) return null;
 
@@ -22,13 +21,7 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
     process.env.NEXT_PUBLIC_TRACKER_URL ||
     "https://apistats.fifaonscreen.online";
 
-  const localUrl =
-    typeof window !== "undefined"
-      ? `${window.location.protocol}//${window.location.hostname}:5050`
-      : "http://localhost:5050";
-
-  const activeHost = mode === "production" ? publicTunnelUrl : localUrl;
-  const scriptUrl = `${activeHost}/tracker.js`;
+  const scriptUrl = `${publicTunnelUrl}/tracker.js`;
 
   const snippet = `<!-- Wide-Histat Analytics Tracking Code -->
 <script
@@ -61,7 +54,10 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
                 Tracking Code for {website.name}
               </h3>
               <p className="text-xs text-slate-500">
-                Domain: <span className="font-mono text-[#1d5b9f] font-semibold">{website.domain}</span>
+                Domain:{" "}
+                <span className="font-mono text-[#1d5b9f] font-semibold">
+                  {website.domain}
+                </span>
               </p>
             </div>
           </div>
@@ -75,42 +71,16 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
         </div>
 
         <p className="text-xs text-slate-600 leading-relaxed mb-3">
-          Paste this snippet inside the <code className="px-1.5 py-0.5 rounded bg-slate-100 text-[#1d5b9f] font-mono font-semibold">&lt;head&gt;</code> or right before the closing <code className="px-1.5 py-0.5 rounded bg-slate-100 text-[#1d5b9f] font-mono font-semibold">&lt;/body&gt;</code> tag of your website HTML or in your Next.js/React layout.
+          Paste this snippet inside the{" "}
+          <code className="px-1.5 py-0.5 rounded bg-slate-100 text-[#1d5b9f] font-mono font-semibold">
+            &lt;head&gt;
+          </code>{" "}
+          or right before the closing{" "}
+          <code className="px-1.5 py-0.5 rounded bg-slate-100 text-[#1d5b9f] font-mono font-semibold">
+            &lt;/body&gt;
+          </code>{" "}
+          tag of your website HTML or in your Next.js/React layout.
         </p>
-
-        {/* Environment Mode Switcher */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
-          <div className="flex flex-wrap gap-1.5">
-            <button
-              onClick={() => setMode("production")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                mode === "production"
-                  ? "bg-[#1d5b9f] text-white shadow-sm"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <Globe className="w-3.5 h-3.5" />
-              Live Website (HTTPS)
-            </button>
-            <button
-              onClick={() => setMode("local")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                mode === "local"
-                  ? "bg-white text-slate-900 shadow-sm border border-slate-200"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <Laptop className="w-3.5 h-3.5" />
-              Localhost
-            </button>
-          </div>
-          {mode === "production" && (
-            <span className="flex items-center gap-1 text-[11px] font-mono text-emerald-700 font-medium pr-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              Tunnel Active
-            </span>
-          )}
-        </div>
 
         {/* Code Snippet Box */}
         <div className="relative rounded-xl border border-slate-300 bg-[#0d1829] p-4 font-mono text-xs text-cyan-200 overflow-x-auto mb-4">
@@ -139,7 +109,9 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
 
         {/* Tracking ID badge */}
         <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-          <span className="text-slate-600 font-medium">Unique Tracking ID:</span>
+          <span className="text-slate-600 font-medium">
+            Unique Tracking ID:
+          </span>
           <span className="font-mono font-bold text-slate-900 bg-white border border-slate-200 px-2 py-0.5 rounded shadow-2xs">
             {website.trackingId}
           </span>

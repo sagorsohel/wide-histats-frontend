@@ -360,8 +360,8 @@ export default function RealtimeHistatsPage() {
     if (!selectedWebsite?.id) return [];
     let list = [...rawRecentHits];
 
-    // 1. Strict website ID filter: exclude hits explicitly belonging to another website
-    list = list.filter((hit) => !hit.websiteId || hit.websiteId === selectedWebsite.id);
+    // 1. Strict website ID filter: hits MUST have websiteId AND it must match selectedWebsite.id
+    list = list.filter((hit) => hit.websiteId && hit.websiteId === selectedWebsite.id);
 
     // 2. Strict domain & title filter
     if (selectedWebsite?.domain) {

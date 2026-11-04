@@ -65,12 +65,43 @@ export const realtimeSlice = createSlice({
         action.payload;
       if (!websiteId) return;
 
-      const current = state.byWebsite[websiteId];
-      if (current?.data) {
-        if (activeCount !== undefined) current.data.activeCount = activeCount;
-        if (activeCount5m !== undefined) current.data.activeCount5m = activeCount5m;
-        if (activeCount15m !== undefined) current.data.activeCount15m = activeCount15m;
-        if (activeVisitors !== undefined) current.data.activeVisitors = activeVisitors;
+      if (!state.byWebsite[websiteId]) {
+        state.byWebsite[websiteId] = {
+          data: {
+            activeCount: activeCount ?? 0,
+            activeCount5m: activeCount5m ?? 0,
+            activeCount15m: activeCount15m ?? 0,
+            activeVisitors: activeVisitors ?? [],
+            todayVisitors: 0,
+            todayPageviews: 0,
+            totalVisitors: 0,
+            totalPageviews: 0,
+            browsingPagesCount: activeVisitors?.length || 0,
+            topPages: [],
+            topReferrers: [],
+            recentPageviews: [],
+            countries: [],
+            devices: {},
+            sources: {},
+          } as any,
+          recentHits: [],
+          lastUpdated: Date.now(),
+        };
+      } else {
+        const current = state.byWebsite[websiteId];
+        if (!current.data) {
+          current.data = {
+            activeCount: activeCount ?? 0,
+            activeCount5m: activeCount5m ?? 0,
+            activeCount15m: activeCount15m ?? 0,
+            activeVisitors: activeVisitors ?? [],
+          } as any;
+        } else {
+          if (activeCount !== undefined) current.data.activeCount = activeCount;
+          if (activeCount5m !== undefined) current.data.activeCount5m = activeCount5m;
+          if (activeCount15m !== undefined) current.data.activeCount15m = activeCount15m;
+          if (activeVisitors !== undefined) current.data.activeVisitors = activeVisitors;
+        }
       }
     },
 

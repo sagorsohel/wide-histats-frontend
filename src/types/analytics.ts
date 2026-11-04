@@ -7,8 +7,13 @@ export interface Website {
   isPublic: boolean;
   createdAt: string;
   activeVisitors?: number;
+  usersOnline?: number;
+  visitorsToday?: number;
+  pageviewsToday?: number;
   totalVisitors?: number;
   totalPageviews?: number;
+  displayId?: string;
+  snapshotTime?: string;
 }
 
 export interface OverviewStats {

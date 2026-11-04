@@ -76,13 +76,15 @@ export const getSocket = (): Socket => {
 };
 
 export const subscribeToWebsite = (websiteId: string) => {
+  if (!websiteId) return;
   currentSubscribedWebsiteId = websiteId;
   const s = getSocket();
   if (s) {
+    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") || "" : "";
     if (!s.connected) {
       s.connect();
     } else {
-      s.emit("subscribe:website", websiteId);
+      s.emit("subscribe:website", { websiteId, token });
     }
   }
 };
@@ -105,11 +107,11 @@ export const reconnectSocketWithToken = () => {
     s.auth = { token };
     if (s.connected) {
       s.emit("auth:token", token);
-      s.disconnect();
-    }
-    s.connect();
-    if (currentSubscribedWebsiteId) {
-      s.emit("subscribe:website", currentSubscribedWebsiteId);
+      if (currentSubscribedWebsiteId) {
+        s.emit("subscribe:website", { websiteId: currentSubscribedWebsiteId, token });
+      }
+    } else {
+      s.connect();
     }
   }
 };

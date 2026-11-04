@@ -16,10 +16,10 @@ export default function RootLoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // If already logged in, redirect straight to /summary
+  // If already logged in, redirect straight to /control-panel
   useEffect(() => {
     if (!authLoading && user) {
-      router.replace("/summary");
+      router.replace("/control-panel");
     }
   }, [user, authLoading, router]);
 
@@ -42,7 +42,7 @@ export default function RootLoginPage() {
       }
 
       if (success) {
-        router.push("/summary");
+        router.push("/control-panel");
       } else {
         setError(
           isRegister

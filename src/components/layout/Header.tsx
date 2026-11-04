@@ -17,6 +17,8 @@ import {
   ExternalLink,
   Menu,
   X,
+  Sliders,
+  LayoutGrid,
 } from "lucide-react";
 
 export const Header: React.FC = () => {
@@ -24,7 +26,6 @@ export const Header: React.FC = () => {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   useEffect(() => {
@@ -37,6 +38,7 @@ export const Header: React.FC = () => {
   }, [pathname]);
 
   const isAuthPage = pathname === "/" || pathname === "/login";
+  const isControlPanel = pathname === "/control-panel" || pathname === "/websites";
 
   const { user, logout } = useAuth();
   const { websites, selectedWebsite, setSelectedWebsite, openTrackingModal } =
@@ -47,8 +49,8 @@ export const Header: React.FC = () => {
       <header className="h-16 border-b border-slate-200 bg-white sticky top-0 z-40 px-3 sm:px-4 lg:px-8 flex items-center justify-between shadow-xs shrink-0">
         {/* Left: Mobile Hamburger + Brand & Desktop Website Selector */}
         <div className="flex items-center gap-2 sm:gap-4 lg:gap-6 min-w-0">
-          {/* Mobile Menu Hamburger */}
-          {mounted && !isAuthPage && (
+          {/* Mobile Menu Hamburger (Only when inside a website with sidebar) */}
+          {mounted && !isAuthPage && !isControlPanel && (
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle navigation menu"
@@ -64,7 +66,7 @@ export const Header: React.FC = () => {
 
           {/* Logo & Brand */}
           <Link
-            href={isAuthPage ? "/" : "/summary"}
+            href={isAuthPage ? "/" : "/control-panel"}
             className="flex items-center gap-2 shrink-0"
           >
             <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-[#1d5b9f] to-[#2563eb] flex items-center justify-center text-white font-black shadow-md shadow-blue-500/20 text-sm sm:text-base">
@@ -80,101 +82,60 @@ export const Header: React.FC = () => {
             </div>
           </Link>
 
-          {/* Desktop Website Dropdown (Hidden on Mobile) */}
-          {mounted && !isAuthPage && selectedWebsite && (
-            <div className="hidden md:flex items-center gap-1.5">
-              <div className="relative">
-                <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  title={`Website: ${selectedWebsite.name} (${selectedWebsite.domain})`}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs sm:text-sm font-medium transition-all"
-                >
-                  <Globe className="w-4 h-4 text-[#1d5b9f] shrink-0" />
-                  <span className="max-w-[120px] lg:max-w-[180px] truncate">
-                    {selectedWebsite.name}
-                  </span>
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-500 ml-0.5 shrink-0" />
-                </button>
-
-                {dropdownOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setDropdownOpen(false)}
-                    />
-                    <div className="absolute left-0 mt-2 w-64 rounded-xl border border-slate-200 bg-white shadow-2xl p-1.5 z-50 animate-slide-down">
-                      <div className="text-[11px] font-semibold text-slate-500 uppercase px-2.5 py-1.5">
-                        Your Websites
-                      </div>
-                      <div className="max-h-60 overflow-y-auto space-y-0.5">
-                        {websites.map((site) => (
-                          <button
-                            key={site.id}
-                            onClick={() => {
-                              setSelectedWebsite(site);
-                              setDropdownOpen(false);
-                              if (typeof window !== "undefined") {
-                                window.dispatchEvent(
-                                  new CustomEvent("histat:website_changed", { detail: site })
-                                );
-                              }
-                            }}
-                            className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-sm transition-colors ${
-                              selectedWebsite.id === site.id
-                                ? "bg-blue-50 text-[#1d5b9f] font-semibold"
-                                : "text-slate-700 hover:bg-slate-100"
-                            }`}
-                          >
-                            <div className="flex flex-col text-left truncate">
-                              <span className="truncate">{site.name}</span>
-                              <span className="text-[11px] text-slate-400 truncate">
-                                {site.domain}
-                              </span>
-                            </div>
-                            {selectedWebsite.id === site.id && (
-                              <Check className="w-4 h-4 text-[#1d5b9f] shrink-0 ml-2" />
-                            )}
-                          </button>
-                        ))}
-                      </div>
-
-                      <div className="border-t border-slate-200 mt-1.5 pt-1.5">
-                        <Link
-                          href="/websites"
-                          onClick={() => setDropdownOpen(false)}
-                          className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-[#1d5b9f] hover:bg-blue-50 transition-colors"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                          Add New Website
-                        </Link>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Direct Open Link in New Tab */}
-              <a
-                href={
-                  selectedWebsite.domain.startsWith("http")
-                    ? selectedWebsite.domain
-                    : `https://${selectedWebsite.domain}`
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-                title={`Open ${selectedWebsite.domain} in new tab`}
-                className="p-2 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-[#1d5b9f] transition-all flex items-center justify-center shrink-0"
+          {/* Desktop Control Panel & Website Selector */}
+          {mounted && !isAuthPage && (
+            <div className="hidden md:flex items-center gap-2">
+              {/* Control Panel Button */}
+              <Link
+                href="/control-panel"
+                title="Open Control Panel (All Websites)"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all shadow-2xs ${
+                  pathname === "/control-panel" || pathname === "/websites"
+                    ? "bg-[#1d5b9f] text-white border-[#1d5b9f]"
+                    : "bg-[#f0f4f9] hover:bg-[#e2eaf5] text-[#1d5b9f] border-[#bcd0e8]"
+                }`}
               >
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+                <Sliders className="w-3.5 h-3.5" />
+                <span>Control panel</span>
+              </Link>
+
+              {/* Active Website Indicator (Read-Only - Cannot be changed from here) */}
+              {selectedWebsite && (
+                <div className="flex items-center gap-1.5">
+                  <div
+                    title={`Active Website: ${selectedWebsite.name} (${selectedWebsite.domain})`}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-800 text-xs font-semibold shadow-2xs select-none"
+                  >
+                    <Globe className="w-3.5 h-3.5 text-[#1d5b9f] shrink-0" />
+                    <span className="max-w-[120px] lg:max-w-[170px] truncate">
+                      {selectedWebsite.name}
+                    </span>
+                  </div>
+
+                  {/* Direct Open Link in New Tab */}
+                  <a
+                    href={
+                      selectedWebsite.domain.startsWith("http")
+                        ? selectedWebsite.domain
+                        : `https://${selectedWebsite.domain}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={`Open ${selectedWebsite.domain} in new tab`}
+                    className="p-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-500 hover:text-[#1d5b9f] transition-all flex items-center justify-center shrink-0 shadow-2xs"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              )}
             </div>
           )}
         </div>
 
         {/* Right Controls */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          {/* Tracking Code Snippet Button (Desktop) */}
-          {mounted && !isAuthPage && selectedWebsite && (
+          {/* Tracking Code Snippet Button (Desktop - only when inside a website) */}
+          {mounted && !isAuthPage && !isControlPanel && selectedWebsite && (
             <button
               onClick={() => openTrackingModal(selectedWebsite)}
               className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#1d5b9f]/30 bg-[#1d5b9f]/10 text-[#1d5b9f] hover:bg-[#1d5b9f]/20 text-xs font-semibold transition-all shadow-2xs"
@@ -184,8 +145,8 @@ export const Header: React.FC = () => {
             </button>
           )}
 
-          {/* Live Visitor Indicator */}
-          {mounted && !isAuthPage && selectedWebsite && (
+          {/* Live Visitor Indicator (Only when inside a website) */}
+          {mounted && !isAuthPage && !isControlPanel && selectedWebsite && (
             <Link
               href="/realtime"
               className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold hover:bg-emerald-100 transition-all shrink-0"
@@ -311,84 +272,58 @@ export const Header: React.FC = () => {
               </button>
             </div>
 
-            {/* Mobile Website Selector */}
+            {/* Mobile Website Indicator (Read-Only) */}
             {selectedWebsite && (
               <div className="p-3 border-b border-slate-200 bg-blue-50/50 space-y-2">
-                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                  <span>Current Website</span>
-                  {websites.length > 1 && (
-                    <span className="text-[9px] text-[#1d5b9f] bg-blue-100 px-1.5 py-0.5 rounded">
-                      {websites.length} Websites
-                    </span>
-                  )}
+                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  Current Website
                 </div>
 
-                {websites.length > 1 ? (
-                  <div className="max-h-48 overflow-y-auto space-y-1">
-                    {websites.map((site) => (
-                      <button
-                        key={site.id}
-                        onClick={() => {
-                          setSelectedWebsite(site);
-                          setMobileMenuOpen(false);
-                        }}
-                        className={`w-full flex items-center justify-between p-2 rounded-lg text-xs transition-colors ${
-                          selectedWebsite.id === site.id
-                            ? "bg-white border-2 border-[#1d5b9f] text-[#1d5b9f] font-bold shadow-xs"
-                            : "bg-white/80 border border-slate-200 text-slate-700 hover:bg-white"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 truncate text-left">
-                          <Globe
-                            className={`w-3.5 h-3.5 shrink-0 ${
-                              selectedWebsite.id === site.id
-                                ? "text-[#1d5b9f]"
-                                : "text-slate-400"
-                            }`}
-                          />
-                          <div className="truncate">
-                            <div className="truncate font-semibold">{site.name}</div>
-                            <div className="text-[10px] text-slate-400 truncate font-mono">
-                              {site.domain}
-                            </div>
-                          </div>
-                        </div>
-                        {selectedWebsite.id === site.id && (
-                          <Check className="w-4 h-4 text-[#1d5b9f] shrink-0 ml-1.5" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between bg-white border border-slate-200 rounded-lg p-2 text-xs">
-                    <div className="flex items-center gap-2 truncate">
-                      <Globe className="w-4 h-4 text-[#1d5b9f] shrink-0" />
-                      <span className="font-bold text-slate-800 truncate">
-                        {selectedWebsite.name}
-                      </span>
+                <div className="flex items-center justify-between bg-white border border-slate-200 rounded-lg p-2.5 text-xs shadow-2xs">
+                  <div className="flex items-center gap-2 truncate">
+                    <Globe className="w-4 h-4 text-[#1d5b9f] shrink-0" />
+                    <div className="truncate">
+                      <div className="font-bold text-slate-800 truncate">{selectedWebsite.name}</div>
+                      <div className="text-[10px] text-slate-400 font-mono truncate">{selectedWebsite.domain}</div>
                     </div>
-                    <a
-                      href={`https://${selectedWebsite.domain}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#1d5b9f] hover:underline"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
                   </div>
-                )}
+                  <a
+                    href={
+                      selectedWebsite.domain.startsWith("http")
+                        ? selectedWebsite.domain
+                        : `https://${selectedWebsite.domain}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-[#1d5b9f] hover:bg-slate-100"
+                    title="Open website in new tab"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
 
-                {/* Tracking Code Action */}
-                <button
-                  onClick={() => {
-                    openTrackingModal(selectedWebsite);
-                    setMobileMenuOpen(false);
-                  }}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-[#1d5b9f] text-white text-xs font-bold shadow-xs hover:bg-[#174880] transition-colors"
-                >
-                  <Code className="w-3.5 h-3.5" />
-                  <span>Get Tracking Counter Code</span>
-                </button>
+                {/* Control Panel and Tracking Code Actions */}
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <Link
+                    href="/control-panel"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg bg-blue-100 hover:bg-blue-200 text-[#1d5b9f] text-xs font-bold transition-colors text-center"
+                  >
+                    <Sliders className="w-3.5 h-3.5 shrink-0" />
+                    <span>Control Panel</span>
+                  </Link>
+
+                  <button
+                    onClick={() => {
+                      openTrackingModal(selectedWebsite);
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg bg-[#1d5b9f] text-white text-xs font-bold shadow-xs hover:bg-[#174880] transition-colors text-center"
+                  >
+                    <Code className="w-3.5 h-3.5 shrink-0" />
+                    <span>Counter Code</span>
+                  </button>
+                </div>
               </div>
             )}
 

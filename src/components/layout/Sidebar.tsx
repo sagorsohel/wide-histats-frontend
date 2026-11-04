@@ -15,6 +15,7 @@ import {
   Shield,
   Layers,
   Search,
+  Sliders,
 } from "lucide-react";
 
 interface NavGroup {
@@ -57,7 +58,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     title: "Account & Settings",
     items: [
-      { href: "/websites", label: "Websites", icon: Globe },
+      { href: "/control-panel", label: "Control panel", icon: Sliders },
       { href: "/settings", label: "Settings", icon: Settings },
     ],
   },
@@ -71,8 +72,14 @@ export const Sidebar: React.FC = () => {
     setMounted(true);
   }, []);
 
-  // Hide sidebar on login pages or until mounted
-  if (!mounted || pathname === "/" || pathname === "/login") {
+  // Hide sidebar on login pages, root, and control panel
+  if (
+    !mounted ||
+    pathname === "/" ||
+    pathname === "/login" ||
+    pathname === "/control-panel" ||
+    pathname === "/websites"
+  ) {
     return null;
   }
 
@@ -91,7 +98,8 @@ export const Sidebar: React.FC = () => {
                 const Icon = item.icon;
                 const isActive =
                   pathname === item.href ||
-                  (item.href === "/summary" && pathname === "/summery");
+                  (item.href === "/summary" && pathname === "/summery") ||
+                  (item.href === "/control-panel" && pathname === "/websites");
 
                 return (
                   <Link

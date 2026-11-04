@@ -36,7 +36,7 @@ export default function LoginPage() {
       }
 
       if (success) {
-        router.push("/summary");
+        router.push("/control-panel");
       } else {
         setError(
           isRegister

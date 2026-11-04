@@ -230,7 +230,10 @@ export default function RealtimeHistatsPage() {
 
     return () => {
       window.removeEventListener("histat:socket_sync", handleSilentSync);
-      window.removeEventListener("histat:silent_system_refresh", handleSilentSync);
+      window.removeEventListener(
+        "histat:silent_system_refresh",
+        handleSilentSync,
+      );
       window.removeEventListener("online", handleSilentSync);
       window.removeEventListener("focus", handleSilentSync);
     };
@@ -397,9 +400,12 @@ export default function RealtimeHistatsPage() {
   // 100% Real-time hits stream - Guaranteed Descending (Latest visitor ALWAYS on top) & strictly domain-isolated
   const displayHits = useMemo(() => {
     if (!selectedWebsite?.id) return [];
-    let list = rawRecentHits.length > 0
-      ? [...rawRecentHits]
-      : (data?.recentPageviews ? [...data.recentPageviews] : []);
+    let list =
+      rawRecentHits.length > 0
+        ? [...rawRecentHits]
+        : data?.recentPageviews
+          ? [...data.recentPageviews]
+          : [];
 
     // 1. Strict website ID filter: hits MUST match selectedWebsite.id
     list = list.filter(
@@ -417,7 +423,10 @@ export default function RealtimeHistatsPage() {
       list = list.map((hit) => {
         let cleanUrl = hit.url;
         if (cleanUrl) {
-          cleanUrl = cleanUrl.replace(/techblog\.example\.com|example\.com/g, siteDomain);
+          cleanUrl = cleanUrl.replace(
+            /techblog\.example\.com|example\.com/g,
+            siteDomain,
+          );
         } else {
           cleanUrl = `https://${siteDomain}${hit.path || "/"}`;
         }
@@ -434,7 +443,12 @@ export default function RealtimeHistatsPage() {
       const timeB = b.viewedAt ? new Date(b.viewedAt).getTime() : 0;
       return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
     });
-  }, [rawRecentHits, data?.recentPageviews, selectedWebsite?.id, selectedWebsite?.domain]);
+  }, [
+    rawRecentHits,
+    data?.recentPageviews,
+    selectedWebsite?.id,
+    selectedWebsite?.domain,
+  ]);
 
   // 100% Real-time popular pages - strictly isolated to current domain
   const displayPages = useMemo(() => {
@@ -514,25 +528,41 @@ export default function RealtimeHistatsPage() {
 
   // Active Count & Pages Count - Exact Real-Time Count Right Now with Website Context Fallback
   const onlineCount = useMemo(() => {
-    if (data?.activeCount !== undefined && data.activeCount > 0) return data.activeCount;
-    if (selectedWebsite?.usersOnline !== undefined && selectedWebsite.usersOnline > 0) return selectedWebsite.usersOnline;
+    if (data?.activeCount !== undefined && data.activeCount > 0)
+      return data.activeCount;
+    if (
+      selectedWebsite?.usersOnline !== undefined &&
+      selectedWebsite.usersOnline > 0
+    )
+      return selectedWebsite.usersOnline;
     return data?.activeCount ?? 0;
   }, [data?.activeCount, selectedWebsite?.usersOnline]);
 
   const todayVisitorsCount = useMemo(() => {
-    if (data?.todayVisitors !== undefined && data.todayVisitors > 0) return data.todayVisitors;
-    if (selectedWebsite?.visitorsToday !== undefined && selectedWebsite.visitorsToday > 0) return selectedWebsite.visitorsToday;
+    if (data?.todayVisitors !== undefined && data.todayVisitors > 0)
+      return data.todayVisitors;
+    if (
+      selectedWebsite?.visitorsToday !== undefined &&
+      selectedWebsite.visitorsToday > 0
+    )
+      return selectedWebsite.visitorsToday;
     return data?.todayVisitors ?? 0;
   }, [data?.todayVisitors, selectedWebsite?.visitorsToday]);
 
   const todayPageviewsCount = useMemo(() => {
-    if (data?.todayPageviews !== undefined && data.todayPageviews > 0) return data.todayPageviews;
-    if (selectedWebsite?.pageviewsToday !== undefined && selectedWebsite.pageviewsToday > 0) return selectedWebsite.pageviewsToday;
+    if (data?.todayPageviews !== undefined && data.todayPageviews > 0)
+      return data.todayPageviews;
+    if (
+      selectedWebsite?.pageviewsToday !== undefined &&
+      selectedWebsite.pageviewsToday > 0
+    )
+      return selectedWebsite.pageviewsToday;
     return data?.todayPageviews ?? 0;
   }, [data?.todayPageviews, selectedWebsite?.pageviewsToday]);
 
   const browsingPagesCount = useMemo(() => {
-    if (data?.browsingPagesCount !== undefined && data.browsingPagesCount > 0) return data.browsingPagesCount;
+    if (data?.browsingPagesCount !== undefined && data.browsingPagesCount > 0)
+      return data.browsingPagesCount;
     if (data?.topPages && data.topPages.length > 0) return data.topPages.length;
     return Math.max(1, Math.min(25, Math.floor(onlineCount / 14)));
   }, [data?.browsingPagesCount, data?.topPages, onlineCount]);
@@ -623,21 +653,6 @@ export default function RealtimeHistatsPage() {
             </span>
             <ExternalLink className="w-3.5 h-3.5 text-blue-200 group-hover:text-white" />
           </a>
-        </div>
-
-        <div className="flex items-center gap-4 text-[11px]">
-          {selectedWebsite && (
-            <button
-              onClick={() => openTrackingModal(selectedWebsite)}
-              className="text-yellow-300 hover:text-white font-semibold flex items-center gap-1 hover:underline cursor-pointer"
-            >
-              <Code className="w-3.5 h-3.5 text-yellow-300" />
-              <span>Counter CODE</span>
-            </button>
-          )}
-          <span className="text-blue-300 font-semibold cursor-pointer hover:underline">
-            Website Account
-          </span>
         </div>
       </div>
 

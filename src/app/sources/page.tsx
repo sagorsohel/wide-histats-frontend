@@ -298,9 +298,10 @@ export default function SourcesPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* RESTORE PREVIOUS DESKTOP HEADER CONTROLS (hidden on mobile, visible on desktop lg:flex) */}
+        <div className="hidden lg:flex items-center gap-2">
           {customWindow?.label && (
-            <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-[#1d5b9f] border border-blue-200 rounded-lg text-xs font-bold">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-[#1d5b9f] border border-blue-200 rounded-lg text-xs font-bold">
               <CalendarIcon className="w-3.5 h-3.5" />
               {customWindow.label}
               <button
@@ -320,106 +321,113 @@ export default function SourcesPage() {
         </div>
       </div>
 
-      {/* TOP SECTION: HISTATS SUMMARY TABLE + CALENDAR CONTROLS */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        {/* LEFT: Histats Summary Comparison Table (8 cols on lg) */}
-        <div className="lg:col-span-7 xl:col-span-8 bg-white rounded-xl border border-[#c5d8eb] shadow-xs overflow-hidden">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gradient-to-b from-[#2e6ea9] to-[#20558a] text-white text-xs font-bold border-b border-[#1b4b7c]">
-                <th className="py-2.5 px-3.5 tracking-wide text-left font-bold text-white/95">
-                  Summary
-                </th>
-                <th className="py-2.5 px-3.5 text-right tracking-wide font-bold text-white/95 w-28">
-                  Stats summary
-                </th>
-                <th className="py-2.5 px-3.5 text-right tracking-wide font-bold text-white/95 w-32">
-                  Referrer summary
-                </th>
-                <th className="py-2.5 px-3.5 text-right tracking-wide font-bold text-white/95 w-28">
-                  (%)
-                </th>
-              </tr>
-            </thead>
-            <tbody className="text-xs font-medium divide-y divide-slate-100">
-              {/* Row 1: Total page views */}
-              <tr className="hover:bg-slate-50/80 transition-colors">
-                <td className="py-2.5 px-3.5 text-slate-800 font-medium">
-                  Total page views
-                </td>
-                <td className="py-2.5 px-3.5 text-right font-bold text-slate-900 tabular-nums">
-                  {loading && !data ? "..." : summary.totalPageviews.toLocaleString()}
-                </td>
-                <td className="py-2.5 px-3.5 text-right font-bold text-slate-900 tabular-nums">
-                  {loading && !data ? "..." : summary.refPageviews.toLocaleString()}
-                </td>
-                <td className="py-2.5 px-3.5 text-right font-semibold text-[#1d5b9f] tabular-nums">
-                  {loading && !data ? "..." : `(${summary.pageviewsPct.toFixed(2)} %)`}
-                </td>
-              </tr>
+      {/* TOP SECTION: TABLE & CALENDAR */}
+      {/* On mobile (< lg): Calendar is FIRST (order-1), Summary Table is SECOND (order-2) */}
+      {/* On desktop (lg+): Summary Table is LEFT (lg:order-1 lg:col-span-7 xl:col-span-8), Calendar is RIGHT (lg:order-2 lg:col-span-5 xl:col-span-4) - EXACT PREVIOUS VIEW! */}
+      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-5 items-start">
+        {/* 1. HISTATS SUMMARY COMPARISON TABLE (order-2 on mobile, lg:order-1 on desktop) */}
+        <div className="w-full order-2 lg:order-1 lg:col-span-7 xl:col-span-8 bg-white rounded-xl border border-[#c5d8eb] shadow-xs overflow-hidden">
+          <div className="w-full overflow-x-auto scrollbar-none">
+            <table className="w-full text-left border-collapse min-w-full">
+              <thead>
+                <tr className="bg-gradient-to-r from-[#1d5796] via-[#215f9e] to-[#1a4a7f] text-white text-[11px] sm:text-xs font-bold border-b border-[#164375]">
+                  <th className="py-2.5 px-2.5 sm:px-3.5 tracking-wide text-left font-bold text-white/95">
+                    Summary
+                  </th>
+                  <th className="py-2.5 px-2 sm:px-3 text-right tracking-wide font-bold text-white/95 whitespace-nowrap lg:w-28">
+                    Stats summary
+                  </th>
+                  <th className="py-2.5 px-2 sm:px-3 text-right tracking-wide font-bold text-white/95 whitespace-nowrap lg:w-32">
+                    Referrer summary
+                  </th>
+                  <th className="py-2.5 px-2 sm:px-3 text-right tracking-wide font-bold text-white/95 whitespace-nowrap lg:w-28">
+                    (%)
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="text-[11px] sm:text-xs font-medium divide-y divide-slate-100">
+                {/* Row 1: Total page views */}
+                <tr className="hover:bg-slate-50/80 transition-colors">
+                  <td className="py-2.5 px-2.5 sm:px-3.5 text-slate-800 font-medium">
+                    Total page views
+                  </td>
+                  <td className="py-2.5 px-2 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
+                    {loading && !data ? "..." : summary.totalPageviews.toLocaleString()}
+                  </td>
+                  <td className="py-2.5 px-2 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
+                    {loading && !data ? "..." : summary.refPageviews.toLocaleString()}
+                  </td>
+                  <td className="py-2.5 px-2 sm:px-3 text-right font-semibold text-[#1d5b9f] tabular-nums whitespace-nowrap">
+                    {loading && !data ? "..." : `(${summary.pageviewsPct.toFixed(2)} %)`}
+                  </td>
+                </tr>
 
-              {/* Row 2: Total visitors (Iconic Soft Green Highlight in Histats) */}
-              <tr className="bg-[#eef8e8] hover:bg-[#e4f3dc] transition-colors border-y border-[#d5ebcc]">
-                <td className="py-2.5 px-3.5 text-emerald-950 font-bold flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-600 inline-block shrink-0" />
-                  Total visitors
-                </td>
-                <td className="py-2.5 px-3.5 text-right font-black text-slate-950 tabular-nums">
-                  {loading && !data ? "..." : summary.totalVisitors.toLocaleString()}
-                </td>
-                <td className="py-2.5 px-3.5 text-right font-black text-slate-950 tabular-nums">
-                  {loading && !data ? "..." : summary.refVisitors.toLocaleString()}
-                </td>
-                <td className="py-2.5 px-3.5 text-right font-bold text-[#1d5b9f] tabular-nums">
-                  {loading && !data ? "..." : `(${summary.visitorsPct.toFixed(2)} %)`}
-                </td>
-              </tr>
+                {/* Row 2: Total visitors (Iconic Soft Green Highlight in Histats matching user's photo!) */}
+                <tr className="bg-[#eef8e8] hover:bg-[#e4f3dc] transition-colors border-y border-[#d5ebcc]">
+                  <td className="py-2.5 px-2.5 sm:px-3.5 text-emerald-950 font-bold flex items-center gap-1.5 whitespace-nowrap">
+                    <span className="w-2 h-2 rounded-full bg-emerald-600 inline-block shrink-0" />
+                    <span>Total visitors</span>
+                  </td>
+                  <td className="py-2.5 px-2 sm:px-3 text-right font-black text-slate-950 tabular-nums whitespace-nowrap">
+                    {loading && !data ? "..." : summary.totalVisitors.toLocaleString()}
+                  </td>
+                  <td className="py-2.5 px-2 sm:px-3 text-right font-black text-slate-950 tabular-nums whitespace-nowrap">
+                    {loading && !data ? "..." : summary.refVisitors.toLocaleString()}
+                  </td>
+                  <td className="py-2.5 px-2 sm:px-3 text-right font-bold text-[#1d5b9f] tabular-nums whitespace-nowrap">
+                    {loading && !data ? "..." : `(${summary.visitorsPct.toFixed(2)} %)`}
+                  </td>
+                </tr>
 
-              {/* Row 3: Total new visitors */}
-              <tr className="hover:bg-slate-50/80 transition-colors">
-                <td className="py-2.5 px-3.5 text-slate-800 font-medium">
-                  Total new visitors
-                </td>
-                <td className="py-2.5 px-3.5 text-right font-bold text-slate-900 tabular-nums">
-                  {loading && !data ? "..." : summary.totalNewVisitors.toLocaleString()}
-                </td>
-                <td className="py-2.5 px-3.5 text-right font-bold text-slate-900 tabular-nums">
-                  {loading && !data ? "..." : summary.refNewVisitors.toLocaleString()}
-                </td>
-                <td className="py-2.5 px-3.5 text-right font-semibold text-[#1d5b9f] tabular-nums">
-                  {loading && !data ? "..." : `(${summary.newVisitorsPct.toFixed(2)} %)`}
-                </td>
-              </tr>
+                {/* Row 3: Total new visitors */}
+                <tr className="hover:bg-slate-50/80 transition-colors">
+                  <td className="py-2.5 px-2.5 sm:px-3.5 text-slate-800 font-medium">
+                    Total new visitors
+                  </td>
+                  <td className="py-2.5 px-2 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
+                    {loading && !data ? "..." : summary.totalNewVisitors.toLocaleString()}
+                  </td>
+                  <td className="py-2.5 px-2 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
+                    {loading && !data ? "..." : summary.refNewVisitors.toLocaleString()}
+                  </td>
+                  <td className="py-2.5 px-2 sm:px-3 text-right font-semibold text-[#1d5b9f] tabular-nums whitespace-nowrap">
+                    {loading && !data ? "..." : `(${summary.newVisitorsPct.toFixed(2)} %)`}
+                  </td>
+                </tr>
 
-              {/* Row 4: Page views per visit */}
-              <tr className="hover:bg-slate-50/80 transition-colors">
-                <td className="py-2.5 px-3.5 text-slate-800 font-medium">
-                  Page views per visit
-                </td>
-                <td className="py-2.5 px-3.5 text-right font-bold text-slate-900 tabular-nums">
-                  {loading && !data ? "..." : summary.totalPpv.toFixed(2)}
-                </td>
-                <td className="py-2.5 px-3.5 text-right font-bold text-slate-900 tabular-nums">
-                  {loading && !data ? "..." : summary.refPpv.toFixed(1)}
-                </td>
-                <td
-                  className={`py-2.5 px-3.5 text-right font-semibold tabular-nums ${
-                    summary.ppvDiffPct < 0 ? "text-rose-600" : "text-[#1d5b9f]"
-                  }`}
-                >
-                  {loading && !data
-                    ? "..."
-                    : `(${summary.ppvDiffPct > 0 ? "+" : ""}${summary.ppvDiffPct.toFixed(1)}%)`}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                {/* Row 4: Page views per visit */}
+                <tr className="hover:bg-slate-50/80 transition-colors">
+                  <td className="py-2.5 px-2.5 sm:px-3.5 text-slate-800 font-medium">
+                    Page views per visit
+                  </td>
+                  <td className="py-2.5 px-2 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
+                    {loading && !data ? "..." : summary.totalPpv.toFixed(2)}
+                  </td>
+                  <td className="py-2.5 px-2 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
+                    {loading && !data ? "..." : summary.refPpv.toFixed(1)}
+                  </td>
+                  <td
+                    className={`py-2.5 px-2 sm:px-3 text-right font-semibold tabular-nums whitespace-nowrap ${
+                      summary.ppvDiffPct < 0 ? "text-rose-600" : "text-[#1d5b9f]"
+                    }`}
+                  >
+                    {loading && !data
+                      ? "..."
+                      : `(${summary.ppvDiffPct > 0 ? "+" : ""}${summary.ppvDiffPct.toFixed(1)}%)`}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        {/* RIGHT: Real Interactive Histats Calendar & Controls (4-5 cols) */}
-        <div className="lg:col-span-5 xl:col-span-4">
+        {/* 2. CALENDAR CARD (order-1 on mobile: positioned ABOVE table; lg:order-2 on desktop: positioned on the RIGHT side!) */}
+        <div className="w-full order-1 lg:order-2 lg:col-span-5 xl:col-span-4 bg-white rounded-xl border border-[#c5d8eb] shadow-xs p-3.5 sm:p-4">
           <HistatsCalendar
+            selectedPreset={range}
+            onPresetChange={handleRangeChange}
             onDateChange={handleCalendarDateChange}
+            currentWindow={customWindow}
             showNewAndLost={showNewAndLost}
             onToggleNewAndLost={setShowNewAndLost}
           />

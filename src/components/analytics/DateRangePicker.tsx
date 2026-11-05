@@ -306,16 +306,16 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
 
   return (
     <div ref={containerRef} className={`relative inline-block ${className}`}>
-      {/* MAIN PICKER BAR */}
-      <div className="flex items-center gap-1 p-1 rounded-lg bg-white border border-slate-200 shadow-2xs max-w-full overflow-x-auto whitespace-nowrap scrollbar-none">
-        {/* INTERACTIVE CALENDAR ICON BUTTON (Pressing opens calendar on all pages & mobile) */}
+      {/* MAIN PICKER BAR (Apple Frosted Glass) */}
+      <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_4px_16px_rgba(0,0,0,0.03)] max-w-full overflow-x-auto whitespace-nowrap scrollbar-none">
+        {/* INTERACTIVE CALENDAR ICON BUTTON */}
         <button
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
-          className={`p-1.5 sm:px-2 rounded-md transition-all flex items-center justify-center cursor-pointer shrink-0 relative ${
+          className={`p-1.5 sm:px-2 rounded-xl transition-all flex items-center justify-center cursor-pointer shrink-0 relative ${
             isOpen || customWindow
-              ? "bg-blue-50 text-[#1d5b9f] ring-1 ring-blue-300"
-              : "text-slate-500 hover:text-[#1d5b9f] hover:bg-slate-100"
+              ? "bg-blue-50 text-blue-600 ring-1 ring-blue-300"
+              : "text-slate-500 hover:text-blue-600 hover:bg-white/60"
           }`}
           title="Open interactive calendar to pick any date or custom range"
         >
@@ -325,9 +325,9 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
           )}
         </button>
 
-        {/* ACTIVE CUSTOM RANGE BADGE (When custom date range is selected) */}
+        {/* ACTIVE CUSTOM RANGE BADGE */}
         {customWindow?.label ? (
-          <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-[#1d5b9f] border border-blue-200 rounded-md text-xs font-bold shrink-0">
+          <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200/80 rounded-xl text-xs font-bold shrink-0 shadow-2xs">
             <span>{customWindow.label}</span>
             <button
               type="button"
@@ -340,7 +340,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
           </div>
         ) : null}
 
-        {/* STANDARD PRESET BUTTONS (Today, Yesterday, Last 7 Days, Last 30 Days) */}
+        {/* STANDARD PRESET BUTTONS */}
         {presetOptions.map((opt) => {
           const isActive = !customWindow && selectedRange === opt.id;
           return (
@@ -348,10 +348,10 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
               key={opt.id}
               type="button"
               onClick={() => handlePresetSelect(opt.id)}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer ${
                 isActive
-                  ? "bg-[#1d5b9f] text-white shadow-xs"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-600/25"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-white/70"
               }`}
             >
               {opt.label}

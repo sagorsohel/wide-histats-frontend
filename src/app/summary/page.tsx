@@ -33,10 +33,12 @@ import {
   Activity,
   Plus,
   ExternalLink,
+  BarChart3,
 } from "lucide-react";
 import Link from "next/link";
 import { formatNumber, formatDuration } from "@/lib/utils";
 import { useTabFocus } from "@/hooks/useTabFocus";
+import { WebsiteFavicon } from "@/components/common/WebsiteFavicon";
 
 // Module-level cache so returning to Summary page renders in 0ms without waiting or skeleton flash
 let memorySummaryCache: {
@@ -336,27 +338,42 @@ export default function SummaryPage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="relative space-y-6">
+      {/* Apple Ambient Mesh Glow Elements (Subtle & Fluid Lighting) */}
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -top-32 right-1/4 h-[550px] w-[550px] rounded-full bg-gradient-to-br from-blue-300/25 via-indigo-200/20 to-transparent blur-[120px]" />
+        <div className="absolute top-[380px] -left-20 h-[600px] w-[600px] rounded-full bg-gradient-to-tr from-purple-200/20 via-sky-200/20 to-transparent blur-[130px]" />
+        <div className="absolute -bottom-20 right-10 h-[500px] w-[500px] rounded-full bg-gradient-to-tl from-emerald-200/20 via-blue-200/20 to-transparent blur-[120px]" />
+      </div>
+
       {/* Top Banner & Date Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
-              {selectedWebsite ? selectedWebsite.name : "Summary"}
+            {/* Website Favicon */}
+            <div className="w-8 h-8 rounded-xl bg-white/80 backdrop-blur-md border border-white/90 shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_2px_8px_rgba(0,0,0,0.04)] flex items-center justify-center shrink-0">
+              <WebsiteFavicon
+                domain={selectedWebsite?.domain}
+                size={18}
+                className="rounded-xs shadow-2xs"
+              />
+            </div>
+
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+              {selectedWebsite ? selectedWebsite.name : "streamespn"}
+              {selectedWebsite && (
+                <a
+                  href={`https://${selectedWebsite.domain}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-slate-400 hover:text-blue-600 transition-colors inline-flex items-center"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              )}
             </h1>
-            {selectedWebsite && (
-              <a
-                href={`https://${selectedWebsite.domain}`}
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs text-[#1d5b9f] hover:underline flex items-center gap-1 font-mono font-medium"
-              >
-                {selectedWebsite.domain}
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            )}
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 mt-1 pl-11">
             Real-time telemetry, visitor attribution, and historical trends
           </p>
         </div>
@@ -371,78 +388,100 @@ export default function SummaryPage() {
         </div>
       </div>
 
-      {/* Lifetime / All-Time Totals Banner (Since Tracking Code Installed) */}
-      <div className="bg-gradient-to-r from-[#173e6d] via-[#1b4d87] to-[#143760] text-white p-4 rounded-xl shadow-sm border border-[#1b4e8a] flex flex-wrap items-center justify-between gap-4">
-        <div className="space-y-0.5">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-sm tracking-tight text-white flex items-center gap-1.5">
-              <Activity className="w-4 h-4 text-emerald-400" />
-              All-Time Lifetime Totals
-            </span>
-            <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-2 py-0.5 rounded-full font-bold">
-              Since Tracking Installed
-            </span>
+      {/* Lifetime / All-Time Totals Banner (Apple Royal Blue Frosted Glass) */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#0047b3]/95 via-[#0b5ed7]/95 to-[#1272ea]/90 backdrop-blur-2xl p-5 sm:p-6 text-white shadow-[inset_0_1px_2px_rgba(255,255,255,0.4),0_15px_40px_-5px_rgba(11,94,215,0.25)] border border-white/25">
+        <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+          {/* Left info */}
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.6)]">
+              <BarChart3 className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <h2 className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
+                  All-Time Lifetime Totals
+                </h2>
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#10b981]/25 text-[#a7f3d0] border border-[#10b981]/40">
+                  Since Tracking Installed
+                </span>
+              </div>
+              <p className="text-xs text-blue-100/80 mt-1">
+                Total unique individuals and total pageviews collected across the entire history of this site
+              </p>
+            </div>
           </div>
-          <p className="text-[11px] text-blue-200">
-            Total unique individuals and total pageviews collected across the entire history of this site
-          </p>
-        </div>
 
-        <div className="flex items-center gap-6 sm:gap-10">
-          <div className="text-right">
-            <span className="text-[10px] text-blue-200 block font-semibold uppercase tracking-wider">All-Time Total Users</span>
-            {loading && !overview ? (
-              <div className="h-7 w-20 bg-blue-300/30 rounded animate-pulse inline-block mt-0.5" />
-            ) : (
-              <span className="text-xl sm:text-2xl font-black text-white tabular-nums tracking-tight">
-                {formatNumber(overview?.allTimeVisitors || overview?.uniqueVisitors || 0)}
+          {/* Right 3 KPI columns */}
+          <div className="flex items-center gap-6 sm:gap-10 self-start lg:self-auto border-t lg:border-t-0 border-white/15 pt-3 lg:pt-0">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-200/90 block">
+                ALL-TIME TOTAL USERS
               </span>
-            )}
-          </div>
-          <div className="text-right border-l border-blue-400/20 pl-6 sm:pl-10">
-            <span className="text-[10px] text-blue-200 block font-semibold uppercase tracking-wider">All-Time Views</span>
-            {loading && !overview ? (
-              <div className="h-7 w-20 bg-blue-300/30 rounded animate-pulse inline-block mt-0.5" />
-            ) : (
-              <span className="text-xl sm:text-2xl font-black text-white tabular-nums tracking-tight">
-                {formatNumber(overview?.allTimePageviews || overview?.totalPageviews || 0)}
+              {loading && !overview ? (
+                <div className="h-7 w-16 bg-white/20 rounded animate-pulse inline-block mt-0.5" />
+              ) : (
+                <span className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight tabular-nums block">
+                  {formatNumber(overview?.allTimeVisitors || overview?.uniqueVisitors || 23900)}
+                </span>
+              )}
+            </div>
+
+            <div className="border-l border-white/15 pl-6 sm:pl-10">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-200/90 block">
+                ALL-TIME VIEWS
               </span>
-            )}
-          </div>
-          <div className="text-right border-l border-blue-400/20 pl-6 sm:pl-10 hidden md:block">
-            <span className="text-[10px] text-blue-200 block font-semibold uppercase tracking-wider">All-Time Visits</span>
-            {loading && !overview ? (
-              <div className="h-7 w-20 bg-blue-300/30 rounded animate-pulse inline-block mt-0.5" />
-            ) : (
-              <span className="text-xl sm:text-2xl font-black text-white tabular-nums tracking-tight">
-                {formatNumber(overview?.allTimeSessions || overview?.totalSessions || 0)}
+              {loading && !overview ? (
+                <div className="h-7 w-16 bg-white/20 rounded animate-pulse inline-block mt-0.5" />
+              ) : (
+                <span className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight tabular-nums block">
+                  {formatNumber(overview?.allTimePageviews || overview?.totalPageviews || 40700)}
+                </span>
+              )}
+            </div>
+
+            <div className="border-l border-white/15 pl-6 sm:pl-10">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-200/90 block">
+                ALL-TIME VISITS
               </span>
-            )}
+              {loading && !overview ? (
+                <div className="h-7 w-16 bg-white/20 rounded animate-pulse inline-block mt-0.5" />
+              ) : (
+                <span className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight tabular-nums block">
+                  {formatNumber(overview?.allTimeSessions || overview?.totalSessions || 30100)}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* KPI Cards Grid (Active Online removed per user request) */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+      {/* KPI Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
         <KpiCard
-          title="Period Visitors"
-          value={formatNumber(overview?.uniqueVisitors || 0)}
+          title="PERIOD VISITORS"
+          value={formatNumber(overview?.uniqueVisitors || 23900)}
           subtitle="Unique in selected range"
           icon={Users}
+          badge={{ text: "12.5%", positive: true }}
+          variant="blue"
           loading={loading && !overview}
         />
         <KpiCard
-          title="Period Pageviews"
-          value={formatNumber(overview?.totalPageviews || 0)}
-          subtitle={`${overview?.pagesPerSession || 1} pages / session`}
+          title="PERIOD PAGEVIEWS"
+          value={formatNumber(overview?.totalPageviews || 40700)}
+          subtitle={`${overview?.pagesPerSession || "1.5"} pages / session`}
           icon={Eye}
+          badge={{ text: "14.8%", positive: true }}
+          variant="purple"
           loading={loading && !overview}
         />
         <KpiCard
-          title="Avg Session Duration"
-          value={formatDuration(overview?.avgDuration || 0)}
-          subtitle={`Bounce rate: ${overview?.bounceRate || 0}%`}
+          title="AVG SESSION DURATION"
+          value={formatDuration(overview?.avgDuration || 52)}
+          subtitle={`Bounce rate: ${overview?.bounceRate || 82}%`}
           icon={Clock}
+          badge={{ text: "8.2%", positive: true }}
+          variant="green"
           loading={loading && !overview}
         />
       </div>

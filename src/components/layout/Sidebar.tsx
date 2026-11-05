@@ -107,23 +107,29 @@ export const Sidebar: React.FC = () => {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+                    className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
                       isActive
-                        ? "bg-[#e5eff9] text-[#1c5396] font-bold border-l-3 border-[#1c5396] shadow-2xs"
-                        : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                        ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold shadow-md shadow-blue-500/25"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                     }`}
                   >
-                    <div className="flex items-center gap-2 truncate">
+                    <div className="flex items-center gap-2.5 truncate">
                       <Icon
-                        className={`w-3.5 h-3.5 ${
-                          isActive ? "text-[#1c5396]" : "text-slate-500"
+                        className={`w-4 h-4 ${
+                          isActive ? "text-white" : "text-slate-500"
                         }`}
                       />
                       <span className="truncate">{item.label}</span>
                     </div>
 
                     {item.badge && (
-                      <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-300 animate-pulse">
+                      <span
+                        className={`px-1.5 py-0.2 rounded-full text-[9px] font-bold ${
+                          isActive
+                            ? "bg-white/20 text-white border border-white/40"
+                            : "bg-emerald-100 text-emerald-700 border border-emerald-300 animate-pulse"
+                        }`}
+                      >
                         {item.badge}
                       </span>
                     )}
@@ -135,20 +141,34 @@ export const Sidebar: React.FC = () => {
         ))}
       </nav>
 
-      {/* Mini histats counter promo banner at bottom matching screenshot */}
-      <div className="mt-auto p-3 rounded-lg border border-slate-200 bg-white text-xs shadow-2xs">
-        <div className="font-bold text-slate-800 text-[11px] flex items-center gap-1 mb-1">
-          <span className="text-[#1d5b9f]">Wide-Histat</span> Counter
+      {/* Mini counter promo banner at bottom matching screenshot */}
+      <div className="mt-auto pt-4 space-y-3">
+        <div className="p-3.5 rounded-2xl border border-blue-100 bg-gradient-to-b from-blue-50/70 to-white text-center shadow-xs space-y-2">
+          <div className="w-10 h-10 mx-auto rounded-xl bg-blue-100/50 flex items-center justify-center text-xl">
+            🚀
+          </div>
+          <div>
+            <div className="font-extrabold text-slate-900 text-xs">
+              Wide-Histat Counter
+            </div>
+            <p className="text-slate-500 text-[10px] leading-relaxed mt-0.5">
+              Real-time visitor presence &amp; intelligent traffic analysis.
+            </p>
+          </div>
+          <Link
+            href="/websites"
+            className="w-full inline-flex items-center justify-center gap-1 py-1.5 px-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] shadow-sm transition-all"
+          >
+            <span>Get tracker code</span>
+            <span className="text-xs">&rarr;</span>
+          </Link>
         </div>
-        <p className="text-slate-500 text-[10px] leading-tight mb-2">
-          High-precision real-time visitor presence & telemetry tracking.
-        </p>
-        <Link
-          href="/websites"
-          className="text-[#1d5b9f] hover:underline font-semibold text-[10px] flex items-center gap-1"
-        >
-          Get Tracker Code &rarr;
-        </Link>
+
+        {/* Footer */}
+        <div className="text-center text-[10px] text-slate-400 space-y-0.5 pb-2">
+          <div>&copy; 2026 Wide-Histat</div>
+          <div>Made with ❤️ in Bangladesh</div>
+        </div>
       </div>
     </aside>
   );

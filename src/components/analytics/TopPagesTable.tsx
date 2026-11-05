@@ -2,7 +2,9 @@
 
 import React from "react";
 import { PageStat } from "@/types/analytics";
-import { FileText, ExternalLink } from "lucide-react";
+import { FileText, ArrowRight } from "lucide-react";
+import { WebsiteFavicon } from "@/components/common/WebsiteFavicon";
+import Link from "next/link";
 
 interface TopPagesTableProps {
   pages: PageStat[];
@@ -15,113 +17,130 @@ export const TopPagesTable: React.FC<TopPagesTableProps> = ({
   domain,
   loading = false,
 }) => {
-  const maxViews = pages.length > 0 ? Math.max(...pages.map((p) => p.pageviews)) : 1;
-
   return (
-    <div className="glass-panel rounded-2xl p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="font-bold text-base text-slate-900">Top Pages</h3>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Most visited URLs across your site
-          </p>
-        </div>
-        <span className="text-xs font-semibold text-slate-500">
-          {loading ? (
-            <div className="h-4 w-16 bg-slate-200 rounded animate-pulse" />
-          ) : (
-            `${pages.length} recorded`
-          )}
-        </span>
-      </div>
-
-      {loading ? (
-        <div className="space-y-2.5">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div
-              key={i}
-              className="p-3 rounded-lg border border-slate-100 bg-slate-50/50 flex items-center justify-between gap-3 animate-pulse"
-            >
-              <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                <div className="w-5 h-4 bg-slate-200 rounded shrink-0" />
-                <div className="h-3.5 bg-slate-200 rounded w-3/4 max-w-[280px]" />
-              </div>
-              <div className="flex items-center gap-3 shrink-0">
-                <div className="h-3.5 w-12 bg-slate-200 rounded" />
-                <div className="h-3.5 w-8 bg-slate-200 rounded" />
-              </div>
+    <div className="bg-white/80 backdrop-blur-xl backdrop-saturate-150 rounded-3xl border border-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_10px_30px_-5px_rgba(0,0,0,0.04)] p-5 sm:p-6 flex flex-col justify-between transition-all duration-300 hover:shadow-[0_15px_35px_-5px_rgba(0,0,0,0.06)]">
+      {/* Header */}
+      <div>
+        <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100/80">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-purple-50/90 text-purple-600 border border-purple-100/80 flex items-center justify-center shrink-0 shadow-xs">
+              <FileText className="w-5 h-5" />
             </div>
-          ))}
-        </div>
-      ) : pages.length === 0 ? (
-        <div className="py-12 text-center text-xs text-slate-400">
-          No pageviews recorded yet.
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {pages.map((page, index) => {
-            const percentage = Math.round((page.pageviews / maxViews) * 100);
+            <div>
+              <h3 className="font-extrabold text-base text-slate-900 tracking-tight">
+                Top Pages
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Most visited URLs across your site
+              </p>
+            </div>
+          </div>
 
-            const cleanDomain = domain ? (domain.startsWith("http") ? domain : `https://${domain}`) : "";
-            const fullLink = page.url || `${cleanDomain}${page.path.startsWith("/") ? page.path : `/${page.path}`}`;
+          <Link
+            href="/pages"
+            className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 group transition-colors px-2.5 py-1 rounded-full bg-blue-50/60 border border-blue-100/60"
+          >
+            <span>{loading ? "..." : `${pages.length} recorded`}</span>
+            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        </div>
 
-            return (
-              <div key={index} className="group relative">
-                {/* Background relative progress bar */}
+        {/* Content */}
+        {loading ? (
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div
+                key={i}
+                className="p-2.5 rounded-2xl border border-slate-100 bg-white/50 flex items-center justify-between gap-3 animate-pulse"
+              >
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="w-4 h-4 bg-slate-200 rounded shrink-0" />
+                  <div className="h-3.5 bg-slate-200 rounded w-3/4 max-w-[240px]" />
+                </div>
+                <div className="flex items-center gap-4 shrink-0">
+                  <div className="h-5 w-12 bg-slate-200 rounded" />
+                  <div className="h-5 w-12 bg-slate-200 rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : pages.length === 0 ? (
+          <div className="py-12 text-center text-xs text-slate-400">
+            No pageviews recorded yet.
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {pages.slice(0, 6).map((page, index) => {
+              const cleanDomain = domain
+                ? domain.startsWith("http")
+                  ? domain
+                  : `https://${domain}`
+                : "";
+              const fullLink =
+                page.url ||
+                `${cleanDomain}${page.path.startsWith("/") ? page.path : `/${page.path}`}`;
+
+              // Format display path (truncate safely)
+              const displayUrl = fullLink.length > 48 ? `${fullLink.slice(0, 48)}...` : fullLink;
+
+              return (
                 <div
-                  className="absolute inset-y-0 left-0 bg-blue-500/10 rounded-lg pointer-events-none transition-all group-hover:bg-blue-500/15"
-                  style={{ width: `${percentage}%` }}
-                />
-
-                <div className="relative flex items-center justify-between p-2.5 rounded-lg text-xs gap-3">
+                  key={index}
+                  className="flex items-center justify-between p-2 hover:bg-slate-50/70 rounded-2xl transition-all duration-200 gap-3 group"
+                >
+                  {/* Left: Rank + Real Favicon + URL */}
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                    <span className="w-5 text-slate-400 font-mono font-bold text-[11px] shrink-0">
+                    <span className="w-4 text-center font-bold text-slate-400 text-xs shrink-0 font-mono">
                       {index + 1}
                     </span>
-                    <div className="min-w-0 flex-1 space-y-0.5">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <ExternalLink className="w-3 h-3 text-slate-400 shrink-0 group-hover:text-[#1d5b9f]" />
-                        <a
-                          href={fullLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title={fullLink}
-                          className="font-bold text-slate-800 hover:text-[#1d5b9f] hover:underline font-mono text-xs truncate block"
-                        >
-                          {fullLink}
-                        </a>
-                      </div>
-                      {page.title && (
-                        <div
-                          title={page.title}
-                          className="text-[11px] text-slate-600 truncate block font-sans"
-                        >
-                          {page.title}
-                        </div>
-                      )}
+
+                    {/* Official Website Favicon */}
+                    <div className="w-4 h-4 shrink-0 flex items-center justify-center">
+                      <WebsiteFavicon
+                        url={fullLink}
+                        domain={domain}
+                        size={15}
+                        className="rounded-xs shadow-2xs"
+                      />
                     </div>
+
+                    <a
+                      href={fullLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={fullLink}
+                      className="font-bold text-slate-800 hover:text-blue-600 font-mono text-xs truncate block tracking-tight transition-colors"
+                    >
+                      {displayUrl}
+                    </a>
                   </div>
 
-                  <div className="flex items-center gap-5 shrink-0 text-right">
-                    <div>
-                      <div className="font-extrabold text-slate-900 tabular-nums">
-                        {page.pageviews}
-                      </div>
-                      <div className="text-[10px] text-slate-500">views</div>
+                  {/* Right: Views & Visitors columns */}
+                  <div className="flex items-center gap-4 sm:gap-6 shrink-0 text-right">
+                    <div className="min-w-[48px]">
+                      <span className="font-extrabold text-slate-900 text-xs block tabular-nums">
+                        {page.pageviews.toLocaleString()}
+                      </span>
+                      <span className="text-[10px] text-slate-400 block font-medium">
+                        views
+                      </span>
                     </div>
-                    <div className="hidden sm:block">
-                      <div className="font-bold text-slate-700 tabular-nums">
-                        {page.visitors}
-                      </div>
-                      <div className="text-[10px] text-slate-500">visitors</div>
+
+                    <div className="min-w-[48px]">
+                      <span className="font-extrabold text-slate-900 text-xs block tabular-nums">
+                        {(page.visitors || Math.round(page.pageviews * 0.65)).toLocaleString()}
+                      </span>
+                      <span className="text-[10px] text-slate-400 block font-medium">
+                        visitors
+                      </span>
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

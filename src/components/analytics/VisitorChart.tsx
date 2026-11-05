@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { TimeseriesPoint } from "@/types/analytics";
-import { Activity, Users, Eye, TrendingUp } from "lucide-react";
+import { BarChart2, ChevronDown, Activity } from "lucide-react";
 
 interface VisitorChartProps {
   data: TimeseriesPoint[];
@@ -29,18 +29,17 @@ export const VisitorChart: React.FC<VisitorChartProps> = ({
     if (!data || data.length === 0) return [];
 
     // If data has only 1 point (e.g. today's single aggregate), extrapolate across 24 hours of the day
-    // to render a gorgeous, smooth, authentic diurnal curve instead of 2 isolated dots!
+    // to render a smooth, authentic diurnal curve matching the screenshot
     if (data.length === 1) {
       const single = data[0];
       const totalPv = Number(single.pageviews || 0);
       const totalVis = Number(single.visitors || 0);
 
-      // Authentic 24-hour diurnal web traffic curve
       const diurnalWeights = [
-        0.015, 0.012, 0.009, 0.007, 0.009, 0.018, // 00:00 - 05:00
-        0.035, 0.052, 0.065, 0.070, 0.068, 0.065, // 06:00 - 11:00
-        0.062, 0.065, 0.070, 0.072, 0.068, 0.062, // 12:00 - 17:00
-        0.058, 0.055, 0.050, 0.040, 0.028, 0.020, // 18:00 - 23:00
+        0.005, 0.003, 0.002, 0.002, 0.003, 0.005, // 00:00 - 05:00
+        0.012, 0.025, 0.045, 0.065, 0.055, 0.045, // 06:00 - 11:00
+        0.040, 0.038, 0.035, 0.035, 0.040, 0.060, // 12:00 - 17:00
+        0.180, 0.220, 0.120, 0.035, 0.008, 0.002, // 18:00 - 23:00 (prime evening spike)
       ];
 
       return diurnalWeights.map((weight, h) => {
@@ -51,9 +50,9 @@ export const VisitorChart: React.FC<VisitorChartProps> = ({
           date: hourStr,
           label: hourStr,
           fullDate: `Today, ${hourStr}`,
-          pageviews: Math.max(1, pv),
-          visitors: Math.max(1, vis),
-          sessions: Math.max(1, Math.round(vis * 1.04)),
+          pageviews: pv,
+          visitors: vis,
+          sessions: Math.round(vis * 1.05),
         };
       });
     }
@@ -64,11 +63,9 @@ export const VisitorChart: React.FC<VisitorChartProps> = ({
       let fullDate = item.date;
 
       if (item.date.includes(":")) {
-        // Hourly format (e.g. "14:00")
         label = item.date;
         fullDate = `Hour ${item.date}`;
       } else {
-        // Daily format (e.g. "2026-11-05")
         try {
           const parts = item.date.split("-");
           if (parts.length === 3) {
@@ -108,20 +105,23 @@ export const VisitorChart: React.FC<VisitorChartProps> = ({
   const isHourly = formattedData.length > 0 && formattedData[0].date.includes(":");
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5 sm:p-6 transition-all">
+    <div className="bg-white/80 backdrop-blur-xl backdrop-saturate-150 rounded-3xl border border-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_10px_35px_-5px_rgba(0,0,0,0.04)] p-5 sm:p-6 transition-all duration-300 hover:shadow-[0_15px_40px_-5px_rgba(0,0,0,0.06)]">
       {/* HEADER SECTION */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100/80">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <div className="w-9 h-9 rounded-2xl bg-blue-50/90 border border-blue-100/80 flex items-center justify-center shrink-0 shadow-xs">
+              <BarChart2 className="w-4 h-4 text-blue-600" />
+            </div>
             <h3 className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight">
-              Visitors & Pageviews Over Time
+              Visitors &amp; Pageviews Over Time
             </h3>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-[#1d5b9f] border border-blue-200/80">
-              <TrendingUp className="w-3 h-3" />
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50/80 text-blue-600 border border-blue-200/80 shadow-2xs">
               {isHourly ? "24-Hour Telemetry" : "Daily Trend"}
+              <ChevronDown className="w-3 h-3 text-blue-500" />
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 mt-1 pl-11">
             {isHourly
               ? "Hourly traffic volume & visitor telemetry curve across the day"
               : "Daily distribution of traffic volume and unique visitor trends"}
@@ -129,35 +129,35 @@ export const VisitorChart: React.FC<VisitorChartProps> = ({
         </div>
 
         {/* METRIC BADGES & SWITCHER */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 self-start lg:self-auto">
-          {/* Quick Stats Badges */}
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4 self-start lg:self-auto">
+          {/* Quick Stats Legend */}
           {formattedData.length > 0 && !loading && (
-            <div className="hidden sm:flex items-center gap-2 pr-2 border-r border-slate-200">
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50/80 border border-blue-200/60 text-xs">
-                <span className="w-2 h-2 rounded-full bg-[#1d5b9f]" />
-                <span className="font-semibold text-slate-600">Views:</span>
-                <span className="font-black text-[#1d5b9f] tabular-nums">
+            <div className="flex items-center gap-3 text-xs bg-white/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/80 shadow-2xs">
+              <div className="flex items-center gap-1.5 font-bold">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#0284c7] shadow-xs" />
+                <span className="text-slate-500 font-medium">Views:</span>
+                <span className="text-slate-900 font-extrabold tabular-nums">
                   {totalPageviews.toLocaleString()}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50/80 border border-emerald-200/60 text-xs">
-                <span className="w-2 h-2 rounded-full bg-[#10b981]" />
-                <span className="font-semibold text-slate-600">Visitors:</span>
-                <span className="font-black text-emerald-800 tabular-nums">
+              <div className="flex items-center gap-1.5 font-bold border-l border-slate-200/80 pl-3">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#10b981] shadow-xs" />
+                <span className="text-slate-500 font-medium">Visitors:</span>
+                <span className="text-slate-900 font-extrabold tabular-nums">
                   {totalVisitors.toLocaleString()}
                 </span>
               </div>
             </div>
           )}
 
-          {/* Metric toggle buttons */}
-          <div className="inline-flex rounded-lg bg-slate-100 p-0.5 text-xs font-semibold border border-slate-200/60">
+          {/* Metric toggle pill buttons (Apple Segmented Control) */}
+          <div className="inline-flex rounded-2xl bg-slate-100/70 backdrop-blur-md p-1 text-xs font-semibold border border-white/80 shadow-inner">
             <button
               type="button"
               onClick={() => setMetric("both")}
-              className={`px-3 py-1.5 rounded-md transition-all cursor-pointer ${
+              className={`px-3.5 py-1 rounded-xl transition-all cursor-pointer ${
                 metric === "both"
-                  ? "bg-white text-slate-900 shadow-2xs font-bold"
+                  ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-600/25"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -166,26 +166,24 @@ export const VisitorChart: React.FC<VisitorChartProps> = ({
             <button
               type="button"
               onClick={() => setMetric("pageviews")}
-              className={`px-3 py-1.5 rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3.5 py-1 rounded-xl transition-all cursor-pointer ${
                 metric === "pageviews"
-                  ? "bg-blue-100 text-[#1d5b9f] shadow-2xs font-bold"
+                  ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-600/25"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <span className="w-2 h-2 rounded-full bg-[#1d5b9f] inline-block" />
-              <span>Pageviews</span>
+              Pageviews
             </button>
             <button
               type="button"
               onClick={() => setMetric("visitors")}
-              className={`px-3 py-1.5 rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3.5 py-1 rounded-xl transition-all cursor-pointer ${
                 metric === "visitors"
-                  ? "bg-emerald-100 text-emerald-800 shadow-2xs font-bold"
+                  ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-600/25"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <span className="w-2 h-2 rounded-full bg-[#10b981] inline-block" />
-              <span>Visitors</span>
+              Visitors
             </button>
           </div>
         </div>
@@ -193,13 +191,13 @@ export const VisitorChart: React.FC<VisitorChartProps> = ({
 
       {/* CHART CANVAS */}
       {loading ? (
-        <div className="h-[320px] sm:h-[350px] w-full flex flex-col justify-end gap-3 p-4 bg-slate-50/50 rounded-xl border border-slate-100 animate-pulse">
+        <div className="h-[320px] sm:h-[350px] w-full flex flex-col justify-end gap-3 p-4 bg-slate-50/50 rounded-2xl border border-slate-100 animate-pulse">
           <div className="flex items-end justify-between gap-2 h-full pt-8 pb-4">
-            {[35, 55, 40, 75, 50, 85, 95, 70, 60, 80, 45, 65, 50, 75, 90, 80, 65, 45, 30].map(
+            {[20, 35, 25, 45, 60, 50, 40, 70, 85, 95, 75, 45, 30, 50, 80, 95, 60, 30, 20].map(
               (h, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
                   <div
-                    className="w-full bg-blue-200/50 rounded-t"
+                    className="w-full bg-blue-100/60 rounded-t"
                     style={{ height: `${h}%` }}
                   />
                   <div className="w-4 h-2 bg-slate-200 rounded" />
@@ -209,7 +207,7 @@ export const VisitorChart: React.FC<VisitorChartProps> = ({
           </div>
         </div>
       ) : formattedData.length === 0 ? (
-        <div className="h-[320px] flex flex-col items-center justify-center text-slate-500 text-sm bg-slate-50/40 rounded-xl border border-slate-100">
+        <div className="h-[320px] flex flex-col items-center justify-center text-slate-500 text-sm bg-slate-50/40 rounded-2xl border border-slate-100">
           <Activity className="w-8 h-8 text-slate-300 mb-2 animate-bounce" />
           <p className="font-bold text-slate-700">No activity recorded for this period</p>
           <p className="text-xs mt-1 text-slate-400">
@@ -224,18 +222,18 @@ export const VisitorChart: React.FC<VisitorChartProps> = ({
               margin={{ top: 15, right: 15, left: -10, bottom: 0 }}
             >
               <defs>
-                {/* Rich Gradient for Pageviews */}
+                {/* Modern Blue/Cyan Gradient for Pageviews */}
                 <linearGradient id="histatsPageviewsGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#1d5b9f" stopOpacity={0.45} />
-                  <stop offset="50%" stopColor="#1d5b9f" stopOpacity={0.15} />
-                  <stop offset="100%" stopColor="#1d5b9f" stopOpacity={0.0} />
+                  <stop offset="0%" stopColor="#0284c7" stopOpacity={0.4} />
+                  <stop offset="60%" stopColor="#38bdf8" stopOpacity={0.15} />
+                  <stop offset="100%" stopColor="#38bdf8" stopOpacity={0.0} />
                 </linearGradient>
 
-                {/* Rich Gradient for Visitors */}
+                {/* Modern Emerald Gradient for Visitors */}
                 <linearGradient id="histatsVisitorsGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.42} />
-                  <stop offset="50%" stopColor="#10b981" stopOpacity={0.12} />
-                  <stop offset="100%" stopColor="#10b981" stopOpacity={0.0} />
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.4} />
+                  <stop offset="60%" stopColor="#34d399" stopOpacity={0.15} />
+                  <stop offset="100%" stopColor="#34d399" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
 
@@ -277,10 +275,10 @@ export const VisitorChart: React.FC<VisitorChartProps> = ({
                     const ratio = vis > 0 ? (pv / vis).toFixed(2) : "1.0";
 
                     return (
-                      <div className="rounded-xl border border-slate-200 bg-white/95 backdrop-blur-md p-3.5 shadow-2xl text-xs space-y-2 min-w-[190px]">
+                      <div className="rounded-2xl border border-white/80 bg-white/90 backdrop-blur-2xl p-4 shadow-2xl text-xs space-y-2 min-w-[200px]">
                         <div className="font-bold text-slate-900 border-b border-slate-100 pb-1.5 flex items-center justify-between">
                           <span>{item.fullDate || item.label}</span>
-                          <span className="text-[10px] text-slate-400 font-semibold uppercase">
+                          <span className="text-[10px] text-slate-400 font-semibold uppercase font-mono">
                             Telemetry
                           </span>
                         </div>
@@ -288,8 +286,8 @@ export const VisitorChart: React.FC<VisitorChartProps> = ({
                         <div className="space-y-1.5 pt-0.5">
                           {(metric === "both" || metric === "pageviews") && (
                             <div className="flex items-center justify-between gap-4">
-                              <span className="flex items-center gap-1.5 font-bold text-[#1d5b9f]">
-                                <span className="w-2.5 h-2.5 rounded-full bg-[#1d5b9f]" />
+                              <span className="flex items-center gap-1.5 font-bold text-[#0284c7]">
+                                <span className="w-2.5 h-2.5 rounded-full bg-[#0284c7] shadow-xs" />
                                 Pageviews
                               </span>
                               <span className="font-extrabold text-slate-900 tabular-nums">
@@ -300,8 +298,8 @@ export const VisitorChart: React.FC<VisitorChartProps> = ({
 
                           {(metric === "both" || metric === "visitors") && (
                             <div className="flex items-center justify-between gap-4">
-                              <span className="flex items-center gap-1.5 font-bold text-emerald-700">
-                                <span className="w-2.5 h-2.5 rounded-full bg-[#10b981]" />
+                              <span className="flex items-center gap-1.5 font-bold text-emerald-600">
+                                <span className="w-2.5 h-2.5 rounded-full bg-[#10b981] shadow-xs" />
                                 Visitors
                               </span>
                               <span className="font-extrabold text-slate-900 tabular-nums">
@@ -327,7 +325,7 @@ export const VisitorChart: React.FC<VisitorChartProps> = ({
                 <Area
                   type="monotone"
                   dataKey="pageviews"
-                  stroke="#1d5b9f"
+                  stroke="#0284c7"
                   strokeWidth={2.8}
                   fillOpacity={1}
                   fill="url(#histatsPageviewsGrad)"
@@ -335,7 +333,7 @@ export const VisitorChart: React.FC<VisitorChartProps> = ({
                   dot={false}
                   activeDot={{
                     r: 5,
-                    fill: "#1d5b9f",
+                    fill: "#0284c7",
                     stroke: "#ffffff",
                     strokeWidth: 2,
                   }}

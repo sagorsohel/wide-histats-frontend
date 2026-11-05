@@ -12,6 +12,22 @@ import {
 import { Globe2, MapPin, Info, ArrowUpRight } from "lucide-react";
 import { CountryFlag } from "@/components/common/CountryFlag";
 import { useTabFocus } from "@/hooks/useTabFocus";
+import dynamic from "next/dynamic";
+
+const RealtimeGeoMap = dynamic(
+  () =>
+    import("@/components/analytics/RealtimeGeoMap").then(
+      (m) => m.RealtimeGeoMap
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[300px] w-full bg-[#0d1726] flex items-center justify-center text-cyan-400/80 text-xs font-mono animate-pulse rounded-2xl">
+        Loading Global Distribution Map...
+      </div>
+    ),
+  }
+);
 
 // Module-level memory cache for 0ms instant display when navigating to Geolocation
 let memoryGeoCache: {
@@ -212,6 +228,29 @@ export default function GeographyPage() {
         <p className="leading-relaxed">
           <strong className="text-slate-900 font-semibold">Privacy Notice:</strong> IP-based geolocation is approximate and derived safely on the server side without storing raw IP addresses. Locations may be affected by VPNs, proxies, and cellular towers.
         </p>
+      </div>
+
+      {/* Interactive Global Telemetry Map */}
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div className="flex items-center gap-2">
+            <h3 className="font-bold text-base text-slate-900">Interactive Global Map</h3>
+            <span className="text-[10px] text-blue-700 font-bold px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200">
+              Live Telemetry
+            </span>
+          </div>
+          <span className="text-xs text-slate-500 font-mono hidden sm:inline-block">
+            MapLibre GL &bull; Open-Source
+          </span>
+        </div>
+        <RealtimeGeoMap
+          countryData={countries.map((c) => ({
+            country: c.country,
+            code: c.country_code,
+            count: c.visitors,
+          }))}
+          height="340px"
+        />
       </div>
 
       {/* Two Column Breakdown: Countries & Cities */}

@@ -43,7 +43,23 @@ import {
   Minus,
   CornerDownRight,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useTabFocus } from "@/hooks/useTabFocus";
+
+const RealtimeGeoMap = dynamic(
+  () =>
+    import("@/components/analytics/RealtimeGeoMap").then(
+      (m) => m.RealtimeGeoMap
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[225px] w-full bg-[#0d1726] flex items-center justify-center text-cyan-400 text-xs font-mono animate-pulse rounded-md">
+        Loading Global Telemetry Map...
+      </div>
+    ),
+  }
+);
 
 type TabType =
   | "summary"
@@ -1057,186 +1073,30 @@ export default function RealtimeHistatsPage() {
 
               {/* Right Column: Geolocation Map & Most Active Visitors */}
               <div className="space-y-2.5">
-                {/* Box 3: Geolocation World Map (Histats Authentic Look) */}
+                {/* Box 3: Geolocation World Map (MapLibre GL Telemetry) */}
                 <div className="bg-white border border-[#cbd6e2] rounded-xs shadow-2xs overflow-hidden">
                   <div className="bg-[#f0f4f9] px-3 py-1.5 border-b border-[#d2dce6] flex items-center justify-between">
-                    <span className="font-bold text-slate-800 text-[12px]">
-                      Geolocation
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-slate-800 text-[12px]">
+                        Geolocation
+                      </span>
+                      <span className="text-[10px] text-cyan-700 bg-cyan-100 font-bold px-1.5 py-0.2 rounded font-mono">
+                        MapLibre GL
+                      </span>
+                    </div>
                     <Search className="w-3.5 h-3.5 text-slate-400 cursor-pointer" />
                   </div>
 
-                  {/* World Map Container with Ocean background & zoom controls */}
-                  <div className="relative bg-[#1a3359] h-[210px] w-full overflow-hidden flex items-center justify-center">
-                    {/* Zoom buttons */}
-                    <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-                      <button
-                        onClick={() =>
-                          setMapZoom((z) => Math.min(z + 0.2, 1.8))
-                        }
-                        className="w-5 h-5 bg-[#254677] text-white hover:bg-[#325b96] border border-blue-400/50 flex items-center justify-center font-bold text-xs"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
-                      <button
-                        onClick={() =>
-                          setMapZoom((z) => Math.max(z - 0.2, 0.8))
-                        }
-                        className="w-5 h-5 bg-[#254677] text-white hover:bg-[#325b96] border border-blue-400/50 flex items-center justify-center font-bold text-xs"
-                      >
-                        <Minus className="w-3 h-3" />
-                      </button>
-                    </div>
-
-                    {/* SVG World Map */}
-                    <div
-                      className="w-full h-full transition-transform duration-300 flex items-center justify-center"
-                      style={{ transform: `scale(${mapZoom})` }}
-                    >
-                      <svg
-                        viewBox="0 0 1000 500"
-                        className="w-full h-full opacity-90 select-none"
-                      >
-                        {/* Background continents simplified silhouettes */}
-                        {/* North America */}
-                        <path
-                          d="M120,60 L280,60 L290,130 L240,180 L200,240 L160,200 L120,130 Z"
-                          fill="#415d86"
-                        />
-                        {/* South America */}
-                        <path
-                          d="M260,260 L360,280 L340,420 L280,470 L240,360 Z"
-                          fill="#415d86"
-                        />
-                        {/* Europe */}
-                        <path
-                          d="M480,70 L600,60 L590,140 L520,160 L460,130 Z"
-                          fill="#415d86"
-                        />
-                        {/* Africa */}
-                        <path
-                          d="M470,170 L590,170 L600,290 L550,380 L490,320 L450,220 Z"
-                          fill="#415d86"
-                        />
-                        {/* Asia */}
-                        <path
-                          d="M600,60 L850,70 L870,220 L760,280 L660,220 L610,150 Z"
-                          fill="#415d86"
-                        />
-                        {/* Australia */}
-                        <path
-                          d="M780,310 L890,320 L870,410 L770,390 Z"
-                          fill="#415d86"
-                        />
-
-                        {/* Live Histats vertical pins / bars (Yellow & Red) */}
-                        {/* North America pins */}
-                        <rect
-                          x="220"
-                          y="120"
-                          width="4"
-                          height="28"
-                          fill="#facc15"
-                        />
-                        <rect
-                          x="220"
-                          y="105"
-                          width="4"
-                          height="15"
-                          fill="#ef4444"
-                        />
-                        <rect
-                          x="180"
-                          y="140"
-                          width="3"
-                          height="20"
-                          fill="#facc15"
-                        />
-
-                        {/* Europe pins */}
-                        <rect
-                          x="520"
-                          y="100"
-                          width="4"
-                          height="34"
-                          fill="#facc15"
-                        />
-                        <rect
-                          x="520"
-                          y="85"
-                          width="4"
-                          height="15"
-                          fill="#ef4444"
-                        />
-                        <rect
-                          x="540"
-                          y="110"
-                          width="3"
-                          height="22"
-                          fill="#facc15"
-                        />
-                        <rect
-                          x="500"
-                          y="120"
-                          width="3"
-                          height="18"
-                          fill="#ef4444"
-                        />
-
-                        {/* Middle East pins */}
-                        <rect
-                          x="580"
-                          y="150"
-                          width="4"
-                          height="30"
-                          fill="#facc15"
-                        />
-                        <rect
-                          x="580"
-                          y="135"
-                          width="4"
-                          height="15"
-                          fill="#ef4444"
-                        />
-
-                        {/* Asia & SE Asia pins */}
-                        <rect
-                          x="740"
-                          y="160"
-                          width="4"
-                          height="25"
-                          fill="#facc15"
-                        />
-                        <rect
-                          x="790"
-                          y="180"
-                          width="3"
-                          height="20"
-                          fill="#facc15"
-                        />
-                        <rect
-                          x="710"
-                          y="190"
-                          width="4"
-                          height="22"
-                          fill="#ef4444"
-                        />
-
-                        {/* Australia pin */}
-                        <rect
-                          x="830"
-                          y="340"
-                          width="3"
-                          height="16"
-                          fill="#facc15"
-                        />
-                      </svg>
-                    </div>
-
-                    <div className="absolute bottom-1 right-2 text-[9px] text-blue-200/80 font-mono">
-                      Active Telemetry Map
-                    </div>
-                  </div>
+                  <RealtimeGeoMap
+                    countryData={
+                      data?.topCountries && data.topCountries.length > 0
+                        ? data.topCountries
+                        : onlineCount > 0
+                        ? [{ country: "South Africa", code: "ZA", count: onlineCount }]
+                        : []
+                    }
+                    height="230px"
+                  />
                 </div>
 
                 {/* Box 4: Most Active Visitors */}
@@ -1876,44 +1736,16 @@ export default function RealtimeHistatsPage() {
             </h3>
 
             {/* Expanded World Map */}
-            <div className="relative bg-[#1a3359] h-[340px] w-full rounded overflow-hidden flex items-center justify-center shadow-inner">
-              <svg viewBox="0 0 1000 500" className="w-full h-full opacity-90">
-                <path
-                  d="M120,60 L280,60 L290,130 L240,180 L200,240 L160,200 L120,130 Z"
-                  fill="#415d86"
-                />
-                <path
-                  d="M260,260 L360,280 L340,420 L280,470 L240,360 Z"
-                  fill="#415d86"
-                />
-                <path
-                  d="M480,70 L600,60 L590,140 L520,160 L460,130 Z"
-                  fill="#415d86"
-                />
-                <path
-                  d="M470,170 L590,170 L600,290 L550,380 L490,320 L450,220 Z"
-                  fill="#415d86"
-                />
-                <path
-                  d="M600,60 L850,70 L870,220 L760,280 L660,220 L610,150 Z"
-                  fill="#415d86"
-                />
-                <path
-                  d="M780,310 L890,320 L870,410 L770,390 Z"
-                  fill="#415d86"
-                />
-
-                {/* Live pins */}
-                <rect x="220" y="110" width="5" height="35" fill="#facc15" />
-                <rect x="220" y="90" width="5" height="20" fill="#ef4444" />
-                <rect x="520" y="95" width="5" height="40" fill="#facc15" />
-                <rect x="520" y="75" width="5" height="20" fill="#ef4444" />
-                <rect x="580" y="145" width="5" height="35" fill="#facc15" />
-                <rect x="580" y="125" width="5" height="20" fill="#ef4444" />
-                <rect x="740" y="155" width="5" height="30" fill="#facc15" />
-                <rect x="790" y="175" width="4" height="25" fill="#facc15" />
-              </svg>
-            </div>
+            <RealtimeGeoMap
+              countryData={
+                data?.topCountries && data.topCountries.length > 0
+                  ? data.topCountries
+                  : onlineCount > 0
+                  ? [{ country: "South Africa", code: "ZA", count: onlineCount }]
+                  : []
+              }
+              height="420px"
+            />
 
             {/* Country ranking list */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">

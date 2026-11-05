@@ -323,6 +323,187 @@ export const TwitterXIcon: React.FC<IconProps> = ({ size = 16, className = "" })
   </svg>
 );
 
+// 18. Microsoft Bing Official Teal SVG
+export const BingIcon: React.FC<IconProps> = ({ size = 16, className = "" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    className={`shrink-0 inline-block align-middle ${className}`}
+  >
+    <path
+      fill="#008373"
+      d="M5 3v18l5.5-3.2 4.2 2.2 4.3-4.2-7-3.8V7.5L5 3zm6.5 7.5l4 2.2-4 2.3v-4.5z"
+    />
+  </svg>
+);
+
+// 19. DuckDuckGo Official SVG
+export const DuckDuckGoIcon: React.FC<IconProps> = ({ size = 16, className = "" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    className={`shrink-0 inline-block align-middle ${className}`}
+  >
+    <circle cx="12" cy="12" r="10" fill="#DE5833" />
+    <circle cx="10" cy="10" r="1.5" fill="#FFFFFF" />
+    <path d="M11 12c2.5 0 4.5 1 4.5 3s-2 2-4.5 2c-2 0-3.5-1-3.5-2.5S8.5 12 11 12z" fill="#FFFFFF" />
+    <path d="M14 13.5c1.5 0 3 .8 3 1.8s-1.5 1.7-3 1.7c-.5 0-1-.1-1.4-.3.5-.6.9-1.3 1.4-1.7.5-.5 0-1.5 0-1.5z" fill="#FFAA00" />
+    <circle cx="9.5" cy="9.5" r="0.8" fill="#1C1E21" />
+  </svg>
+);
+
+// 20. Yandex Official Red SVG
+export const YandexIcon: React.FC<IconProps> = ({ size = 16, className = "" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    className={`shrink-0 inline-block align-middle ${className}`}
+  >
+    <circle cx="12" cy="12" r="11" fill="#FC3F1D" />
+    <path
+      fill="#FFFFFF"
+      d="M13.8 19h-2.1v-6.5L8.9 6h2.2l1.7 4.7 1.7-4.7h2.2l-2.8 6.5V19z"
+    />
+  </svg>
+);
+
+// 21. Yahoo Official Purple SVG
+export const YahooIcon: React.FC<IconProps> = ({ size = 16, className = "" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    className={`shrink-0 inline-block align-middle ${className}`}
+  >
+    <rect width="24" height="24" rx="5" fill="#6001D2" />
+    <path
+      fill="#FFFFFF"
+      d="M7 6l3.5 6.5V18h2v-5.5L16 6h-2.2l-2.3 4.8L9.2 6H7z"
+    />
+  </svg>
+);
+
+// 22. Telegram Official Cyan Paper Airplane SVG
+export const TelegramIcon: React.FC<IconProps> = ({ size = 16, className = "" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    className={`shrink-0 inline-block align-middle ${className}`}
+  >
+    <circle cx="12" cy="12" r="11" fill="#29B6F6" />
+    <path
+      fill="#FFFFFF"
+      d="M18.1 7.2L5.8 11.9c-.8.3-.8.8-.2 1l3.1 1 7.3-4.6c.3-.2.7-.1.4.1l-5.9 5.3-.2 3.3c.3 0 .5-.1.7-.3l1.7-1.6 3.5 2.6c.6.4 1.1.2 1.3-.6l2.3-10.8c.2-.9-.3-1.3-.9-.9z"
+    />
+  </svg>
+);
+
+// 23. Reddit Official Orange Snoo SVG
+export const RedditIcon: React.FC<IconProps> = ({ size = 16, className = "" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    className={`shrink-0 inline-block align-middle ${className}`}
+  >
+    <circle cx="12" cy="12" r="11" fill="#FF4500" />
+    <path
+      fill="#FFFFFF"
+      d="M19.5 12c0-.7-.6-1.3-1.3-1.3-.3 0-.6.1-.9.3-1.1-.8-2.6-1.3-4.3-1.3l.7-3.4 2.4.5c0 .6.5 1.1 1.1 1.1.6 0 1.1-.5 1.1-1.1s-.5-1.1-1.1-1.1c-.5 0-.9.3-1 .8l-2.7-.6c-.2 0-.3.1-.4.3l-.9 4c-1.7 0-3.2.5-4.3 1.3-.2-.2-.5-.3-.9-.3-.7 0-1.3.6-1.3 1.3 0 .5.3.9.7 1.1-.1.3-.1.6-.1.9 0 2.5 2.9 4.5 6.5 4.5s6.5-2 6.5-4.5c0-.3 0-.6-.1-.9.4-.2.7-.6.7-1.1zm-10.5.8c.4 0 .8.4.8.8s-.4.8-.8.8-.8-.4-.8-.8.4-.8.8-.8zm6 3c-.8.8-2.2.8-3 0-.1-.1-.1-.3 0-.4.1-.1.3-.1.4 0 .6.6 1.6.6 2.2 0 .1-.1.3-.1.4 0 .1.1.1.3 0 .4zm-.2-2.2c-.4 0-.8-.4-.8-.8s.4-.8.8-.8.8.4.8.8-.4.8-.8.8z"
+    />
+  </svg>
+);
+
+// 24. Instagram Official Gradient Camera SVG
+export const InstagramIcon: React.FC<IconProps> = ({ size = 16, className = "" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    className={`shrink-0 inline-block align-middle ${className}`}
+  >
+    <defs>
+      <radialGradient id="instaGrad" cx="30%" cy="105%" r="110%">
+        <stop offset="0%" stopColor="#FFD521" />
+        <stop offset="10%" stopColor="#FFD521" />
+        <stop offset="50%" stopColor="#F50000" />
+        <stop offset="100%" stopColor="#B900B4" />
+      </radialGradient>
+    </defs>
+    <rect width="22" height="22" x="1" y="1" rx="6" fill="url(#instaGrad)" />
+    <rect width="14" height="14" x="5" y="5" rx="3.5" fill="none" stroke="#FFFFFF" strokeWidth="1.8" />
+    <circle cx="12" cy="12" r="3.5" fill="none" stroke="#FFFFFF" strokeWidth="1.8" />
+    <circle cx="16" cy="8" r="0.9" fill="#FFFFFF" />
+  </svg>
+);
+
+// 25. LinkedIn Official Blue SVG
+export const LinkedInIcon: React.FC<IconProps> = ({ size = 16, className = "" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="#0A66C2"
+    className={`shrink-0 inline-block align-middle ${className}`}
+  >
+    <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.53 1.53 0 1 0-.01-3.05 1.53 1.53 0 0 0 .01 3.05m1.39 9.74v-8.37H5.07v8.37h2.78z" />
+  </svg>
+);
+
+// 26. Pinterest Official Red SVG
+export const PinterestIcon: React.FC<IconProps> = ({ size = 16, className = "" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="#E60023"
+    className={`shrink-0 inline-block align-middle ${className}`}
+  >
+    <circle cx="12" cy="12" r="11" />
+    <path
+      fill="#FFFFFF"
+      d="M12 4.5c-4.1 0-7.5 3-7.5 6.7 0 2.4 1.2 4.5 3 5.6-.1-.5-.2-1.2 0-1.7l1.1-4.7s-.3-.6-.3-1.4c0-1.3.8-2.3 1.7-2.3.8 0 1.2.6 1.2 1.3 0 .8-.5 2-.8 3.1-.2 1 .5 1.8 1.5 1.8 1.8 0 3-2.3 3-5 0-2.1-1.4-3.7-4-3.7-2.9 0-4.8 2.2-4.8 4.7 0 .8.2 1.5.6 1.9.1.1.1.2 0 .3l-.2.9c0 .2-.2.2-.3.1-1.2-.6-1.8-2.1-1.8-3.4 0-2.8 2.3-6.1 7-6.1 3.8 0 6.2 2.7 6.2 5.6 0 3.9-2.2 6.8-5.4 6.8-1.1 0-2.1-.6-2.4-1.2l-.7 2.6c-.3 1-1 2.2-1.5 3 .9.3 1.9.4 3 .4 4.1 0 7.5-3.4 7.5-7.5s-3.4-7.5-7.5-7.5z"
+    />
+  </svg>
+);
+
+// 27. TikTok Official SVG
+export const TikTokIcon: React.FC<IconProps> = ({ size = 16, className = "" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    className={`shrink-0 inline-block align-middle ${className}`}
+  >
+    <rect width="24" height="24" rx="5" fill="#010101" />
+    <path
+      fill="#25F4EE"
+      d="M14.5 5.5v7.2a3.3 3.3 0 1 1-2.4-3.2v2.2a1.2 1.2 0 1 0 1.2 1v-8.4c1.1.8 2.3 1.2 3.7 1.2V7.2c-1.1 0-2-.6-2.5-1.7z"
+    />
+    <path
+      fill="#FE2C55"
+      d="M15 6v7.2a3.3 3.3 0 1 1-3.3-3.3v1.2a2.1 2.1 0 1 0 2.1 2.1V4c1.1.8 2.3 1.2 3.7 1.2V7c-1.1 0-2-.5-2.5-1z"
+    />
+  </svg>
+);
+
+// 28. WhatsApp Official Green SVG
+export const WhatsAppIcon: React.FC<IconProps> = ({ size = 16, className = "" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="#25D366"
+    className={`shrink-0 inline-block align-middle ${className}`}
+  >
+    <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.41 1.56 1.56 2.41 3.63 2.41 5.83s-.85 4.27-2.41 5.83c-1.55 1.55-3.62 2.41-5.82 2.41-1.5 0-2.97-.39-4.26-1.13l-.3-.18-3.13.82.84-3.05-.2-.31c-.81-1.32-1.24-2.84-1.24-4.39 0-4.54 3.7-8.24 8.29-8.24m4.54 11.64c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.03-1.25-.75-.67-1.26-1.5-1.41-1.75-.15-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08s.89 2.41 1.01 2.58c.13.17 1.75 2.67 4.24 3.75.59.26 1.05.41 1.41.53.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.17-.48-.29z" />
+  </svg>
+);
+
 // -------------------------------------------------------------
 // UNIFIED RESOLVER COMPONENTS
 // -------------------------------------------------------------
@@ -425,20 +606,46 @@ export const ReferrerBrandIcon: React.FC<{
 }> = ({ referrer, browser, size = 15, className = "" }) => {
   const ref = (referrer || "").toLowerCase().trim();
 
-  if (ref.includes("google")) {
-    return <GoogleIcon size={size} className={className} />;
-  }
-  if (ref.includes("blogspot") || ref.includes("blogger")) {
-    return <BloggerIcon size={size} className={className} />;
-  }
+  // Search Engines
+  if (ref.includes("google")) return <GoogleIcon size={size} className={className} />;
+  if (ref.includes("bing")) return <BingIcon size={size} className={className} />;
+  if (ref.includes("duckduckgo")) return <DuckDuckGoIcon size={size} className={className} />;
+  if (ref.includes("yandex")) return <YandexIcon size={size} className={className} />;
+  if (ref.includes("yahoo")) return <YahooIcon size={size} className={className} />;
+
+  // Social & Messaging Channels
   if (ref.includes("facebook") || ref.includes("fb.me") || ref.includes("fb.com")) {
     return <FacebookIcon size={size} className={className} />;
+  }
+  if (ref.includes("twitter") || ref.includes("t.co") || ref.includes("x.com")) {
+    return <TwitterXIcon size={size} className={className} />;
   }
   if (ref.includes("youtube") || ref.includes("youtu.be")) {
     return <YouTubeIcon size={size} className={className} />;
   }
-  if (ref.includes("twitter") || ref.includes("t.co") || ref.includes("x.com")) {
-    return <TwitterXIcon size={size} className={className} />;
+  if (ref.includes("telegram") || ref.includes("t.me")) {
+    return <TelegramIcon size={size} className={className} />;
+  }
+  if (ref.includes("reddit")) {
+    return <RedditIcon size={size} className={className} />;
+  }
+  if (ref.includes("instagram")) {
+    return <InstagramIcon size={size} className={className} />;
+  }
+  if (ref.includes("linkedin")) {
+    return <LinkedInIcon size={size} className={className} />;
+  }
+  if (ref.includes("pinterest")) {
+    return <PinterestIcon size={size} className={className} />;
+  }
+  if (ref.includes("tiktok")) {
+    return <TikTokIcon size={size} className={className} />;
+  }
+  if (ref.includes("whatsapp") || ref.includes("wa.me")) {
+    return <WhatsAppIcon size={size} className={className} />;
+  }
+  if (ref.includes("blogspot") || ref.includes("blogger")) {
+    return <BloggerIcon size={size} className={className} />;
   }
 
   // Fallback to real browser icon if direct or web

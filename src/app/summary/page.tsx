@@ -14,6 +14,10 @@ import {
   CountryStat,
   DeviceStat,
   BrowserStat,
+  CityStat,
+  OsStat,
+  ReferrerStat,
+  LandingExitPageStat,
 } from "@/types/analytics";
 import {
   DateRangePicker,
@@ -26,6 +30,11 @@ import { TopPagesTable } from "@/components/analytics/TopPagesTable";
 import { SourcesChart } from "@/components/analytics/SourcesChart";
 import { GeographyTable } from "@/components/analytics/GeographyTable";
 import { DeviceBreakdown } from "@/components/analytics/DeviceBreakdown";
+import { AudienceLoyaltyCard } from "@/components/analytics/AudienceLoyaltyCard";
+import { TopCitiesTable } from "@/components/analytics/TopCitiesTable";
+import { OperatingSystemsCard } from "@/components/analytics/OperatingSystemsCard";
+import { LandingExitPagesCard } from "@/components/analytics/LandingExitPagesCard";
+import { SearchAndSocialCard } from "@/components/analytics/SearchAndSocialCard";
 import {
   Users,
   Eye,
@@ -49,8 +58,13 @@ let memorySummaryCache: {
   pages: PageStat[];
   sources: SourceStat[];
   countries: CountryStat[];
+  cities: CityStat[];
   devices: DeviceStat[];
   browsers: BrowserStat[];
+  operatingSystems: OsStat[];
+  landingPages: LandingExitPageStat[];
+  exitPages: LandingExitPageStat[];
+  referrers: ReferrerStat[];
 } | null = null;
 
 export default function SummaryPage() {
@@ -67,8 +81,13 @@ export default function SummaryPage() {
   const [pages, setPages] = useState<PageStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.pages : []));
   const [sources, setSources] = useState<SourceStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.sources : []));
   const [countries, setCountries] = useState<CountryStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.countries : []));
+  const [cities, setCities] = useState<CityStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.cities : []));
   const [devices, setDevices] = useState<DeviceStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.devices : []));
   const [browsers, setBrowsers] = useState<BrowserStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.browsers : []));
+  const [operatingSystems, setOperatingSystems] = useState<OsStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.operatingSystems : []));
+  const [landingPages, setLandingPages] = useState<LandingExitPageStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.landingPages : []));
+  const [exitPages, setExitPages] = useState<LandingExitPageStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.exitPages : []));
+  const [referrers, setReferrers] = useState<ReferrerStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.referrers : []));
   const [loading, setLoading] = useState(!isCached);
 
   // Protected route check
@@ -139,14 +158,20 @@ export default function SummaryPage() {
         geoRes,
         devicesRes,
         browsersRes,
+        osRes,
+        landingRes,
+        exitRes,
       ] = await Promise.all([
         api.get<OverviewStats>(`/api/v1/analytics/overview?${q}`),
         api.get<TimeseriesPoint[]>(`/api/v1/analytics/timeseries?${q}`),
         api.get<PageStat[]>(`/api/v1/analytics/pages?${q}&limit=6`),
-        api.get<{ sources: SourceStat[] }>(`/api/v1/analytics/sources?${q}&limit=6`),
-        api.get<{ countries: CountryStat[] }>(`/api/v1/analytics/geography?${q}&limit=6`),
+        api.get<{ sources: SourceStat[]; referrers?: ReferrerStat[] }>(`/api/v1/analytics/sources?${q}&limit=12`),
+        api.get<{ countries: CountryStat[]; cities: CityStat[] }>(`/api/v1/analytics/geography?${q}&limit=8`),
         api.get<DeviceStat[]>(`/api/v1/analytics/devices?${q}`),
         api.get<BrowserStat[]>(`/api/v1/analytics/browsers?${q}`),
+        api.get<OsStat[]>(`/api/v1/analytics/operating-systems?${q}&limit=6`),
+        api.get<LandingExitPageStat[]>(`/api/v1/analytics/landing-pages?${q}&limit=6`),
+        api.get<LandingExitPageStat[]>(`/api/v1/analytics/exit-pages?${q}&limit=6`),
       ]);
 
       // Strict race condition check: if user switched to another website while this was in flight, discard!
@@ -158,9 +183,14 @@ export default function SummaryPage() {
       if (timeseriesRes.success && timeseriesRes.data) setTimeseries(timeseriesRes.data);
       if (pagesRes.success && pagesRes.data) setPages(pagesRes.data);
       if (sourcesRes.success && sourcesRes.data?.sources) setSources(sourcesRes.data.sources);
+      if (sourcesRes.success && sourcesRes.data?.referrers) setReferrers(sourcesRes.data.referrers);
       if (geoRes.success && geoRes.data?.countries) setCountries(geoRes.data.countries);
+      if (geoRes.success && geoRes.data?.cities) setCities(geoRes.data.cities);
       if (devicesRes.success && devicesRes.data) setDevices(devicesRes.data);
       if (browsersRes.success && browsersRes.data) setBrowsers(browsersRes.data);
+      if (osRes.success && osRes.data) setOperatingSystems(osRes.data);
+      if (landingRes.success && landingRes.data) setLandingPages(landingRes.data);
+      if (exitRes.success && exitRes.data) setExitPages(exitRes.data);
       hasDataRef.current = true;
 
       // Save to memory cache for 0ms instant reload on next link visit
@@ -172,8 +202,13 @@ export default function SummaryPage() {
         pages: pagesRes.data || [],
         sources: sourcesRes.data?.sources || [],
         countries: geoRes.data?.countries || [],
+        cities: geoRes.data?.cities || [],
         devices: devicesRes.data || [],
         browsers: browsersRes.data || [],
+        operatingSystems: osRes.data || [],
+        landingPages: landingRes.data || [],
+        exitPages: exitRes.data || [],
+        referrers: sourcesRes.data?.referrers || [],
       };
     } catch (err) {
       console.error("Failed to load dashboard data", err);
@@ -210,8 +245,13 @@ export default function SummaryPage() {
       setPages([]);
       setSources([]);
       setCountries([]);
+      setCities([]);
       setDevices([]);
       setBrowsers([]);
+      setOperatingSystems([]);
+      setLandingPages([]);
+      setExitPages([]);
+      setReferrers([]);
       hasDataRef.current = false;
       setLoading(true);
 
@@ -232,8 +272,13 @@ export default function SummaryPage() {
         setPages([]);
         setSources([]);
         setCountries([]);
+        setCities([]);
         setDevices([]);
         setBrowsers([]);
+        setOperatingSystems([]);
+        setLandingPages([]);
+        setExitPages([]);
+        setReferrers([]);
         hasDataRef.current = false;
         setLoading(true);
         loadData(false, newSite.id);
@@ -489,16 +534,43 @@ export default function SummaryPage() {
       {/* Main Chart Section */}
       <VisitorChart data={timeseries} loading={loading} />
 
-      {/* Two-column Widgets: Top Pages & Traffic Sources */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Feature 1: New vs. Returning Visitors (Audience Loyalty & Retention) */}
+      <AudienceLoyaltyCard
+        firstTimeVisitors={overview?.firstTimeVisitors}
+        returningVisitors={overview?.returningVisitors}
+        newVisitorsPct={overview?.newVisitorsPct}
+        returningVisitorsPct={overview?.returningVisitorsPct}
+        totalVisitors={overview?.uniqueVisitors}
+        loading={loading}
+      />
+
+      {/* Feature 4: Top Pages & Landing vs Exit Pages */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
         <TopPagesTable pages={pages} domain={selectedWebsite?.domain} loading={loading} />
-        <SourcesChart sources={sources} loading={loading} />
+        <LandingExitPagesCard
+          landingPages={landingPages}
+          exitPages={exitPages}
+          domain={selectedWebsite?.domain}
+          loading={loading}
+        />
       </div>
 
-      {/* Two-column Widgets: Geography & Devices */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Feature 5: Traffic Sources & Search Engines vs Social Channels */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
+        <SourcesChart sources={sources} loading={loading} />
+        <SearchAndSocialCard referrers={referrers} loading={loading} />
+      </div>
+
+      {/* Feature 2: Geography - Top Countries & Top Cities / Metros Breakdown */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
         <GeographyTable countries={countries} loading={loading} />
+        <TopCitiesTable cities={cities} loading={loading} />
+      </div>
+
+      {/* Feature 3: Hardware & Platforms - Devices & Browsers + Operating Systems Breakdown */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
         <DeviceBreakdown devices={devices} browsers={browsers} loading={loading} />
+        <OperatingSystemsCard operatingSystems={operatingSystems} loading={loading} />
       </div>
     </div>
   );

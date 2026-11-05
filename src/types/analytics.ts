@@ -26,6 +26,10 @@ export interface OverviewStats {
   allTimeVisitors?: number;
   allTimePageviews?: number;
   allTimeSessions?: number;
+  firstTimeVisitors?: number;
+  returningVisitors?: number;
+  newVisitorsPct?: number;
+  returningVisitorsPct?: number;
   pagesPerSession: number;
   bounceRate: number;
   avgDuration: number;
@@ -106,6 +110,7 @@ export interface CountryStat {
 export interface CityStat {
   city: string;
   country: string;
+  country_code?: string;
   visitors: number;
 }
 
@@ -174,6 +179,14 @@ export interface PageStat {
   url?: string;
   pageviews: number;
   visitors: number;
+  sessions?: number;
+}
+
+export interface LandingExitPageStat {
+  path: string;
+  sessions: number;
+  pageviews?: number;
+  visitors?: number;
 }
 
 export interface DeviceStat {

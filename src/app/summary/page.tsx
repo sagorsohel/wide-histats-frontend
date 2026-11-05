@@ -561,8 +561,8 @@ export default function SummaryPage() {
         <SearchAndSocialCard referrers={referrers} loading={loading} />
       </div>
 
-      {/* Feature 2: Geography - Top Countries & Top Cities / Metros Breakdown */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
+      {/* Feature 2: Geography - Visitors by Country & Top Cities Breakdown */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 items-stretch">
         <GeographyTable countries={countries} loading={loading} />
         <TopCitiesTable cities={cities} loading={loading} />
       </div>

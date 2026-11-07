@@ -1,15 +1,23 @@
 "use client";
 
 import React from "react";
-import { LucideIcon, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { LucideIcon, MoreVertical } from "lucide-react";
 
-export type KpiVariant = "blue" | "purple" | "green" | "emerald";
+export type KpiVariant =
+  | "purple"
+  | "blue"
+  | "orange"
+  | "amber"
+  | "pink"
+  | "rose"
+  | "green"
+  | "emerald";
 
 interface KpiCardProps {
   title: string;
   value: string | number;
   subtitle?: string;
-  icon: LucideIcon;
+  icon?: LucideIcon;
   badge?: {
     text: string;
     positive?: boolean;
@@ -17,134 +25,121 @@ interface KpiCardProps {
   variant?: KpiVariant;
   highlight?: boolean;
   loading?: boolean;
+  countBadge?: number | string;
+  avatars?: string[];
+  className?: string;
 }
+
+// High-resolution clean avatars matching modern collaboration dashboards
+const defaultAvatars = [
+  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces",
+  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=64&h=64&fit=crop&crop=faces",
+  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=64&h=64&fit=crop&crop=faces",
+];
 
 export const KpiCard: React.FC<KpiCardProps> = ({
   title,
   value,
   subtitle,
-  icon: Icon,
   badge,
   variant = "blue",
   loading = false,
+  countBadge = 2,
+  avatars,
+  className = "",
 }) => {
-  // Color configuration matching the exact aesthetic
+  const avatarList = avatars && avatars.length > 0 ? avatars : defaultAvatars;
+
+  // Vibrant gradient configurations matching reference design
   const config = {
-    blue: {
-      iconBg: "bg-blue-50/90 text-blue-600 border border-blue-100/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_2px_8px_rgba(37,99,235,0.08)]",
-      waveGradId: "kpiWaveBlue",
-      waveStart: "#38bdf8",
-      waveEnd: "#2563eb",
-      stroke: "#0284c7",
-      wavePath: "M0,35 C20,38 35,26 50,28 C65,30 75,12 100,10",
-      fillPath: "M0,35 C20,38 35,26 50,28 C65,30 75,12 100,10 L100,45 L0,45 Z",
-    },
     purple: {
-      iconBg: "bg-purple-50/90 text-purple-600 border border-purple-100/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_2px_8px_rgba(147,51,234,0.08)]",
-      waveGradId: "kpiWavePurple",
-      waveStart: "#c084fc",
-      waveEnd: "#8b5cf6",
-      stroke: "#9333ea",
-      wavePath: "M0,38 C25,38 40,20 65,28 C80,32 90,14 100,16",
-      fillPath: "M0,38 C25,38 40,20 65,28 C80,32 90,14 100,16 L100,45 L0,45 Z",
+      bg: "bg-gradient-to-r from-[#9461fd] via-[#8555f8] to-[#733cf5]",
+      darkBand: "bg-[#5b21b6]/60",
+      shadow: "shadow-[0_12px_28px_-6px_rgba(115,60,245,0.35)]",
+    },
+    blue: {
+      bg: "bg-gradient-to-r from-[#448df9] via-[#2f7bf6] to-[#1c64f2]",
+      darkBand: "bg-[#1e40af]/60",
+      shadow: "shadow-[0_12px_28px_-6px_rgba(28,100,242,0.35)]",
+    },
+    orange: {
+      bg: "bg-gradient-to-r from-[#fbbf24] via-[#f59e0b] to-[#f97316]",
+      darkBand: "bg-[#c2410c]/60",
+      shadow: "shadow-[0_12px_28px_-6px_rgba(249,115,22,0.35)]",
+    },
+    amber: {
+      bg: "bg-gradient-to-r from-[#fbbf24] via-[#f59e0b] to-[#f97316]",
+      darkBand: "bg-[#c2410c]/60",
+      shadow: "shadow-[0_12px_28px_-6px_rgba(249,115,22,0.35)]",
+    },
+    pink: {
+      bg: "bg-gradient-to-r from-[#f472b6] via-[#ec4899] to-[#f43f5e]",
+      darkBand: "bg-[#be123c]/60",
+      shadow: "shadow-[0_12px_28px_-6px_rgba(244,63,94,0.35)]",
+    },
+    rose: {
+      bg: "bg-gradient-to-r from-[#f472b6] via-[#ec4899] to-[#f43f5e]",
+      darkBand: "bg-[#be123c]/60",
+      shadow: "shadow-[0_12px_28px_-6px_rgba(244,63,94,0.35)]",
     },
     green: {
-      iconBg: "bg-emerald-50/90 text-emerald-600 border border-emerald-100/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_2px_8px_rgba(16,185,129,0.08)]",
-      waveGradId: "kpiWaveGreen",
-      waveStart: "#34d399",
-      waveEnd: "#10b981",
-      stroke: "#10b981",
-      wavePath: "M0,40 C20,38 35,32 55,22 C70,16 85,28 100,8",
-      fillPath: "M0,40 C20,38 35,32 55,22 C70,16 85,28 100,8 L100,45 L0,45 Z",
+      bg: "bg-gradient-to-r from-[#34d399] via-[#10b981] to-[#059669]",
+      darkBand: "bg-[#065f46]/60",
+      shadow: "shadow-[0_12px_28px_-6px_rgba(16,185,129,0.35)]",
     },
     emerald: {
-      iconBg: "bg-emerald-50/90 text-emerald-600 border border-emerald-100/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_2px_8px_rgba(16,185,129,0.08)]",
-      waveGradId: "kpiWaveEmerald",
-      waveStart: "#34d399",
-      waveEnd: "#10b981",
-      stroke: "#10b981",
-      wavePath: "M0,40 C20,38 35,32 55,22 C70,16 85,28 100,8",
-      fillPath: "M0,40 C20,38 35,32 55,22 C70,16 85,28 100,8 L100,45 L0,45 Z",
+      bg: "bg-gradient-to-r from-[#34d399] via-[#10b981] to-[#059669]",
+      darkBand: "bg-[#065f46]/60",
+      shadow: "shadow-[0_12px_28px_-6px_rgba(16,185,129,0.35)]",
     },
   }[variant];
 
   return (
-    <div className="bg-white/75 backdrop-blur-xl backdrop-saturate-150 p-5 rounded-3xl border border-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_10px_25px_-5px_rgba(0,0,0,0.04)] hover:bg-white/85 hover:shadow-[0_15px_30px_-5px_rgba(0,0,0,0.06)] transition-all duration-300 relative overflow-hidden flex items-center justify-between gap-4">
-      {/* Left content: Icon, Title, Value, Subtitle */}
-      <div className="flex items-center gap-4 min-w-0 flex-1">
-        {/* Soft rounded squircle Icon */}
-        <div
-          className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${config.iconBg}`}
-        >
-          <Icon className="w-6 h-6" />
-        </div>
+    <div
+      className={`rounded-[22px] ${config.bg} ${config.shadow} text-white relative overflow-hidden flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-xl group select-none ${className}`}
+    >
+      {/* Upper Content Section */}
+      <div className="p-4 sm:p-5 pb-3">
+        {/* 1. Top Row: Avatars & Count Badge on left, Three Dots Menu on right */}
 
-        <div className="min-w-0 flex-1 space-y-1">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            {title}
-          </span>
+        {/* 2. Middle: Title & Value */}
+        <div className="mt-3.5 space-y-0.5">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="font-extrabold text-sm sm:text-base text-white tracking-tight leading-tight">
+              {title}
+            </h3>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            {loading ? (
-              <div className="h-8 w-20 rounded-md bg-slate-200 animate-pulse my-0.5" />
-            ) : (
-              <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight tabular-nums">
-                {value}
-              </span>
-            )}
-
+            {/* Percentage Pill Badge */}
             {!loading && badge && (
-              <span
-                className={`inline-flex items-center gap-0.5 text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                  badge.positive !== false
-                    ? "bg-emerald-50 text-emerald-600 border border-emerald-200/80 shadow-2xs"
-                    : "bg-rose-50 text-rose-600 border border-rose-200/80 shadow-2xs"
-                }`}
-              >
-                {badge.positive !== false ? (
-                  <ArrowUpRight className="w-3 h-3 stroke-[2.5]" />
-                ) : (
-                  <ArrowDownRight className="w-3 h-3 stroke-[2.5]" />
-                )}
-                {badge.text}
+              <span className="inline-flex items-center gap-0.5 text-[10px] font-black px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md border border-white/25 text-white shadow-2xs shrink-0">
+                {badge.positive !== false ? "↗" : "↘"} {badge.text}
               </span>
             )}
           </div>
 
-          {loading ? (
-            <div className="h-3 w-28 rounded bg-slate-100 animate-pulse mt-1" />
-          ) : (
-            subtitle && (
-              <p className="text-xs text-slate-400 font-medium truncate">
-                {subtitle}
-              </p>
-            )
+          {/* Main Stat Value */}
+          <div className="pt-0.5">
+            {loading ? (
+              <div className="h-7 w-20 bg-white/30 rounded-lg animate-pulse my-1" />
+            ) : (
+              <span className="text-2xl  font-black text-white tracking-tight tabular-nums block">
+                {value}
+              </span>
+            )}
+          </div>
+
+          {/* Subtitle */}
+          {subtitle && (
+            <p className="text-[11px] text-white/80 font-medium truncate pt-0.5">
+              {subtitle}
+            </p>
           )}
         </div>
       </div>
 
-      {/* Right side: Translucent smooth wave */}
-      <div className="shrink-0 hidden sm:block">
-        <svg
-          viewBox="0 0 100 45"
-          className="w-24 lg:w-28 h-12 select-none overflow-visible"
-          preserveAspectRatio="none"
-        >
-          <defs>
-            <linearGradient id={config.waveGradId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={config.waveStart} stopOpacity={0.4} />
-              <stop offset="100%" stopColor={config.waveEnd} stopOpacity={0.0} />
-            </linearGradient>
-          </defs>
-          <path d={config.fillPath} fill={`url(#${config.waveGradId})`} />
-          <path
-            d={config.wavePath}
-            fill="none"
-            stroke={config.stroke}
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-        </svg>
+      {/* 3. Bottom Accent Band (Signature Style from Reference Design) */}
+      <div className="h-3 w-full bg-black/15 flex items-stretch mt-2">
+        <div className={`w-24 sm:w-28 ${config.darkBand} rounded-r-md`} />
       </div>
     </div>
   );

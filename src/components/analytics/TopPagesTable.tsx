@@ -80,8 +80,8 @@ export const TopPagesTable: React.FC<TopPagesTableProps> = ({
                 page.url ||
                 `${cleanDomain}${page.path.startsWith("/") ? page.path : `/${page.path}`}`;
 
-              // Format display path (truncate safely)
-              const displayUrl = fullLink.length > 48 ? `${fullLink.slice(0, 48)}...` : fullLink;
+              // Format display path (let CSS truncate naturally fill full width)
+              const displayUrl = fullLink;
 
               return (
                 <div
@@ -128,7 +128,9 @@ export const TopPagesTable: React.FC<TopPagesTableProps> = ({
 
                     <div className="min-w-[48px]">
                       <span className="font-extrabold text-slate-900 text-xs block tabular-nums">
-                        {(page.visitors || Math.round(page.pageviews * 0.65)).toLocaleString()}
+                        {(
+                          page.visitors || Math.round(page.pageviews * 0.65)
+                        ).toLocaleString()}
                       </span>
                       <span className="text-[10px] text-slate-400 block font-medium">
                         visitors

@@ -26,6 +26,7 @@ export interface DateRangePickerProps {
   customWindow?: CustomDateWindow | null;
   onCustomRangeChange?: (window: CustomDateWindow | null) => void;
   className?: string;
+  inline?: boolean;
 }
 
 export const DateRangePicker: React.FC<DateRangePickerProps> = ({
@@ -34,6 +35,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
   customWindow,
   onCustomRangeChange,
   className = "",
+  inline = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [calendarMode, setCalendarMode] = useState<"daily" | "range" | "monthly">("daily");
@@ -158,7 +160,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     }
     setRangeStart(null);
     setRangeEnd(null);
-    setIsOpen(false);
+    if (!inline) setIsOpen(false);
   };
 
   // Handle Reset to Today
@@ -167,12 +169,13 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     if (onCustomRangeChange) {
       onCustomRangeChange(null);
     }
+    setCalendarMode("daily");
     setSelectedSingleDate(today);
     setRangeStart(null);
     setRangeEnd(null);
     setViewMonth(today.getMonth());
     setViewYear(today.getFullYear());
-    setIsOpen(false);
+    if (!inline) setIsOpen(false);
   };
 
   // Handle Date Click inside Calendar
@@ -222,7 +225,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
             mode: "range",
           });
         }
-        setIsOpen(false);
+        if (!inline) setIsOpen(false);
       }
     } else {
       // Daily selection
@@ -261,7 +264,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
           mode: "daily",
         });
       }
-      setIsOpen(false);
+      if (!inline) setIsOpen(false);
     }
   };
 
@@ -288,7 +291,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
         mode: "monthly",
       });
     }
-    setIsOpen(false);
+    if (!inline) setIsOpen(false);
   };
 
   // Month Title
@@ -303,6 +306,239 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
     { id: "7d", label: "Last 7 Days" },
     { id: "30d", label: "Last 30 Days" },
   ];
+
+  if (inline) {
+    return (
+      <div className={`w-full select-none ${className}`}>
+        {/* 1. Header: Mode Switcher & Reset */}
+        <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-200/80 gap-2">
+          <div className="inline-flex rounded-xl bg-slate-100 p-0.5 text-xs font-semibold shadow-inner">
+            <button
+              type="button"
+              onClick={() => {
+                setCalendarMode("daily");
+                setRangeStart(null);
+                setRangeEnd(null);
+              }}
+              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                calendarMode === "daily"
+                  ? "bg-white text-slate-900 shadow-2xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Daily
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCalendarMode("range");
+                if (!rangeStart) {
+                  setRangeStart(today);
+                }
+              }}
+              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+                calendarMode === "range"
+                  ? "bg-white text-[#1455bb] shadow-2xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <span>Range</span>
+              {calendarMode === "range" && !rangeEnd && (
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping inline-block" />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={handleMonthlySelect}
+              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                calendarMode === "monthly"
+                  ? "bg-white text-slate-900 shadow-2xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Monthly
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleReset}
+            className="px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-500 hover:text-[#1455bb] hover:bg-blue-50/80 transition-colors flex items-center gap-1 cursor-pointer border border-transparent hover:border-blue-100"
+            title="Reset to Today"
+          >
+            <RotateCcw className="w-3 h-3" />
+            <span>Reset</span>
+          </button>
+        </div>
+
+        {/* 2. Month Navigation */}
+        <div className="flex items-center justify-between pb-2 mb-2 px-1">
+          <button
+            type="button"
+            onClick={prevMonth}
+            className="p-1 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+            title="Previous month"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          <div className="flex items-center gap-1.5 text-xs font-black text-[#1455bb] tracking-wider">
+            <CalendarIcon className="w-3.5 h-3.5 text-[#1455bb]" />
+            <span>{monthTitle}</span>
+          </div>
+
+          <button
+            type="button"
+            onClick={nextMonth}
+            className="p-1 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+            title="Next month"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* 3. Range Mode Helper Prompt */}
+        {calendarMode === "range" && (
+          <div className="bg-blue-50/90 border border-blue-200 text-blue-900 text-[11px] rounded-xl px-2.5 py-1.5 mb-2.5 flex items-center justify-between shadow-2xs">
+            <div className="flex items-center gap-1.5 truncate">
+              <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse shrink-0" />
+              <span className="truncate">
+                {!rangeStart
+                  ? "Click start date"
+                  : !rangeEnd
+                  ? "Now click end date"
+                  : `Selected: ${rangeStart.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })} - ${rangeEnd.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })}`}
+              </span>
+            </div>
+            {rangeStart && !rangeEnd && (
+              <button
+                type="button"
+                onClick={() => {
+                  setRangeStart(null);
+                  setRangeEnd(null);
+                }}
+                className="text-blue-700 hover:underline font-bold text-[10px] shrink-0 ml-1 cursor-pointer"
+              >
+                Reset
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* 4. Calendar Days Grid */}
+        <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-2.5 mb-3 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7)]">
+          {/* Day of Week Header: M T W T F S S */}
+          <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-500 mb-1.5 border-b border-slate-200/80 pb-1.5">
+            <span>M</span>
+            <span>T</span>
+            <span>W</span>
+            <span>T</span>
+            <span>F</span>
+            <span className="text-rose-600 font-extrabold">S</span>
+            <span className="text-rose-600 font-extrabold">S</span>
+          </div>
+
+          {/* Days Grid */}
+          <div className="grid grid-cols-7 gap-y-1 gap-x-1 text-center text-[11px] font-mono">
+            {calendarDays.map((item, idx) => {
+              const time = item.date.getTime();
+
+              const isSingleSelected =
+                calendarMode === "daily" &&
+                selectedSingleDate &&
+                time === selectedSingleDate.getTime() &&
+                item.isCurrentMonth;
+
+              const isRangeStart = rangeStart && time === rangeStart.getTime();
+              const isRangeEnd = rangeEnd && time === rangeEnd.getTime();
+              const inRange =
+                rangeStart &&
+                rangeEnd &&
+                time >= rangeStart.getTime() &&
+                time <= rangeEnd.getTime();
+
+              const inHoverRange =
+                calendarMode === "range" &&
+                rangeStart &&
+                !rangeEnd &&
+                hoverDate &&
+                ((time >= rangeStart.getTime() && time <= hoverDate.getTime()) ||
+                  (time <= rangeStart.getTime() && time >= hoverDate.getTime()));
+
+              let cellClass =
+                "py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center font-semibold text-xs ";
+
+              if (isSingleSelected || isRangeStart || isRangeEnd) {
+                cellClass += "bg-[#1455bb] text-white font-black shadow-sm shadow-blue-600/30 scale-102 ";
+              } else if (inRange) {
+                cellClass += "bg-blue-100 text-[#1455bb] font-bold ";
+              } else if (inHoverRange) {
+                cellClass += "bg-blue-50 text-blue-800 border border-dashed border-blue-300 ";
+              } else if (!item.isCurrentMonth) {
+                cellClass += "text-slate-300 hover:text-slate-600 hover:bg-slate-200/40 ";
+              } else if (item.isWeekend) {
+                cellClass += "text-rose-600 hover:bg-rose-50 font-bold ";
+              } else {
+                cellClass += "text-slate-700 hover:bg-blue-50 hover:text-[#1455bb] ";
+              }
+
+              if (item.isToday && !isSingleSelected && !isRangeStart && !isRangeEnd) {
+                cellClass += "ring-1 ring-blue-400 font-bold ";
+              }
+
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleDateClick(item.date)}
+                  onMouseEnter={() => {
+                    if (calendarMode === "range" && rangeStart && !rangeEnd) {
+                      setHoverDate(item.date);
+                    }
+                  }}
+                  className={cellClass}
+                >
+                  {item.dayNumber}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 5. Quick Presets Footer */}
+        <div className="flex items-center justify-between gap-1 pt-1.5 border-t border-slate-200/80 flex-wrap">
+          <div className="flex items-center gap-1 flex-wrap">
+            {presetOptions.map((opt) => {
+              const isActive = !customWindow && selectedRange === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => handlePresetSelect(opt.id)}
+                  className={`px-2 py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer ${
+                    isActive
+                      ? "bg-[#1455bb] text-white shadow-2xs"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+          <span className="text-[10px] font-medium text-slate-400">
+            <span className="text-rose-500 font-bold">Red</span>: Weekend
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div ref={containerRef} className={`relative inline-block ${className}`}>

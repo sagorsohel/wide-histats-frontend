@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { useWebsite } from "@/context/WebsiteContext";
 import { useAppSelector } from "@/store";
+import { Website } from "@/types/analytics";
 
 // Official useAnimations animated icons (https://useanimations.com)
 import UseAnimations from "react-useanimations";
@@ -211,6 +212,7 @@ export const WebsiteFavicon: React.FC<{
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
+  const [reloadingSite, setReloadingSite] = useState<Website | null>(null);
   const { websites, selectedWebsite, setSelectedWebsite, openTrackingModal } =
     useWebsite();
 
@@ -226,9 +228,23 @@ export const Sidebar: React.FC = () => {
     setMounted(true);
   }, []);
 
-  // Hide sidebar on auth pages, root, and control panel
+  // Switch website and perform a clean reload transition so fresh analytics are fetched and shown
+  const handleSwitchWebsite = (site: Website) => {
+    setReloadingSite(site);
+    setSelectedWebsite(site);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("histat:website_changed", { detail: site }),
+      );
+    }
+    // Smooth transition: remove overlay after analytics fetch begins
+    setTimeout(() => {
+      setReloadingSite(null);
+    }, 450);
+  };
+
+  // Hide sidebar on auth pages, root, and control panel (pathname is known immediately, no !mounted blank flash)
   if (
-    !mounted ||
     pathname === "/" ||
     pathname === "/login" ||
     pathname === "/control-panel" ||
@@ -277,15 +293,21 @@ export const Sidebar: React.FC = () => {
                     <div className="bg-[#f8fafc] w-[56px] h-[50px] rounded-l-2xl flex items-center justify-center relative z-20 pr-1 shadow-2xs">
                       <button
                         type="button"
-                        onClick={() => setSelectedWebsite(site)}
-                        title={`Active: ${site.name} (${site.domain})`}
-                        className="w-10 h-10 rounded-full bg-white flex items-center justify-center p-2 shadow-sm border border-slate-200/80 ring-2 ring-blue-500/25 cursor-pointer active:scale-95 transition-all"
+                        onClick={() => handleSwitchWebsite(site)}
+                        disabled={!!reloadingSite}
+                        title={`Active: ${site.name} (${site.domain}) - Click to reload`}
+                        className={`w-10 h-10 rounded-full bg-white flex items-center justify-center p-2 shadow-sm border border-slate-200/80 ring-2 ring-blue-500/25 cursor-pointer active:scale-95 transition-all relative ${
+                          reloadingSite?.id === site.id ? "opacity-75" : ""
+                        }`}
                       >
                         <WebsiteFavicon
                           name={site.name}
                           domain={site.domain}
                           className="w-5 h-5"
                         />
+                        {reloadingSite?.id === site.id && (
+                          <span className="absolute -inset-0.5 rounded-full border-2 border-[#1455bb] border-t-transparent animate-spin" />
+                        )}
                       </button>
                     </div>
 
@@ -307,15 +329,21 @@ export const Sidebar: React.FC = () => {
                 <button
                   key={site.id}
                   type="button"
-                  onClick={() => setSelectedWebsite(site)}
-                  title={`${site.name} (${site.domain})`}
-                  className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 border border-white/25 flex items-center justify-center p-2 shadow-xs hover:scale-105 active:scale-95 transition-all cursor-pointer group backdrop-blur-xs"
+                  onClick={() => handleSwitchWebsite(site)}
+                  disabled={!!reloadingSite}
+                  title={`Switch to: ${site.name} (${site.domain})`}
+                  className={`w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 border border-white/25 flex items-center justify-center p-2 shadow-xs hover:scale-105 active:scale-95 transition-all cursor-pointer group backdrop-blur-xs relative ${
+                    reloadingSite?.id === site.id ? "ring-2 ring-white/60" : ""
+                  }`}
                 >
                   <WebsiteFavicon
                     name={site.name}
                     domain={site.domain}
                     className="w-5 h-5 drop-shadow-xs"
                   />
+                  {reloadingSite?.id === site.id && (
+                    <span className="absolute -inset-0.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                  )}
                 </button>
               );
             })
@@ -530,6 +558,35 @@ export const Sidebar: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Full-Screen Frosted Reload Overlay when switching websites */}
+      {reloadingSite && (
+        <div className="fixed inset-0 z-[9999] bg-slate-900/25 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in pointer-events-none">
+          <div className="bg-white/95 backdrop-blur-xl border border-slate-200/90 rounded-3xl p-6 shadow-2xl flex flex-col items-center gap-3.5 max-w-xs text-center">
+            <div className="relative">
+              <div className="w-14 h-14 rounded-full bg-blue-50 border-2 border-blue-200 flex items-center justify-center shadow-xs">
+                <WebsiteFavicon
+                  name={reloadingSite.name}
+                  domain={reloadingSite.domain}
+                  className="w-7 h-7"
+                />
+              </div>
+              <div className="absolute -inset-1 rounded-full border-2 border-[#1455bb] border-t-transparent animate-spin" />
+            </div>
+            <div>
+              <div className="font-extrabold text-sm text-slate-800">
+                Loading {reloadingSite.name}...
+              </div>
+              <div className="text-xs text-slate-400 font-mono mt-0.5">
+                {reloadingSite.domain}
+              </div>
+            </div>
+            <div className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
+              Fetching fresh analytics telemetry
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 };

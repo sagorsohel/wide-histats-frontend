@@ -451,7 +451,7 @@ export default function SummaryPage() {
         {/* ============================================================ */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
           {/* KPI Cards Grid - 4 Vibrant Gradient Cards Matching Reference Design */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-4">
             <KpiCard
               title="Period Visitors"
               value={formatNumber(overview?.uniqueVisitors || 57900)}
@@ -536,7 +536,7 @@ export default function SummaryPage() {
         {/* ============================================================ */}
         {/* RIGHT COLUMN: CALENDAR (ON TOP) + LIFETIME TOTALS (BELOW)    */}
         {/* ============================================================ */}
-        <div className="w-full xl:w-80 2xl:w-88 shrink-0 space-y-5 xl:sticky xl:top-6">
+        <div className="w-full xl:w-72 2xl:w-80 shrink-0 space-y-5 xl:sticky xl:top-6">
           {/* Section 1: ALWAYS SHOWN CALENDAR (UPOR) */}
           <div className="rounded-3xl bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.04)] p-4 sm:p-5">
             <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-100">

@@ -51,7 +51,7 @@ export const Header: React.FC = () => {
           {/* ============================================================ */}
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             {/* Mobile Menu Hamburger */}
-            {mounted && !isAuthPage && !isControlPanel && (
+            {!isAuthPage && !isControlPanel && (
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -93,7 +93,7 @@ export const Header: React.FC = () => {
           <div className="flex items-center gap-2 sm:gap-2.5 lg:gap-3 shrink-0">
             
             {/* Desktop Control Panel & Website Pill (Moved to Right Side in Glass Design) */}
-            {mounted && !isAuthPage && (
+            {!isAuthPage && (
               <div className="hidden md:flex items-center gap-2 lg:gap-2.5">
                 
                 {/* 1. Control Panel Button (Frosted Glass Pill) */}
@@ -147,7 +147,7 @@ export const Header: React.FC = () => {
             )}
 
             {/* 3. Tracking Code Snippet Button (Frosted Glass Pill) */}
-            {mounted && !isAuthPage && !isControlPanel && selectedWebsite && (
+            {!isAuthPage && !isControlPanel && selectedWebsite && (
               <button
                 type="button"
                 onClick={() => openTrackingModal(selectedWebsite)}
@@ -159,9 +159,7 @@ export const Header: React.FC = () => {
             )}
 
             {/* 4. User Account Dropdown (Frosted Glass Avatar) */}
-            {!mounted ? (
-              <div className="w-9 h-9 rounded-2xl bg-slate-100 animate-pulse" />
-            ) : user ? (
+            {user ? (
               <div className="relative">
                 <button
                   type="button"
@@ -238,7 +236,7 @@ export const Header: React.FC = () => {
         </div>
 
         {/* Mobile Sub-Header: Current Website Indicator + Control Panel Button */}
-        {mounted && !isAuthPage && !isControlPanel && selectedWebsite && (
+        {!isAuthPage && !isControlPanel && selectedWebsite && (
           <div className="md:hidden border-t border-slate-200/80 bg-gradient-to-r from-slate-50 via-white to-slate-50 px-3 py-2 flex items-center justify-between gap-2 shadow-2xs">
             <div className="flex items-center gap-1.5 min-w-0">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 shrink-0">
@@ -284,7 +282,7 @@ export const Header: React.FC = () => {
         )}
 
         {/* Mobile Sub-Header on Control Panel page */}
-        {mounted && !isAuthPage && isControlPanel && (
+        {!isAuthPage && isControlPanel && (
           <div className="md:hidden border-t border-slate-200/80 bg-[#f8fafc] px-3.5 py-2 flex items-center justify-between gap-2 shadow-2xs text-xs">
             <div className="flex items-center gap-1.5 font-bold text-slate-700">
               <Sliders className="w-3.5 h-3.5 text-[#1455bb]" />
@@ -298,7 +296,7 @@ export const Header: React.FC = () => {
       </header>
 
       {/* Mobile Drawer Navigation (Visible on phones & tablets when open) */}
-      {mounted && !isAuthPage && mobileMenuOpen && (
+      {!isAuthPage && mobileMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex">
           {/* Backdrop */}
           <div

@@ -28,7 +28,7 @@ export default function RootLayout({
                 <Header />
                 <div className="flex-1 flex overflow-hidden h-[calc(100vh-4rem)]">
                   <Sidebar />
-                  <main className="flex-1 h-full overflow-y-auto p-2 sm:p-4 lg:p-6">
+                  <main className="flex-1 min-w-0 h-full overflow-y-auto p-2 sm:p-4 lg:p-6">
                     <div className="max-w-[1600px] w-full mx-auto">
                       {children}
                     </div>

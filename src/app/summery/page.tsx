@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import SummaryPage from "../summary/page";
 
 export default function SummeryPageRedirect() {
   const router = useRouter();
@@ -11,5 +10,9 @@ export default function SummeryPageRedirect() {
     router.replace("/summary");
   }, [router]);
 
-  return <SummaryPage />;
+  return (
+    <div className="p-8 text-center text-xs text-slate-400">
+      Redirecting to /summary...
+    </div>
+  );
 }

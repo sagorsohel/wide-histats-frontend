@@ -3,29 +3,34 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutGrid,
-  TrendingUp,
-  Activity,
-  Compass,
-  FileText,
-  Smartphone,
-  Globe2,
-  Globe,
-  Settings,
-  Sliders,
-  Plus,
-  Code2,
-  ChevronRight,
-} from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useWebsite } from "@/context/WebsiteContext";
 import { useAppSelector } from "@/store";
+
+// Official useAnimations animated icons (https://useanimations.com)
+import UseAnimations from "react-useanimations";
+import grid from "react-useanimations/lib/grid";
+import trendingUp from "react-useanimations/lib/trendingUp";
+import activity from "react-useanimations/lib/activity";
+import explore from "react-useanimations/lib/explore";
+import smartphone from "react-useanimations/lib/smartphone";
+import globe from "react-useanimations/lib/globe";
+import fileText from "react-useanimations/lib/fileText";
+import layers from "react-useanimations/lib/layers";
+import settings from "react-useanimations/lib/settings";
+import plusToX from "react-useanimations/lib/plusToX";
+import code from "react-useanimations/lib/code";
 
 export interface NavItem {
   href: string;
   label: string;
   subtitle: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{
+    className?: string;
+    strokeColor?: string;
+    size?: number;
+  }>;
+  animation: any;
   badge?: string;
   isLive?: boolean;
 }
@@ -35,6 +40,43 @@ export interface NavGroup {
   items: NavItem[];
 }
 
+// Helper factory to create compatible animated icon components (used in Header & Sidebar)
+export const createAnimatedIcon = (
+  animationData: any,
+  defaultSize = 18,
+  isLoop = false,
+) => {
+  const Component: React.FC<{
+    className?: string;
+    strokeColor?: string;
+    size?: number;
+  }> = ({ className = "", strokeColor, size = defaultSize }) => {
+    const determinedColor =
+      strokeColor ||
+      (className.includes("text-[#1455bb]")
+        ? "#1455bb"
+        : className.includes("text-white")
+          ? "#ffffff"
+          : "#64748b");
+
+    return (
+      <div
+        className={`inline-flex items-center justify-center shrink-0 ${className}`}
+      >
+        <UseAnimations
+          animation={animationData}
+          size={size}
+          strokeColor={determinedColor}
+          interaction="hover"
+          loop={isLoop}
+        />
+      </div>
+    );
+  };
+  Component.displayName = "AnimatedIcon";
+  return Component;
+};
+
 export const NAV_GROUPS: NavGroup[] = [
   {
     title: "Traffic & Analytics",
@@ -43,19 +85,22 @@ export const NAV_GROUPS: NavGroup[] = [
         href: "/summary",
         label: "Overview Summary",
         subtitle: "Key performance metrics",
-        icon: LayoutGrid,
+        animation: grid,
+        icon: createAnimatedIcon(grid, 18),
       },
       {
         href: "/traffic-stats",
         label: "Traffic Stats",
         subtitle: "Visitors, sessions & hits",
-        icon: TrendingUp,
+        animation: trendingUp,
+        icon: createAnimatedIcon(trendingUp, 18),
       },
       {
         href: "/realtime",
         label: "Users Online",
         subtitle: "Real-time presence",
-        icon: Activity,
+        animation: activity,
+        icon: createAnimatedIcon(activity, 18, true),
         badge: "Live",
         isLive: true,
       },
@@ -68,7 +113,8 @@ export const NAV_GROUPS: NavGroup[] = [
         href: "/sources",
         label: "Referring Sites",
         subtitle: "Search, direct & social",
-        icon: Compass,
+        animation: explore,
+        icon: createAnimatedIcon(explore, 18),
       },
     ],
   },
@@ -79,13 +125,15 @@ export const NAV_GROUPS: NavGroup[] = [
         href: "/devices",
         label: "Browsers & OS",
         subtitle: "Platforms & screen sizes",
-        icon: Smartphone,
+        animation: smartphone,
+        icon: createAnimatedIcon(smartphone, 18),
       },
       {
         href: "/geography",
         label: "Geolocation",
         subtitle: "Countries & world map",
-        icon: Globe2,
+        animation: globe,
+        icon: createAnimatedIcon(globe, 18),
       },
     ],
   },
@@ -96,7 +144,8 @@ export const NAV_GROUPS: NavGroup[] = [
         href: "/pages",
         label: "Traffic by URL",
         subtitle: "Top visited paths",
-        icon: FileText,
+        animation: fileText,
+        icon: createAnimatedIcon(fileText, 18),
       },
     ],
   },
@@ -104,16 +153,11 @@ export const NAV_GROUPS: NavGroup[] = [
     title: "System & Settings",
     items: [
       {
-        href: "/control-panel",
-        label: "Control Panel",
-        subtitle: "Manage all websites",
-        icon: Sliders,
-      },
-      {
         href: "/settings",
         label: "Settings",
         subtitle: "Preferences & tracking",
-        icon: Settings,
+        animation: settings,
+        icon: createAnimatedIcon(settings, 18),
       },
     ],
   },
@@ -123,7 +167,10 @@ export const NAV_GROUPS: NavGroup[] = [
 export const getCleanDomain = (domain: string): string => {
   if (!domain) return "";
   try {
-    return domain.replace(/^(?:https?:\/\/)?/i, "").split("/")[0].split(":")[0];
+    return domain
+      .replace(/^(?:https?:\/\/)?/i, "")
+      .split("/")[0]
+      .split(":")[0];
   } catch {
     return domain;
   }
@@ -169,7 +216,9 @@ export const Sidebar: React.FC = () => {
 
   // Reactive real-time active visitor count from Redux
   const realtimeData = useAppSelector((state) =>
-    selectedWebsite?.id ? state.realtime.byWebsite[selectedWebsite.id]?.data : null
+    selectedWebsite?.id
+      ? state.realtime.byWebsite[selectedWebsite.id]?.data
+      : null,
   );
   const activeCount = realtimeData?.activeCount;
 
@@ -190,13 +239,11 @@ export const Sidebar: React.FC = () => {
 
   return (
     <aside className="hidden md:flex flex-row shrink-0 h-full select-none border-r border-slate-200/80 shadow-xs">
-      
       {/* ============================================================ */}
       {/* COLUMN 1: Left Royal Blue Dock / Rail (Width: 64px)           */}
       {/* macOS dots + real favicons with seamless organic carved tab  */}
       {/* ============================================================ */}
       <div className="w-[64px] bg-gradient-to-b from-[#1455bb] via-[#124cb0] to-[#0f3f94] flex flex-col items-center py-3.5 shrink-0 relative z-20 shadow-[2px_0_10px_rgba(16,83,184,0.15)]">
-        
         {/* macOS Window Control Dots at top */}
         <div className="flex items-center gap-1.5 mb-5 px-2">
           <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56] shadow-2xs" />
@@ -283,9 +330,14 @@ export const Sidebar: React.FC = () => {
           <Link
             href="/websites"
             title="Add or Manage Websites"
-            className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border border-white/20 transition-all hover:scale-105 active:scale-95 cursor-pointer mt-1"
+            className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border border-white/20 transition-all hover:scale-105 active:scale-95 cursor-pointer mt-1 group"
           >
-            <Plus className="w-4 h-4" />
+            <UseAnimations
+              animation={plusToX}
+              size={18}
+              strokeColor="#ffffff"
+              interaction="hover"
+            />
           </Link>
         </div>
 
@@ -295,9 +347,14 @@ export const Sidebar: React.FC = () => {
             type="button"
             onClick={() => openTrackingModal(selectedWebsite)}
             title="Get Tracker Code"
-            className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-blue-100 flex items-center justify-center transition-all cursor-pointer mt-auto"
+            className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-blue-100 flex items-center justify-center transition-all cursor-pointer mt-auto group"
           >
-            <Code2 className="w-4 h-4" />
+            <UseAnimations
+              animation={code}
+              size={18}
+              strokeColor="#dbeafe"
+              interaction="hover"
+            />
           </button>
         )}
       </div>
@@ -307,7 +364,6 @@ export const Sidebar: React.FC = () => {
       {/* Clean card items starting directly from top                  */}
       {/* ============================================================ */}
       <div className="w-[236px] bg-[#f8fafc] flex flex-col justify-between overflow-hidden relative z-10">
-        
         {/* Navigation Cards List (Starts directly from top without redundant website block) */}
         <div className="flex-1 overflow-y-auto p-3 space-y-3.5 custom-scrollbar">
           {NAV_GROUPS.map((group) => (
@@ -318,94 +374,122 @@ export const Sidebar: React.FC = () => {
 
               <div className="space-y-1.5">
                 {group.items.map((item) => {
-                  const Icon = item.icon;
                   const isActive =
                     pathname === item.href ||
                     (item.href === "/summary" && pathname === "/summery") ||
-                    (item.href === "/control-panel" && pathname === "/websites");
+                    (item.href === "/control-panel" &&
+                      pathname === "/websites");
 
                   if (isActive) {
-                    // Active Card (Exact Glendale Project Blue Highlight Card)
+                    // Active Card with animated icon
                     return (
-                      <Link
+                      <UseAnimations
                         key={item.href}
-                        href={item.href}
-                        className="block p-3 rounded-xl bg-gradient-to-r from-[#1455bb] to-[#1a62d4] text-white shadow-md shadow-blue-600/25 transition-all group scale-[1.01]"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-7 h-7 rounded-lg bg-white/20 text-white flex items-center justify-center shrink-0 shadow-2xs">
-                              <Icon className="w-3.5 h-3.5" />
-                            </div>
-                            <div className="min-w-0">
-                              <div className="font-extrabold text-xs text-white truncate leading-tight">
-                                {item.label}
+                        animation={item.animation}
+                        size={18}
+                        strokeColor="#ffffff"
+                        interaction="hover"
+                        loop={item.isLive}
+                        render={(eventProps, animationProps) => (
+                          <Link
+                            {...eventProps}
+                            href={item.href}
+                            className="block p-3 rounded-xl bg-gradient-to-r from-[#1455bb] to-[#1a62d4] text-white shadow-md shadow-blue-600/25 transition-all group scale-[1.01]"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-7 h-7 rounded-lg bg-white/20 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                                  <span
+                                    {...animationProps}
+                                    className="flex items-center justify-center"
+                                  />
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="font-extrabold text-xs text-white truncate leading-tight">
+                                    {item.label}
+                                  </div>
+                                  <div className="text-[10px] text-blue-100/80 truncate mt-0.5">
+                                    {item.subtitle}
+                                  </div>
+                                </div>
                               </div>
-                              <div className="text-[10px] text-blue-100/80 truncate mt-0.5">
-                                {item.subtitle}
-                              </div>
-                            </div>
-                          </div>
 
-                          {item.isLive ? (
-                            <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-white text-[#1455bb] shadow-xs flex items-center gap-1 shrink-0">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                              <span>
-                                {typeof activeCount === "number" && activeCount > 0
-                                  ? `${activeCount} Live`
-                                  : "Live"}
-                              </span>
-                            </span>
-                          ) : item.badge ? (
-                            <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-white/20 text-white border border-white/30 shrink-0">
-                              {item.badge}
-                            </span>
-                          ) : (
-                            <ChevronRight className="w-3.5 h-3.5 text-white/70 shrink-0" />
-                          )}
-                        </div>
-                      </Link>
+                              {item.isLive ? (
+                                <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-white text-[#1455bb] shadow-xs flex items-center gap-1 shrink-0">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                  <span>
+                                    {typeof activeCount === "number" &&
+                                    activeCount > 0
+                                      ? `${activeCount} Live`
+                                      : "Live"}
+                                  </span>
+                                </span>
+                              ) : item.badge ? (
+                                <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-white/20 text-white border border-white/30 shrink-0">
+                                  {item.badge}
+                                </span>
+                              ) : (
+                                <ChevronRight className="w-3.5 h-3.5 text-white/70 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                              )}
+                            </div>
+                          </Link>
+                        )}
+                      />
                     );
                   }
 
-                  // Inactive Card (White card matching Medium.com & HR Sites in screenshot)
+                  // Inactive Card with animated icon
                   return (
-                    <Link
+                    <UseAnimations
                       key={item.href}
-                      href={item.href}
-                      className="block p-2.5 rounded-xl bg-white border border-slate-200/90 text-slate-800 shadow-2xs hover:border-blue-300 hover:shadow-xs hover:translate-x-0.5 transition-all group"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 group-hover:bg-blue-50 group-hover:text-blue-600 flex items-center justify-center shrink-0 transition-colors">
-                            <Icon className="w-3.5 h-3.5" />
-                          </div>
-                          <div className="min-w-0">
-                            <div className="font-bold text-xs text-slate-800 group-hover:text-blue-600 truncate leading-tight transition-colors">
-                              {item.label}
+                      animation={item.animation}
+                      size={18}
+                      strokeColor="#1455bb"
+                      interaction="hover"
+                      loop={item.isLive}
+                      render={(eventProps, animationProps) => (
+                        <Link
+                          {...eventProps}
+                          href={item.href}
+                          className="block p-2.5 rounded-xl bg-white border border-slate-200/90 text-slate-800 shadow-2xs hover:border-blue-300 hover:shadow-xs hover:translate-x-0.5 transition-all group"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="w-7 h-7 rounded-lg bg-slate-100 text-[#1455bb] group-hover:bg-blue-50 flex items-center justify-center shrink-0 transition-colors">
+                                <span
+                                  {...animationProps}
+                                  className="flex items-center justify-center"
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-bold text-xs text-slate-800 group-hover:text-blue-600 truncate leading-tight transition-colors">
+                                  {item.label}
+                                </div>
+                                <div className="text-[10px] text-slate-400 truncate mt-0.5">
+                                  {item.subtitle}
+                                </div>
+                              </div>
                             </div>
-                            <div className="text-[10px] text-slate-400 truncate mt-0.5">
-                              {item.subtitle}
-                            </div>
-                          </div>
-                        </div>
 
-                        {item.isLive ? (
-                          <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1 shrink-0">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            <span>
-                              {typeof activeCount === "number" && activeCount > 0
-                                ? activeCount
-                                : "LIVE"}
-                            </span>
-                          </span>
-                        ) : item.badge ? (
-                          <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
-                            {item.badge}
-                          </span>
-                        ) : null}
-                      </div>
-                    </Link>
+                            {item.isLive ? (
+                              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1 shrink-0">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                <span>
+                                  {typeof activeCount === "number" &&
+                                  activeCount > 0
+                                    ? activeCount
+                                    : "LIVE"}
+                                </span>
+                              </span>
+                            ) : item.badge ? (
+                              <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
+                                {item.badge}
+                              </span>
+                            ) : null}
+                          </div>
+                        </Link>
+                      )}
+                    />
                   );
                 })}
               </div>
@@ -419,18 +503,23 @@ export const Sidebar: React.FC = () => {
             <button
               type="button"
               onClick={() => openTrackingModal(selectedWebsite)}
-              className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#1455bb] hover:bg-[#1047a0] active:scale-[0.98] text-white font-bold text-xs shadow-xs shadow-blue-600/20 transition-all cursor-pointer"
+              className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#1455bb] hover:bg-[#1047a0] active:scale-[0.98] text-white font-bold text-xs shadow-xs shadow-blue-600/20 transition-all cursor-pointer group"
             >
-              <Code2 className="w-3.5 h-3.5" />
+              <UseAnimations
+                animation={code}
+                size={16}
+                strokeColor="#ffffff"
+                interaction="hover"
+              />
               <span>Get Tracking Code</span>
             </button>
           ) : (
             <Link
               href="/control-panel"
-              className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#1455bb] hover:bg-[#1047a0] active:scale-[0.98] text-white font-bold text-xs shadow-xs transition-all"
+              className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#1455bb] hover:bg-[#1047a0] active:scale-[0.98] text-white font-bold text-xs shadow-xs transition-all group"
             >
               <span>Manage Websites</span>
-              <ChevronRight className="w-3.5 h-3.5" />
+              <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           )}
 

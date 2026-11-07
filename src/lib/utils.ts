@@ -40,3 +40,23 @@ export function formatTimeAgo(timestamp: number | string): string {
   const hours = Math.floor(mins / 60);
   return `${hours}h ago`;
 }
+
+// Compute clean, unique 7-digit site ID (e.g. 4867998, 5055120) for URLs and UI
+export function getSite7DigitId(site?: {
+  id?: string;
+  displayId?: string;
+  trackingId?: string;
+} | null): string {
+  if (!site) return "";
+  if (site.displayId && site.displayId.length >= 5) return site.displayId;
+  const digits = site.trackingId?.replace(/[^0-9]/g, "");
+  if (digits && digits.length >= 7) return digits.slice(0, 7);
+  if (site.id) {
+    let hash = 0;
+    for (let i = 0; i < site.id.length; i++) {
+      hash = (hash * 31 + site.id.charCodeAt(i)) & 0xffffffff;
+    }
+    return String(4800000 + (Math.abs(hash) % 300000));
+  }
+  return "";
+}

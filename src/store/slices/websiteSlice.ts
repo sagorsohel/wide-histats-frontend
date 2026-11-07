@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { Website } from "@/types/analytics";
 import { api } from "@/lib/api";
 import { subscribeToWebsite, unsubscribeFromWebsite } from "@/lib/socket";
+import { getSite7DigitId } from "@/lib/utils";
 
 export interface WebsiteState {
   websites: Website[];
@@ -103,10 +104,26 @@ export const websiteSlice = createSlice({
       state.loading = false;
       state.websites = action.payload;
 
-      // Retain currently selected website if still in list, or select first
+      // Retain currently selected website if still in list, or prioritize URL param, or select first
       if (action.payload.length > 0) {
-        const currentId = state.selectedWebsite?.id;
-        const matched = action.payload.find((w) => w.id === currentId);
+        let preferredId: string | null = null;
+        if (typeof window !== "undefined") {
+          try {
+            const params = new URLSearchParams(window.location.search);
+            preferredId = params.get("id");
+          } catch {}
+        }
+        const currentId = preferredId || state.selectedWebsite?.id;
+        const matched = action.payload.find(
+          (w) =>
+            (preferredId &&
+              (getSite7DigitId(w) === preferredId ||
+                w.displayId === preferredId ||
+                w.trackingId === preferredId ||
+                w.id === preferredId)) ||
+            (!preferredId &&
+              (w.id === currentId || getSite7DigitId(w) === currentId))
+        );
         if (matched) {
           state.selectedWebsite = matched;
         } else {

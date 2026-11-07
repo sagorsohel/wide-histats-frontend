@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useWebsite } from "@/context/WebsiteContext";
 import { NAV_GROUPS, WebsiteFavicon } from "@/components/layout/Sidebar";
+import { getSite7DigitId } from "@/lib/utils";
 import {
   Globe,
   Code,
@@ -113,9 +114,10 @@ export const Header: React.FC = () => {
                 {/* 2. Active Website Pill (Frosted Glass with Favicon & External Link) */}
                 {selectedWebsite && (
                   <div className="flex items-center gap-1.5 bg-white/75 hover:bg-white/95 backdrop-blur-md border border-slate-200/90 hover:border-blue-300 rounded-2xl p-1 pr-1.5 shadow-2xs transition-all">
-                    <div
-                      title={`Active Website: ${selectedWebsite.name} (${selectedWebsite.domain})`}
-                      className="flex items-center gap-2 px-2 py-0.5 text-xs font-extrabold text-slate-800 select-none"
+                    <Link
+                      href={`/summary/?id=${getSite7DigitId(selectedWebsite)}`}
+                      title={`Active Website: ${selectedWebsite.name} (${selectedWebsite.domain}) - View Analytics`}
+                      className="flex items-center gap-2 px-2 py-0.5 text-xs font-extrabold text-slate-800 hover:text-[#1455bb] transition-colors select-none"
                     >
                       <WebsiteFavicon
                         name={selectedWebsite.name}
@@ -125,7 +127,7 @@ export const Header: React.FC = () => {
                       <span className="max-w-[120px] lg:max-w-[170px] truncate">
                         {selectedWebsite.name}
                       </span>
-                    </div>
+                    </Link>
 
                     {/* Direct Open Link in New Tab */}
                     <a
@@ -338,7 +340,11 @@ export const Header: React.FC = () => {
                 </div>
 
                 <div className="flex items-center justify-between bg-white border border-slate-200 rounded-xl p-2.5 text-xs shadow-2xs">
-                  <div className="flex items-center gap-2 truncate">
+                  <Link
+                    href={`/summary/?id=${getSite7DigitId(selectedWebsite)}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 truncate hover:opacity-80 transition-opacity"
+                  >
                     <WebsiteFavicon
                       name={selectedWebsite.name}
                       domain={selectedWebsite.domain}
@@ -352,7 +358,7 @@ export const Header: React.FC = () => {
                         {selectedWebsite.domain}
                       </div>
                     </div>
-                  </div>
+                  </Link>
                   <a
                     href={
                       selectedWebsite.domain.startsWith("http")
@@ -407,12 +413,22 @@ export const Header: React.FC = () => {
                       const Icon = item.icon;
                       const isActive =
                         pathname === item.href ||
-                        (item.href === "/summary" && pathname === "/summery");
+                        pathname === `${item.href}/` ||
+                        (item.href === "/summary" &&
+                          (pathname === "/summery" ||
+                            pathname === "/summery/")) ||
+                        (item.href === "/traffic-stats" &&
+                          (pathname === "/traffic" || pathname === "/traffic/"));
+
+                      const site7Digit = getSite7DigitId(selectedWebsite);
+                      const itemHref = site7Digit
+                        ? `${item.href.endsWith("/") ? item.href : `${item.href}/`}?id=${site7Digit}`
+                        : item.href;
 
                       return (
                         <Link
                           key={item.href}
-                          href={item.href}
+                          href={itemHref}
                           onClick={() => setMobileMenuOpen(false)}
                           className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                             isActive

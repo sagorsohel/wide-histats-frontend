@@ -5,7 +5,8 @@ import { CountryStat } from "@/types/analytics";
 import { Globe2, ArrowRight } from "lucide-react";
 import { CountryFlag } from "@/components/common/CountryFlag";
 import Link from "next/link";
-import { formatCommas } from "@/lib/utils";
+import { formatCommas, getSite7DigitId } from "@/lib/utils";
+import { useWebsite } from "@/context/WebsiteContext";
 
 interface GeographyTableProps {
   countries: CountryStat[];
@@ -16,10 +17,16 @@ export const GeographyTable: React.FC<GeographyTableProps> = ({
   countries,
   loading = false,
 }) => {
+  const { selectedWebsite } = useWebsite();
   // Take top 7 to match Top Cities height perfectly
   const displayCountries = countries.slice(0, 7);
   const totalVisitors =
     countries.reduce((sum, c) => sum + c.visitors, 0) || 1;
+
+  const site7Digit = getSite7DigitId(selectedWebsite);
+  const geographyHref = site7Digit
+    ? `/geography/?id=${site7Digit}`
+    : "/geography";
 
   return (
     <div className="h-full flex flex-col justify-between bg-white/80 backdrop-blur-xl backdrop-saturate-150 rounded-3xl border border-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_10px_30px_-5px_rgba(0,0,0,0.04)] p-5 sm:p-6 transition-all duration-300 hover:shadow-[0_15px_35px_-5px_rgba(0,0,0,0.06)]">
@@ -45,7 +52,7 @@ export const GeographyTable: React.FC<GeographyTableProps> = ({
               Global reach
             </span>
             <Link
-              href="/geography"
+              href={geographyHref}
               className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 group transition-colors px-2.5 py-1 rounded-full bg-blue-50/60 border border-blue-100/60 shrink-0"
             >
               <span>View all</span>

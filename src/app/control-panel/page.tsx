@@ -7,6 +7,7 @@ import { Website } from "@/types/analytics";
 import { api } from "@/lib/api";
 import { subscribeToWebsite } from "@/lib/socket";
 import { WebsiteFavicon } from "@/components/layout/Sidebar";
+import { getSite7DigitId } from "@/lib/utils";
 
 // Official useAnimations animated icons (https://useanimations.com)
 import UseAnimations from "react-useanimations";
@@ -92,7 +93,7 @@ export default function ControlPanelPage() {
     setRefreshing(false);
   };
 
-  // Select website and instantly open its analytics summary
+  // Select website and instantly open its analytics summary with 7-digit ID in URL
   const handleSelectSite = (site: Website, targetPath: string = "/summary") => {
     setSelectedWebsite(site);
     subscribeToWebsite(site.id);
@@ -101,7 +102,9 @@ export default function ControlPanelPage() {
         new CustomEvent("histat:website_changed", { detail: site }),
       );
     }
-    router.push(targetPath);
+    const cleanPath = targetPath.endsWith("/") ? targetPath : `${targetPath}/`;
+    const site7Digit = getSite7DigitId(site);
+    router.push(`${cleanPath}?id=${site7Digit}`);
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -150,16 +153,9 @@ export default function ControlPanelPage() {
     }
   };
 
-  // Compute clean display ID for each website (e.g. 4867998)
+  // Compute clean 7-digit unique display ID for each website (e.g. 4867998, 5055120)
   const getDisplayId = (site: Website): string => {
-    if (site.displayId) return site.displayId;
-    const digits = site.trackingId?.replace(/[^0-9]/g, "");
-    if (digits && digits.length >= 5) return digits.slice(0, 7);
-    let hash = 0;
-    for (let i = 0; i < site.id.length; i++) {
-      hash = (hash * 31 + site.id.charCodeAt(i)) & 0xffffffff;
-    }
-    return String(4800000 + (Math.abs(hash) % 300000));
+    return getSite7DigitId(site);
   };
 
   return (
@@ -358,10 +354,12 @@ export default function ControlPanelPage() {
                       <div className="flex flex-wrap items-center gap-2 pt-0.5">
                         {/* 1. Users Online Chip (Glowing Pulse) */}
                         <div
-                          className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border shadow-2xs transition-all ${
+                          onClick={() => handleSelectSite(site, "/realtime")}
+                          title={`View live real-time users for ${site.name}`}
+                          className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border shadow-2xs transition-all cursor-pointer hover:scale-105 active:scale-95 ${
                             usersOnline > 0
-                              ? "bg-rose-50/90 border-rose-200/90 text-rose-800"
-                              : "bg-slate-50/80 border-slate-200/80 text-slate-600"
+                              ? "bg-rose-50/90 hover:bg-rose-100/90 border-rose-200/90 text-rose-800"
+                              : "bg-slate-50/80 hover:bg-slate-100/80 border-slate-200/80 text-slate-600"
                           }`}
                         >
                           <span className="relative flex h-2 w-2 shrink-0">
@@ -389,7 +387,11 @@ export default function ControlPanelPage() {
                         </div>
 
                         {/* 2. Visitors Today Chip */}
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50/90 border border-emerald-200/90 text-emerald-900 shadow-2xs">
+                        <div
+                          onClick={() => handleSelectSite(site, "/traffic-stats")}
+                          title={`View traffic stats for ${site.name}`}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50/90 hover:bg-emerald-100/90 border border-emerald-200/90 text-emerald-900 shadow-2xs cursor-pointer hover:scale-105 active:scale-95 transition-all"
+                        >
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                           <span className="text-[11px] font-semibold text-emerald-700/80">
                             visitors today :
@@ -400,7 +402,11 @@ export default function ControlPanelPage() {
                         </div>
 
                         {/* 3. Page Views Today Chip */}
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50/90 border border-blue-200/90 text-blue-900 shadow-2xs">
+                        <div
+                          onClick={() => handleSelectSite(site, "/traffic-stats")}
+                          title={`View traffic stats for ${site.name}`}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50/90 hover:bg-blue-100/90 border border-blue-200/90 text-blue-900 shadow-2xs cursor-pointer hover:scale-105 active:scale-95 transition-all"
+                        >
                           <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
                           <span className="text-[11px] font-semibold text-blue-700/80">
                             Page views today :
@@ -411,7 +417,11 @@ export default function ControlPanelPage() {
                         </div>
 
                         {/* 4. Total Visitors Chip */}
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/80 border border-slate-200/90 text-slate-800 shadow-2xs">
+                        <div
+                          onClick={() => handleSelectSite(site, "/summary")}
+                          title={`View summary for ${site.name}`}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/80 hover:bg-slate-200/80 border border-slate-200/90 text-slate-800 shadow-2xs cursor-pointer hover:scale-105 active:scale-95 transition-all"
+                        >
                           <span className="text-[11px] font-semibold text-slate-500">
                             Total visitors :
                           </span>
@@ -421,7 +431,11 @@ export default function ControlPanelPage() {
                         </div>
 
                         {/* 5. Total Page Views Chip */}
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50/80 border border-indigo-200/80 text-indigo-950 shadow-2xs">
+                        <div
+                          onClick={() => handleSelectSite(site, "/summary")}
+                          title={`View summary for ${site.name}`}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50/80 hover:bg-indigo-100/80 border border-indigo-200/80 text-indigo-950 shadow-2xs cursor-pointer hover:scale-105 active:scale-95 transition-all"
+                        >
                           <span className="text-[11px] font-semibold text-indigo-600/90">
                             Total page views :
                           </span>

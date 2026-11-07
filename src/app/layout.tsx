@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import { StoreProvider } from "@/store/StoreProvider";
 import { AuthProvider } from "@/context/AuthContext";
@@ -6,6 +7,7 @@ import { WebsiteProvider } from "@/context/WebsiteContext";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { TrackingModalWrapper } from "@/components/analytics/TrackingModalWrapper";
+import { UrlWebsiteSync } from "@/components/common/UrlWebsiteSync";
 
 export const metadata: Metadata = {
   title: "Wide-Histat — Real-Time Website Analytics Platform",
@@ -24,6 +26,9 @@ export default function RootLayout({
         <StoreProvider>
           <AuthProvider>
             <WebsiteProvider>
+              <Suspense fallback={null}>
+                <UrlWebsiteSync />
+              </Suspense>
               <div className="h-full min-h-screen md:h-screen flex flex-col md:overflow-hidden">
                 <Header />
                 <div className="flex-1 flex overflow-hidden h-[calc(100vh-4rem)]">

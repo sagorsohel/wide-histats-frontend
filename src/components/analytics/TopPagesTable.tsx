@@ -5,6 +5,8 @@ import { PageStat } from "@/types/analytics";
 import { FileText, ArrowRight } from "lucide-react";
 import { WebsiteFavicon } from "@/components/common/WebsiteFavicon";
 import Link from "next/link";
+import { useWebsite } from "@/context/WebsiteContext";
+import { getSite7DigitId } from "@/lib/utils";
 
 interface TopPagesTableProps {
   pages: PageStat[];
@@ -17,6 +19,12 @@ export const TopPagesTable: React.FC<TopPagesTableProps> = ({
   domain,
   loading = false,
 }) => {
+  const { selectedWebsite } = useWebsite();
+  const site7Digit = getSite7DigitId(selectedWebsite);
+  const pagesHref = site7Digit
+    ? `/pages/?id=${site7Digit}`
+    : "/pages";
+
   return (
     <div className="bg-white/80 backdrop-blur-xl backdrop-saturate-150 rounded-3xl border border-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_10px_30px_-5px_rgba(0,0,0,0.04)] p-5 sm:p-6 flex flex-col justify-between transition-all duration-300 hover:shadow-[0_15px_35px_-5px_rgba(0,0,0,0.06)]">
       {/* Header */}
@@ -37,7 +45,7 @@ export const TopPagesTable: React.FC<TopPagesTableProps> = ({
           </div>
 
           <Link
-            href="/pages"
+            href={pagesHref}
             className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 group transition-colors px-2.5 py-1 rounded-full bg-blue-50/60 border border-blue-100/60"
           >
             <span>{loading ? "..." : `${pages.length} recorded`}</span>

@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { useWebsite } from "@/context/WebsiteContext";
 import { useAppSelector } from "@/store";
 import { Website } from "@/types/analytics";
+import { getSite7DigitId } from "@/lib/utils";
 
 // Official useAnimations animated icons (https://useanimations.com)
 import UseAnimations from "react-useanimations";
@@ -210,6 +211,7 @@ export const WebsiteFavicon: React.FC<{
 };
 
 export const Sidebar: React.FC = () => {
+  const router = useRouter();
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const [reloadingSite, setReloadingSite] = useState<Website | null>(null);
@@ -228,14 +230,34 @@ export const Sidebar: React.FC = () => {
     setMounted(true);
   }, []);
 
+  // Helper to generate URLs with 7-digit ID format: /<page>/?id=<7-digit-id>
+  const getHref = (href: string) => {
+    const site7Digit = getSite7DigitId(selectedWebsite);
+    if (!site7Digit) return href;
+    const cleanHref = href.endsWith("/") ? href : `${href}/`;
+    return `${cleanHref}?id=${site7Digit}`;
+  };
+
   // Switch website and perform a clean reload transition so fresh analytics are fetched and shown
   const handleSwitchWebsite = (site: Website) => {
+    if (selectedWebsite?.id === site.id) return;
     setReloadingSite(site);
     setSelectedWebsite(site);
     if (typeof window !== "undefined") {
       window.dispatchEvent(
         new CustomEvent("histat:website_changed", { detail: site }),
       );
+      if (
+        pathname !== "/" &&
+        pathname !== "/login" &&
+        pathname !== "/control-panel" &&
+        pathname !== "/websites"
+      ) {
+        const cleanPath = pathname.endsWith("/") ? pathname : `${pathname}/`;
+        const site7Digit = getSite7DigitId(site);
+        window.history.replaceState(null, "", `${cleanPath}?id=${site7Digit}`);
+        router.push(`${cleanPath}?id=${site7Digit}`);
+      }
     }
     // Smooth transition: remove overlay after analytics fetch begins
     setTimeout(() => {
@@ -404,9 +426,15 @@ export const Sidebar: React.FC = () => {
                 {group.items.map((item) => {
                   const isActive =
                     pathname === item.href ||
-                    (item.href === "/summary" && pathname === "/summery") ||
+                    pathname === `${item.href}/` ||
+                    (item.href === "/summary" &&
+                      (pathname === "/summery" || pathname === "/summery/")) ||
+                    (item.href === "/traffic-stats" &&
+                      (pathname === "/traffic" || pathname === "/traffic/")) ||
                     (item.href === "/control-panel" &&
-                      pathname === "/websites");
+                      (pathname === "/websites" || pathname === "/websites/"));
+
+                  const itemHref = getHref(item.href);
 
                   if (isActive) {
                     // Active Card with animated icon
@@ -421,7 +449,7 @@ export const Sidebar: React.FC = () => {
                         render={(eventProps, animationProps) => (
                           <Link
                             {...eventProps}
-                            href={item.href}
+                            href={itemHref}
                             className="block p-3 rounded-xl bg-gradient-to-r from-[#1455bb] to-[#1a62d4] text-white shadow-md shadow-blue-600/25 transition-all group scale-[1.01]"
                           >
                             <div className="flex items-start justify-between gap-2">
@@ -478,7 +506,7 @@ export const Sidebar: React.FC = () => {
                       render={(eventProps, animationProps) => (
                         <Link
                           {...eventProps}
-                          href={item.href}
+                          href={itemHref}
                           className="block p-2.5 rounded-xl bg-white border border-slate-200/90 text-slate-800 shadow-2xs hover:border-blue-300 hover:shadow-xs hover:translate-x-0.5 transition-all group"
                         >
                           <div className="flex items-start justify-between gap-2">

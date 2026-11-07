@@ -1,18 +1,28 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function SummeryPageRedirect() {
+function SummeryRedirect() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
 
   useEffect(() => {
-    router.replace("/summary");
-  }, [router]);
+    router.replace(id ? `/summary/?id=${id}` : "/summary");
+  }, [router, id]);
 
   return (
     <div className="p-8 text-center text-xs text-slate-400">
       Redirecting to /summary...
     </div>
+  );
+}
+
+export default function SummeryPageRedirect() {
+  return (
+    <Suspense fallback={null}>
+      <SummeryRedirect />
+    </Suspense>
   );
 }

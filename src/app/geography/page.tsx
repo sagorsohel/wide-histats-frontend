@@ -220,21 +220,37 @@ export default function GeographyPage() {
           </p>
         </div>
 
-        <DateRangePicker
-          selectedRange={range}
-          onChange={handleRangeChange}
-          customWindow={customWindow}
-          onCustomRangeChange={handleCustomRangeChange}
-        />
+        {/* Current Active Range indicator Pill */}
+        <div className="flex items-center gap-2">
+          <div className="px-3.5 py-1.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center gap-2">
+            <span className="text-[11px] font-bold text-slate-500">Active Window:</span>
+            <span className="px-2.5 py-0.5 rounded-xl bg-blue-100/80 text-[#1455bb] border border-blue-200/90 text-xs font-black">
+              {customWindow?.label ||
+                (range === "today"
+                  ? "Today"
+                  : range === "yesterday"
+                  ? "Yesterday"
+                  : range === "7d"
+                  ? "Last 7 Days"
+                  : "Last 30 Days")}
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* Privacy Notice Alert per specification */}
-      <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200/80 backdrop-blur-md flex items-start gap-3 text-xs text-slate-700 shadow-2xs">
-        <Info className="w-4 h-4 text-[#1d5b9f] shrink-0 mt-0.5" />
-        <p className="leading-relaxed">
-          <strong className="text-slate-900 font-semibold">Privacy Notice:</strong> IP-based geolocation is approximate and derived safely on the server side without storing raw IP addresses. Locations may be affected by VPNs, proxies, and cellular towers.
-        </p>
-      </div>
+      {/* 2-Column Responsive Layout: Left (Main Content), Right (Always Shown Calendar) */}
+      <div className="flex flex-col xl:flex-row gap-6 items-start relative z-10">
+        {/* ============================================================ */}
+        {/* LEFT / MAIN CONTENT COLUMN                                   */}
+        {/* ============================================================ */}
+        <div className="flex-1 min-w-0 space-y-6 w-full">
+          {/* Privacy Notice Alert per specification */}
+          <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200/80 backdrop-blur-md flex items-start gap-3 text-xs text-slate-700 shadow-2xs">
+            <Info className="w-4 h-4 text-[#1d5b9f] shrink-0 mt-0.5" />
+            <p className="leading-relaxed">
+              <strong className="text-slate-900 font-semibold">Privacy Notice:</strong> IP-based geolocation is approximate and derived safely on the server side without storing raw IP addresses. Locations may be affected by VPNs, proxies, and cellular towers.
+            </p>
+          </div>
 
       {/* Interactive Global Telemetry Map */}
       <div className="bg-white/80 backdrop-blur-xl backdrop-saturate-150 p-5 sm:p-6 rounded-3xl border border-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_10px_30px_-5px_rgba(0,0,0,0.04)] space-y-4">
@@ -486,15 +502,46 @@ export default function GeographyPage() {
             )}
           </div>
 
-          {/* Footer Info */}
-          <div className="mt-4 pt-3 border-t border-slate-100/80 flex items-center justify-between text-[11px] text-slate-400">
-            <span>Urban centers &amp; regional traffic</span>
-            <span className="font-semibold text-slate-500">
-              {formatCommas(citiesTotalVisitors)} visits in top metros
-            </span>
+            {/* Footer Info */}
+            <div className="mt-4 pt-3 border-t border-slate-100/80 flex items-center justify-between text-[11px] text-slate-400">
+              <span>Urban centers &amp; regional traffic</span>
+              <span className="font-semibold text-slate-500">
+                {formatCommas(citiesTotalVisitors)} visits in top metros
+              </span>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* ============================================================ */}
+      {/* RIGHT COLUMN: ALWAYS SHOWN CALENDAR                          */}
+      {/* ============================================================ */}
+      <div className="w-full xl:w-80 2xl:w-88 shrink-0 space-y-5 xl:sticky xl:top-6">
+        <div className="rounded-3xl bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.04)] p-4 sm:p-5 space-y-3">
+          <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-4.5 rounded-full bg-gradient-to-b from-[#1455bb] to-blue-400 shadow-sm" />
+              <h3 className="text-xs font-black uppercase tracking-wider text-slate-800">
+                Analytics Calendar
+              </h3>
+            </div>
+            {customWindow?.label ? (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-100 text-[#1455bb] border border-blue-200">
+                {customWindow.label}
+              </span>
+            ) : null}
+          </div>
+
+          <DateRangePicker
+            inline={true}
+            selectedRange={range}
+            onChange={handleRangeChange}
+            customWindow={customWindow}
+            onCustomRangeChange={handleCustomRangeChange}
+          />
+        </div>
+      </div>
     </div>
+  </div>
   );
 }

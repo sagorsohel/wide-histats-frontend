@@ -190,23 +190,40 @@ export default function PagesReportPage() {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80">
         <div>
           <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Pages & Content Performance
+            Pages &amp; Content Performance
           </h1>
           <p className="text-xs text-slate-500 mt-1">
             Analyze visitor flow, entry landing pages, and drop-off exit pages
           </p>
         </div>
 
-        <DateRangePicker
-          selectedRange={range}
-          onChange={handleRangeChange}
-          customWindow={customWindow}
-          onCustomRangeChange={handleCustomRangeChange}
-        />
+        {/* Current Active Range indicator Pill */}
+        <div className="flex items-center gap-2">
+          <div className="px-3.5 py-1.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center gap-2">
+            <span className="text-[11px] font-bold text-slate-500">Active Window:</span>
+            <span className="px-2.5 py-0.5 rounded-xl bg-blue-100/80 text-[#1455bb] border border-blue-200/90 text-xs font-black">
+              {customWindow?.label ||
+                (range === "today"
+                  ? "Today"
+                  : range === "yesterday"
+                  ? "Yesterday"
+                  : range === "7d"
+                  ? "Last 7 Days"
+                  : "Last 30 Days")}
+            </span>
+          </div>
+        </div>
       </div>
+
+      {/* 2-Column Responsive Layout: Left (Main Tables), Right (Always Shown Calendar) */}
+      <div className="flex flex-col xl:flex-row gap-6 items-start relative z-10">
+        {/* ============================================================ */}
+        {/* LEFT / MAIN CONTENT COLUMN                                   */}
+        {/* ============================================================ */}
+        <div className="flex-1 min-w-0 space-y-6 w-full">
 
       {/* Top Pages Table */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
@@ -420,5 +437,36 @@ export default function PagesReportPage() {
         </div>
       </div>
     </div>
+
+    {/* ============================================================ */}
+    {/* RIGHT COLUMN: ALWAYS SHOWN CALENDAR                          */}
+    {/* ============================================================ */}
+    <div className="w-full xl:w-80 2xl:w-88 shrink-0 space-y-5 xl:sticky xl:top-6">
+      <div className="rounded-3xl bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.04)] p-4 sm:p-5 space-y-3">
+        <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-4.5 rounded-full bg-gradient-to-b from-[#1455bb] to-blue-400 shadow-sm" />
+            <h3 className="text-xs font-black uppercase tracking-wider text-slate-800">
+              Analytics Calendar
+            </h3>
+          </div>
+          {customWindow?.label ? (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-100 text-[#1455bb] border border-blue-200">
+              {customWindow.label}
+            </span>
+          ) : null}
+        </div>
+
+        <DateRangePicker
+          inline={true}
+          selectedRange={range}
+          onChange={handleRangeChange}
+          customWindow={customWindow}
+          onCustomRangeChange={handleCustomRangeChange}
+        />
+      </div>
+    </div>
+  </div>
+</div>
   );
 }

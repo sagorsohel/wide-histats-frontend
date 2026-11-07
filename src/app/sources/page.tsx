@@ -281,146 +281,142 @@ export default function SourcesPage() {
 
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+    <div className="space-y-6 select-text antialiased">
       {/* Page Title & Navigation Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#1d5b9f] to-[#144275] flex items-center justify-center text-white shadow-md shadow-blue-900/10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#1d5b9f] to-[#144275] flex items-center justify-center text-white shadow-md shadow-blue-900/10 shrink-0">
             <Compass className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
               Referring Sites Summary
             </h1>
-            <p className="text-xs text-slate-500 font-medium">
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
               Detailed referrer URL telemetry, bounce rates, pages per visit & visitor attribution
             </p>
           </div>
         </div>
 
-        {/* RESTORE PREVIOUS DESKTOP HEADER CONTROLS (hidden on mobile, visible on desktop lg:flex) */}
-        <div className="hidden lg:flex items-center gap-2">
-          <DateRangePicker
-            selectedRange={customWindow ? ("today" as RangeOption) : range}
-            onChange={handleRangeChange}
-            customWindow={customWindow}
-            onCustomRangeChange={handleCalendarDateChange}
-          />
-        </div>
-      </div>
-
-      {/* TOP SECTION: TABLE & CALENDAR */}
-      {/* On mobile (< lg): Calendar is FIRST (order-1), Summary Table is SECOND (order-2) */}
-      {/* On desktop (lg+): Summary Table is LEFT (lg:order-1 lg:col-span-7 xl:col-span-8), Calendar is RIGHT (lg:order-2 lg:col-span-5 xl:col-span-4) - EXACT PREVIOUS VIEW! */}
-      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-5 items-start">
-        {/* 1. HISTATS SUMMARY COMPARISON TABLE (order-2 on mobile, lg:order-1 on desktop) */}
-        <div className="w-full order-2 lg:order-1 lg:col-span-7 xl:col-span-8 bg-white rounded-xl border border-[#c5d8eb] shadow-xs overflow-hidden">
-          <div className="w-full overflow-x-auto scrollbar-none">
-            <table className="w-full text-left border-collapse min-w-full">
-              <thead>
-                <tr className="bg-gradient-to-r from-[#1d5796] via-[#215f9e] to-[#1a4a7f] text-white text-[11px] sm:text-xs font-bold border-b border-[#164375]">
-                  <th className="py-2.5 px-2.5 sm:px-3.5 tracking-wide text-left font-bold text-white/95">
-                    Summary
-                  </th>
-                  <th className="py-2.5 px-2 sm:px-3 text-right tracking-wide font-bold text-white/95 whitespace-nowrap lg:w-28">
-                    Stats summary
-                  </th>
-                  <th className="py-2.5 px-2 sm:px-3 text-right tracking-wide font-bold text-white/95 whitespace-nowrap lg:w-32">
-                    Referrer summary
-                  </th>
-                  <th className="py-2.5 px-2 sm:px-3 text-right tracking-wide font-bold text-white/95 whitespace-nowrap lg:w-28">
-                    (%)
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="text-[11px] sm:text-xs font-medium divide-y divide-slate-100">
-                {/* Row 1: Total page views */}
-                <tr className="hover:bg-slate-50/80 transition-colors">
-                  <td className="py-2.5 px-2.5 sm:px-3.5 text-slate-800 font-medium">
-                    Total page views
-                  </td>
-                  <td className="py-2.5 px-2 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
-                    {loading && !data ? "..." : summary.totalPageviews.toLocaleString()}
-                  </td>
-                  <td className="py-2.5 px-2 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
-                    {loading && !data ? "..." : summary.refPageviews.toLocaleString()}
-                  </td>
-                  <td className="py-2.5 px-2 sm:px-3 text-right font-semibold text-[#1d5b9f] tabular-nums whitespace-nowrap">
-                    {loading && !data ? "..." : `(${summary.pageviewsPct.toFixed(2)} %)`}
-                  </td>
-                </tr>
-
-                {/* Row 2: Total visitors (Iconic Soft Green Highlight in Histats matching user's photo!) */}
-                <tr className="bg-[#eef8e8] hover:bg-[#e4f3dc] transition-colors border-y border-[#d5ebcc]">
-                  <td className="py-2.5 px-2.5 sm:px-3.5 text-emerald-950 font-bold flex items-center gap-1.5 whitespace-nowrap">
-                    <span className="w-2 h-2 rounded-full bg-emerald-600 inline-block shrink-0" />
-                    <span>Total visitors</span>
-                  </td>
-                  <td className="py-2.5 px-2 sm:px-3 text-right font-black text-slate-950 tabular-nums whitespace-nowrap">
-                    {loading && !data ? "..." : summary.totalVisitors.toLocaleString()}
-                  </td>
-                  <td className="py-2.5 px-2 sm:px-3 text-right font-black text-slate-950 tabular-nums whitespace-nowrap">
-                    {loading && !data ? "..." : summary.refVisitors.toLocaleString()}
-                  </td>
-                  <td className="py-2.5 px-2 sm:px-3 text-right font-bold text-[#1d5b9f] tabular-nums whitespace-nowrap">
-                    {loading && !data ? "..." : `(${summary.visitorsPct.toFixed(2)} %)`}
-                  </td>
-                </tr>
-
-                {/* Row 3: Total new visitors */}
-                <tr className="hover:bg-slate-50/80 transition-colors">
-                  <td className="py-2.5 px-2.5 sm:px-3.5 text-slate-800 font-medium">
-                    Total new visitors
-                  </td>
-                  <td className="py-2.5 px-2 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
-                    {loading && !data ? "..." : summary.totalNewVisitors.toLocaleString()}
-                  </td>
-                  <td className="py-2.5 px-2 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
-                    {loading && !data ? "..." : summary.refNewVisitors.toLocaleString()}
-                  </td>
-                  <td className="py-2.5 px-2 sm:px-3 text-right font-semibold text-[#1d5b9f] tabular-nums whitespace-nowrap">
-                    {loading && !data ? "..." : `(${summary.newVisitorsPct.toFixed(2)} %)`}
-                  </td>
-                </tr>
-
-                {/* Row 4: Page views per visit */}
-                <tr className="hover:bg-slate-50/80 transition-colors">
-                  <td className="py-2.5 px-2.5 sm:px-3.5 text-slate-800 font-medium">
-                    Page views per visit
-                  </td>
-                  <td className="py-2.5 px-2 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
-                    {loading && !data ? "..." : summary.totalPpv.toFixed(2)}
-                  </td>
-                  <td className="py-2.5 px-2 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
-                    {loading && !data ? "..." : summary.refPpv.toFixed(1)}
-                  </td>
-                  <td
-                    className={`py-2.5 px-2 sm:px-3 text-right font-semibold tabular-nums whitespace-nowrap ${
-                      summary.ppvDiffPct < 0 ? "text-rose-600" : "text-[#1d5b9f]"
-                    }`}
-                  >
-                    {loading && !data
-                      ? "..."
-                      : `(${summary.ppvDiffPct > 0 ? "+" : ""}${summary.ppvDiffPct.toFixed(1)}%)`}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+        {/* Current Active Range indicator Pill */}
+        <div className="flex items-center gap-2">
+          <div className="px-3.5 py-1.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center gap-2">
+            <span className="text-[11px] font-bold text-slate-500">Active Window:</span>
+            <span className="px-2.5 py-0.5 rounded-xl bg-blue-100/80 text-[#1455bb] border border-blue-200/90 text-xs font-black">
+              {customWindow?.label ||
+                (range === "today"
+                  ? "Today"
+                  : range === "yesterday"
+                  ? "Yesterday"
+                  : range === "7d"
+                  ? "Last 7 Days"
+                  : "Last 30 Days")}
+            </span>
           </div>
         </div>
-
-        {/* 2. CALENDAR CARD (order-1 on mobile: positioned ABOVE table; lg:order-2 on desktop: positioned on the RIGHT side!) */}
-        <div className="w-full order-1 lg:order-2 lg:col-span-5 xl:col-span-4 bg-white rounded-xl border border-[#c5d8eb] shadow-xs p-3.5 sm:p-4">
-          <HistatsCalendar
-            selectedPreset={range}
-            onPresetChange={handleRangeChange}
-            onDateChange={handleCalendarDateChange}
-            currentWindow={customWindow}
-            showNewAndLost={showNewAndLost}
-            onToggleNewAndLost={setShowNewAndLost}
-          />
-        </div>
       </div>
+
+      {/* 2-Column Responsive Layout: Left (Main Tables), Right (Always Shown Calendar) */}
+      <div className="flex flex-col xl:flex-row gap-6 items-start relative z-10">
+        {/* ============================================================ */}
+        {/* LEFT / MAIN CONTENT COLUMN                                   */}
+        {/* ============================================================ */}
+        <div className="flex-1 min-w-0 space-y-6 w-full">
+          {/* 1. HISTATS SUMMARY COMPARISON TABLE */}
+          <div className="w-full bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="w-full overflow-x-auto scrollbar-none">
+              <table className="w-full text-left border-collapse min-w-full">
+                <thead>
+                  <tr className="bg-gradient-to-r from-[#1d5796] via-[#215f9e] to-[#1a4a7f] text-white text-[11px] sm:text-xs font-bold border-b border-[#164375]">
+                    <th className="py-2.5 px-3 sm:px-4 tracking-wide text-left font-bold text-white/95">
+                      Summary
+                    </th>
+                    <th className="py-2.5 px-2.5 sm:px-3 text-right tracking-wide font-bold text-white/95 whitespace-nowrap lg:w-28">
+                      Stats summary
+                    </th>
+                    <th className="py-2.5 px-2.5 sm:px-3 text-right tracking-wide font-bold text-white/95 whitespace-nowrap lg:w-32">
+                      Referrer summary
+                    </th>
+                    <th className="py-2.5 px-2.5 sm:px-3 text-right tracking-wide font-bold text-white/95 whitespace-nowrap lg:w-28">
+                      (%)
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="text-[11px] sm:text-xs font-medium divide-y divide-slate-100">
+                  {/* Row 1: Total page views */}
+                  <tr className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-2.5 px-3 sm:px-4 text-slate-800 font-medium">
+                      Total page views
+                    </td>
+                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
+                      {loading && !data ? "..." : summary.totalPageviews.toLocaleString()}
+                    </td>
+                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
+                      {loading && !data ? "..." : summary.refPageviews.toLocaleString()}
+                    </td>
+                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-semibold text-[#1d5b9f] tabular-nums whitespace-nowrap">
+                      {loading && !data ? "..." : `(${summary.pageviewsPct.toFixed(2)} %)`}
+                    </td>
+                  </tr>
+
+                  {/* Row 2: Total visitors (Soft Green Highlight) */}
+                  <tr className="bg-[#eef8e8] hover:bg-[#e4f3dc] transition-colors border-y border-[#d5ebcc]">
+                    <td className="py-2.5 px-3 sm:px-4 text-emerald-950 font-bold flex items-center gap-1.5 whitespace-nowrap">
+                      <span className="w-2 h-2 rounded-full bg-emerald-600 inline-block shrink-0" />
+                      <span>Total visitors</span>
+                    </td>
+                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-black text-slate-950 tabular-nums whitespace-nowrap">
+                      {loading && !data ? "..." : summary.totalVisitors.toLocaleString()}
+                    </td>
+                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-black text-slate-950 tabular-nums whitespace-nowrap">
+                      {loading && !data ? "..." : summary.refVisitors.toLocaleString()}
+                    </td>
+                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-[#1d5b9f] tabular-nums whitespace-nowrap">
+                      {loading && !data ? "..." : `(${summary.visitorsPct.toFixed(2)} %)`}
+                    </td>
+                  </tr>
+
+                  {/* Row 3: Total new visitors */}
+                  <tr className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-2.5 px-3 sm:px-4 text-slate-800 font-medium">
+                      Total new visitors
+                    </td>
+                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
+                      {loading && !data ? "..." : summary.totalNewVisitors.toLocaleString()}
+                    </td>
+                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
+                      {loading && !data ? "..." : summary.refNewVisitors.toLocaleString()}
+                    </td>
+                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-semibold text-[#1d5b9f] tabular-nums whitespace-nowrap">
+                      {loading && !data ? "..." : `(${summary.newVisitorsPct.toFixed(2)} %)`}
+                    </td>
+                  </tr>
+
+                  {/* Row 4: Page views per visit */}
+                  <tr className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-2.5 px-3 sm:px-4 text-slate-800 font-medium">
+                      Page views per visit
+                    </td>
+                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
+                      {loading && !data ? "..." : summary.totalPpv.toFixed(2)}
+                    </td>
+                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
+                      {loading && !data ? "..." : summary.refPpv.toFixed(1)}
+                    </td>
+                    <td
+                      className={`py-2.5 px-2.5 sm:px-3 text-right font-semibold tabular-nums whitespace-nowrap ${
+                        summary.ppvDiffPct < 0 ? "text-rose-600" : "text-[#1d5b9f]"
+                      }`}
+                    >
+                      {loading && !data
+                        ? "..."
+                        : `(${summary.ppvDiffPct > 0 ? "+" : ""}${summary.ppvDiffPct.toFixed(1)}%)`}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
       {/* SUBHEADER CONTROLS BAR: Total rows, Page numbers, and Rows to show */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#f8fafc] border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-700">
@@ -877,5 +873,47 @@ export default function SourcesPage() {
         </div>
       </div>
     </div>
+
+    {/* ============================================================ */}
+    {/* RIGHT COLUMN: ALWAYS SHOWN CALENDAR                          */}
+    {/* ============================================================ */}
+    <div className="w-full xl:w-80 2xl:w-88 shrink-0 space-y-5 xl:sticky xl:top-6">
+      <div className="rounded-3xl bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.04)] p-4 sm:p-5 space-y-3">
+        <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-4.5 rounded-full bg-gradient-to-b from-[#1455bb] to-blue-400 shadow-sm" />
+            <h3 className="text-xs font-black uppercase tracking-wider text-slate-800">
+              Analytics Calendar
+            </h3>
+          </div>
+          {customWindow?.label ? (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-100 text-[#1455bb] border border-blue-200">
+              {customWindow.label}
+            </span>
+          ) : null}
+        </div>
+
+        <DateRangePicker
+          inline={true}
+          selectedRange={range}
+          onChange={handleRangeChange}
+          customWindow={customWindow}
+          onCustomRangeChange={handleCalendarDateChange}
+        />
+
+        {/* Show new and lost referrers checkbox */}
+        <label className="flex items-center gap-2 pt-2.5 border-t border-slate-100 text-xs font-semibold text-slate-700 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={showNewAndLost}
+            onChange={(e) => setShowNewAndLost(e.target.checked)}
+            className="w-4 h-4 rounded border-slate-300 text-[#1455bb] focus:ring-blue-500 cursor-pointer"
+          />
+          <span>Show new and lost referrers</span>
+        </label>
+      </div>
+    </div>
+  </div>
+</div>
   );
 }

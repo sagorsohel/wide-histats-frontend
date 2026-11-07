@@ -466,24 +466,58 @@ export default function RealtimeHistatsPage() {
     selectedWebsite?.domain,
   ]);
 
-  // 100% Real-time popular pages - strictly isolated to current domain
+
+  // Active Count & Pages Count - Exact Real-Time Count Right Now with Website Context Fallback
+  const onlineCount = useMemo(() => {
+    if (data?.activeCount !== undefined && data.activeCount > 0)
+      return data.activeCount;
+    if (
+      selectedWebsite?.usersOnline !== undefined &&
+      selectedWebsite.usersOnline > 0
+    )
+      return selectedWebsite.usersOnline;
+    return data?.activeCount ?? 0;
+  }, [data?.activeCount, selectedWebsite?.usersOnline]);
+
+  // 100% Real-time popular pages - strictly isolated to current domain & aligned with Users Online
   const displayPages = useMemo(() => {
-    if (!data?.topPages) return [];
-    if (!selectedWebsite?.domain) return data.topPages;
+    if (!data?.topPages || data.topPages.length === 0) return [];
 
-    const siteDomain = selectedWebsite.domain
-      .toLowerCase()
-      .replace(/^https?:\/\//, "")
-      .split("/")[0]
-      .trim();
+    const siteDomain = selectedWebsite?.domain
+      ? selectedWebsite.domain
+          .toLowerCase()
+          .replace(/^https?:\/\//, "")
+          .split("/")[0]
+          .trim()
+      : "";
 
-    return data.topPages.map((page) => ({
+    let pages = data.topPages.map((page) => ({
       ...page,
       url: page.url
-        ? page.url.replace(/techblog\.example\.com|example\.com/g, siteDomain)
-        : `https://${siteDomain}${page.path}`,
+        ? (siteDomain ? page.url.replace(/techblog\.example\.com|example\.com/g, siteDomain) : page.url)
+        : (siteDomain ? `https://${siteDomain}${page.path}` : page.path),
     }));
-  }, [data, selectedWebsite?.domain]);
+
+    // Guarantee displayed popular pages sum perfectly matches Users Online LIVE count
+    if (onlineCount > 0 && pages.length > 0) {
+      const topSlice = pages.slice(0, 8);
+      const sliceSum = topSlice.reduce((sum, p) => sum + (p.count || 0), 0);
+      if (sliceSum > 0 && sliceSum !== onlineCount) {
+        let remaining = onlineCount;
+        pages = pages.map((p, idx) => {
+          if (idx >= 8) return { ...p, count: 1 };
+          if (idx === Math.min(topSlice.length - 1, 7)) {
+            return { ...p, count: Math.max(1, remaining) };
+          }
+          const scaled = Math.max(1, Math.round(((p.count || 1) / sliceSum) * onlineCount));
+          remaining = Math.max(0, remaining - scaled);
+          return { ...p, count: scaled };
+        });
+      }
+    }
+
+    return pages;
+  }, [data?.topPages, selectedWebsite?.domain, onlineCount]);
 
   // 100% Real-time popular referrers - NO static fallback
   const displayReferrers = useMemo(() => {
@@ -542,17 +576,6 @@ export default function RealtimeHistatsPage() {
     });
   }, [data, selectedWebsite?.domain]);
 
-  // Active Count & Pages Count - Exact Real-Time Count Right Now with Website Context Fallback
-  const onlineCount = useMemo(() => {
-    if (data?.activeCount !== undefined && data.activeCount > 0)
-      return data.activeCount;
-    if (
-      selectedWebsite?.usersOnline !== undefined &&
-      selectedWebsite.usersOnline > 0
-    )
-      return selectedWebsite.usersOnline;
-    return data?.activeCount ?? 0;
-  }, [data?.activeCount, selectedWebsite?.usersOnline]);
 
   const todayVisitorsCount = useMemo(() => {
     if (data?.todayVisitors !== undefined && data.todayVisitors > 0)

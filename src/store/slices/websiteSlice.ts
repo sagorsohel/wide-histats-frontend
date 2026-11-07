@@ -23,7 +23,7 @@ const getStoredSelectedWebsite = (): Website | null => {
 
 const initialState: WebsiteState = {
   websites: [],
-  selectedWebsite: getStoredSelectedWebsite(),
+  selectedWebsite: null,
   loading: false,
   trackingModalWebsite: null,
 };

@@ -5,6 +5,24 @@ import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Plus, Minus, RotateCcw, Maximize2, Minimize2, MapPin } from "lucide-react";
 
+// Point MapLibre directly to static public worker to eliminate 404 HTML mime type error
+if (typeof window !== "undefined") {
+  try {
+    if ((maplibregl as any)?.config) {
+      (maplibregl as any).config.WORKER_URL = "/maplibre-gl-worker.mjs";
+    }
+  } catch {}
+}
+
+// Point MapLibre directly to static public worker to eliminate 404 HTML mime type error
+if (typeof window !== "undefined") {
+  try {
+    if ((maplibregl as any)?.config) {
+      (maplibregl as any).config.WORKER_URL = "/maplibre-gl-worker.mjs";
+    }
+  } catch {}
+}
+
 // Known coordinates [longitude, latitude] for major countries
 const COUNTRY_COORDS: Record<string, [number, number]> = {
   BD: [90.3563, 23.685],

@@ -43,6 +43,19 @@ export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [user, dispatch]);
 
+  // Client-side hydration of selectedWebsite after SSR mount (prevents React #418 hydration mismatch)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("histat_selected_website");
+      if (raw) {
+        const stored = JSON.parse(raw);
+        if (stored && !selectedWebsite) {
+          dispatch(setSelectedWebsiteAction(stored));
+        }
+      }
+    } catch {}
+  }, [dispatch, selectedWebsite]);
+
   useEffect(() => {
     if (user) {
       dispatch(fetchWebsites());

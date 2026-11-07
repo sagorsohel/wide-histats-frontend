@@ -6,21 +6,20 @@ import { useWebsite } from "@/context/WebsiteContext";
 import { Website } from "@/types/analytics";
 import { api } from "@/lib/api";
 import { subscribeToWebsite } from "@/lib/socket";
-import {
-  ExternalLink,
-  Lock,
-  Unlock,
-  BarChart2,
-  Wrench,
-  X,
-  Plus,
-  RefreshCw,
-  Globe,
-  Code,
-  Check,
-  AlertTriangle,
-  Trash2,
-} from "lucide-react";
+import { WebsiteFavicon } from "@/components/layout/Sidebar";
+
+// Official useAnimations animated icons (https://useanimations.com)
+import UseAnimations from "react-useanimations";
+import activity from "react-useanimations/lib/activity";
+import alertTriangle from "react-useanimations/lib/alertTriangle";
+import clock from "react-useanimations/lib/clock";
+import externalLink from "react-useanimations/lib/externalLink";
+import lock from "react-useanimations/lib/lock";
+import plusToX from "react-useanimations/lib/plusToX";
+import refresh from "react-useanimations/lib/refresh";
+import settings from "react-useanimations/lib/settings";
+import trash2 from "react-useanimations/lib/trash2";
+import globe from "react-useanimations/lib/globe";
 
 export default function ControlPanelPage() {
   const router = useRouter();
@@ -41,7 +40,9 @@ export default function ControlPanelPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [deleteConfirmSite, setDeleteConfirmSite] = useState<Website | null>(null);
+  const [deleteConfirmSite, setDeleteConfirmSite] = useState<Website | null>(
+    null,
+  );
   const [deleting, setDeleting] = useState(false);
 
   // Dynamic live snapshot time
@@ -54,7 +55,7 @@ export default function ControlPanelPage() {
       minute: "2-digit",
       second: "2-digit",
       hour12: true,
-    })
+    }),
   );
 
   useEffect(() => {
@@ -68,7 +69,7 @@ export default function ControlPanelPage() {
           minute: "2-digit",
           second: "2-digit",
           hour12: true,
-        })
+        }),
       );
     }, 10000);
     return () => clearInterval(timer);
@@ -86,18 +87,18 @@ export default function ControlPanelPage() {
         minute: "2-digit",
         second: "2-digit",
         hour12: true,
-      })
+      }),
     );
     setRefreshing(false);
   };
 
-  // Select website and instantly open its realtime analytics
-  const handleSelectSite = (site: Website, targetPath: string = "/realtime") => {
+  // Select website and instantly open its analytics summary
+  const handleSelectSite = (site: Website, targetPath: string = "/summary") => {
     setSelectedWebsite(site);
     subscribeToWebsite(site.id);
     if (typeof window !== "undefined") {
       window.dispatchEvent(
-        new CustomEvent("histat:website_changed", { detail: site })
+        new CustomEvent("histat:website_changed", { detail: site }),
       );
     }
     router.push(targetPath);
@@ -149,7 +150,7 @@ export default function ControlPanelPage() {
     }
   };
 
-  // Compute clean display ID for each website
+  // Compute clean display ID for each website (e.g. 4867998)
   const getDisplayId = (site: Website): string => {
     if (site.displayId) return site.displayId;
     const digits = site.trackingId?.replace(/[^0-9]/g, "");
@@ -162,262 +163,409 @@ export default function ControlPanelPage() {
   };
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto space-y-4 antialiased text-[12px] font-sans select-text pb-12">
-      {/* Top Breadcrumb & Actions Bar */}
-      <div className="flex items-center justify-between gap-3 border-b border-slate-200 pb-2.5">
-        <div className="flex items-center gap-2">
-          <span className="text-[#1a5db4] font-bold text-sm tracking-tight hover:underline cursor-pointer">
-            Active today ({websites.length})
-          </span>
-        </div>
+    // Full bleed container breaking out of main padding to fill 100% of the page
+    <div className="-m-2 sm:-m-4 lg:-m-6 min-h-[calc(100vh-4rem)] p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-[#d6e7fa] via-[#edf4fc] to-[#d8e6f8] relative overflow-hidden flex flex-col antialiased text-slate-800 font-sans select-text">
+      {/* ============================================================ */}
+      {/* FULL-PAGE AMBIENT RADIAL LIGHT SPHERES                       */}
+      {/* ============================================================ */}
+      <div className="absolute -top-40 -left-40 w-[42rem] h-[42rem] bg-sky-400/28 rounded-full blur-[130px] pointer-events-none" />
+      <div className="absolute top-1/4 -right-32 w-[45rem] h-[45rem] bg-blue-600/20 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute -bottom-36 left-1/4 w-[38rem] h-[38rem] bg-indigo-400/22 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-10 right-10 w-[28rem] h-[28rem] bg-cyan-300/20 rounded-full blur-[100px] pointer-events-none" />
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            title="Refresh website telemetry snapshot"
-            className="flex items-center gap-1.5 px-3 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium transition-all shadow-2xs cursor-pointer"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
-            <span className="hidden sm:inline">Refresh</span>
-          </button>
+      {/* ============================================================ */}
+      {/* MAIN FROSTED GLASS CONTAINER (Full Glassmorphic Canvas)      */}
+      {/* ============================================================ */}
+      <div className="relative w-full max-w-[1600px] mx-auto rounded-[32px] bg-white/65 backdrop-blur-2xl border border-white/85 shadow-[0_20px_60px_-15px_rgba(20,85,187,0.12),inset_0_1px_2px_rgba(255,255,255,0.95)] p-5 sm:p-7 lg:p-9 space-y-6 z-10 flex-1 flex flex-col">
+        {/* Specular Shimmer Highlight on Top Edge */}
+        <div className="absolute top-0 left-10 right-10 h-px bg-gradient-to-r from-transparent via-white/90 to-transparent pointer-events-none" />
 
-          <button
-            onClick={() => setModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1 rounded border border-blue-300 bg-[#1d5b9f] hover:bg-[#16487e] text-white text-xs font-bold transition-all shadow-2xs cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Register Website</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Classic Histats Website List Rows */}
-      <div className="bg-white border border-[#cbd5e1] rounded-sm shadow-2xs divide-y divide-[#e2e8f0] overflow-hidden">
-        {loading && websites.length === 0 ? (
-          <div className="p-8 text-center text-slate-500 space-y-2">
-            <div className="inline-block animate-spin">
-              <RefreshCw className="w-5 h-5 text-[#1d5b9f]" />
-            </div>
-            <div>Loading your websites telemetry...</div>
+        {/* Top Header Row: Active Count + useAnimations Buttons */}
+        <div className="flex items-center justify-between gap-3 pb-3 border-b border-white/70">
+          {/* Active Websites Indicator with Blue Bar */}
+          <div className="flex items-center gap-3">
+            <span className="w-1.5 h-6 rounded-full bg-gradient-to-b from-[#1455bb] to-blue-400 shadow-sm" />
+            <h1 className="text-base sm:text-lg font-black text-[#1455bb] tracking-tight flex items-center gap-2">
+              <span>Active today</span>
+              <span className="px-2.5 py-0.5 rounded-full bg-blue-100/80 border border-blue-200/90 text-[#1455bb] text-xs font-black shadow-2xs">
+                {websites.length}
+              </span>
+            </h1>
           </div>
-        ) : websites.length === 0 ? (
-          <div className="p-8 text-center text-slate-500 space-y-3">
-            <Globe className="w-8 h-8 text-slate-400 mx-auto" />
-            <p className="font-semibold text-slate-700">No websites found.</p>
+
+          {/* Action Buttons: Animated Refresh & Register */}
+          <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
+            {/* Animated Refresh Button */}
             <button
-              onClick={() => setModalOpen(true)}
-              className="px-4 py-2 rounded bg-[#1d5b9f] text-white font-bold text-xs"
+              type="button"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              title="Refresh website telemetry snapshot"
+              className="group flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/85 hover:bg-white backdrop-blur-md border border-white/90 text-slate-700 text-xs font-extrabold transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md cursor-pointer active:scale-95 disabled:opacity-60"
             >
-              Register your first website
+              <div className="w-4 h-4 flex items-center justify-center">
+                <UseAnimations
+                  animation={refresh}
+                  size={18}
+                  strokeColor="#1455bb"
+                  interaction="hover"
+                />
+              </div>
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
+
+            {/* Animated Register Website Button */}
+            <button
+              type="button"
+              onClick={() => setModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-[#1455bb] via-[#165fd4] to-[#1e6ae8] hover:from-[#1047a0] hover:to-[#1755be] text-white text-xs font-black transition-all shadow-md shadow-blue-600/25 active:scale-95 cursor-pointer"
+            >
+              <div className="w-4 h-4 flex items-center justify-center">
+                <UseAnimations
+                  animation={plusToX}
+                  size={18}
+                  strokeColor="#ffffff"
+                  interaction="hover"
+                />
+              </div>
+              <span>Register Website</span>
             </button>
           </div>
-        ) : (
-          websites.map((site) => {
-            const isSelected = selectedWebsite?.id === site.id;
-            const displayId = getDisplayId(site);
-            const domainUrl = site.domain.startsWith("http")
-              ? site.domain
-              : `https://${site.domain}`;
-            const domainDisplay = site.domain.endsWith("/")
-              ? site.domain
-              : `${site.domain}/`;
+        </div>
 
-            const usersOnline = site.usersOnline ?? site.activeVisitors ?? 0;
-            const visitorsToday = site.visitorsToday ?? 0;
-            const pageviewsToday = site.pageviewsToday ?? 0;
-            const totalVisitors = site.totalVisitors ?? 0;
-            const totalPageviews = site.totalPageviews ?? 0;
-            const rowSnapshot = site.snapshotTime || snapshotTime;
-
-            return (
-              <div
-                key={site.id}
-                className={`px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors ${
-                  isSelected
-                    ? "bg-[#eaf2fb] hover:bg-[#e1ecf8]"
-                    : "hover:bg-[#f8fafc]"
-                }`}
+        {/* ============================================================ */}
+        {/* WEBSITE CARDS LIST (With Beautiful Frosted Stats Chips)      */}
+        {/* ============================================================ */}
+        <div className="space-y-4 flex-1">
+          {loading && websites.length === 0 ? (
+            <div className="p-16 text-center text-slate-500 rounded-3xl bg-white/40 backdrop-blur-md border border-white/60 space-y-3">
+              <div className="w-8 h-8 mx-auto flex items-center justify-center">
+                <UseAnimations
+                  animation={refresh}
+                  size={32}
+                  strokeColor="#1455bb"
+                  loop={true}
+                />
+              </div>
+              <div className="font-bold text-sm text-slate-700">
+                Loading your websites telemetry...
+              </div>
+            </div>
+          ) : websites.length === 0 ? (
+            <div className="p-16 text-center text-slate-500 rounded-3xl bg-white/40 backdrop-blur-md border border-white/60 space-y-4">
+              <div className="w-12 h-12 mx-auto flex items-center justify-center">
+                <UseAnimations
+                  animation={globe}
+                  size={48}
+                  strokeColor="#1455bb"
+                  loop={true}
+                />
+              </div>
+              <h3 className="font-black text-lg text-slate-800">
+                No websites registered yet
+              </h3>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+                Register your first website to receive instant real-time
+                telemetry, interactive analytics, and customizable counter
+                badges.
+              </p>
+              <button
+                type="button"
+                onClick={() => setModalOpen(true)}
+                className="mt-2 inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#1455bb] hover:bg-[#1047a0] text-white font-extrabold text-xs shadow-md shadow-blue-600/20 transition-all cursor-pointer"
               >
-                {/* Left & Middle: Numeric ID & Telemetry Metrics */}
-                <div className="flex items-start gap-4 sm:gap-6 min-w-0 flex-1">
-                  {/* Blue Numeric Histats Site ID */}
-                  <div
-                    onClick={() => handleSelectSite(site)}
-                    title={`Click to open ${site.name} analytics`}
-                    className="shrink-0 cursor-pointer pt-0.5"
-                  >
-                    <span className="text-[#1a5db4] font-bold text-[15px] tabular-nums hover:underline">
-                      {displayId}
-                    </span>
-                  </div>
+                <UseAnimations
+                  animation={plusToX}
+                  size={16}
+                  strokeColor="#ffffff"
+                  interaction="hover"
+                />
+                <span>Register your first website</span>
+              </button>
+            </div>
+          ) : (
+            websites.map((site) => {
+              const isSelected = selectedWebsite?.id === site.id;
+              const displayId = getDisplayId(site);
+              const domainUrl = site.domain.startsWith("http")
+                ? site.domain
+                : `https://${site.domain}`;
+              const domainDisplay = site.domain.endsWith("/")
+                ? site.domain
+                : `${site.domain}/`;
 
-                  {/* Domain and Telemetry Line */}
-                  <div className="min-w-0 flex-1 space-y-1">
-                    {/* Domain Name */}
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleSelectSite(site)}
-                        className="text-left font-bold text-slate-900 text-[13.5px] hover:text-[#1a5db4] hover:underline cursor-pointer truncate"
-                      >
-                        {domainDisplay}
-                      </button>
+              const usersOnline = site.usersOnline ?? site.activeVisitors ?? 0;
+              const visitorsToday = site.visitorsToday ?? 0;
+              const pageviewsToday = site.pageviewsToday ?? 0;
+              const totalVisitors = site.totalVisitors ?? 0;
+              const totalPageviews = site.totalPageviews ?? 0;
+              const rowSnapshot = site.snapshotTime || snapshotTime;
 
-                      {isSelected && (
-                        <span className="text-[10px] uppercase font-extrabold px-1.5 py-0.2 rounded bg-blue-100 text-[#1a5db4] border border-blue-300">
-                          Selected
-                        </span>
-                      )}
+              return (
+                <div
+                  key={site.id}
+                  className={`rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300 ${
+                    isSelected
+                      ? "bg-white/92 backdrop-blur-xl border border-blue-300 shadow-[0_8px_30px_rgba(20,85,187,0.12),inset_0_1px_1px_rgba(255,255,255,1)] ring-2 ring-blue-500/20"
+                      : "bg-white/75 hover:bg-white/90 backdrop-blur-lg border border-white/90 hover:border-blue-200/80 shadow-[0_4px_20px_rgba(20,85,187,0.04),inset_0_1px_1px_rgba(255,255,255,0.85)] hover:shadow-[0_12px_32px_rgba(20,85,187,0.09)]"
+                  }`}
+                >
+                  {/* Left & Center: Numeric ID & Beautiful Telemetry Ribbon */}
+                  <div className="flex items-start gap-4 sm:gap-5 min-w-0 flex-1">
+                    {/* Blue Numeric Site ID (Glass Pill Badge) */}
+                    <div
+                      onClick={() => handleSelectSite(site)}
+                      title={`Click to view ${site.name} analytics`}
+                      className="w-24 sm:w-28 h-20 rounded-2xl bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-white/70 backdrop-blur-md border border-blue-400/30 flex flex-col items-center justify-center shrink-0 cursor-pointer hover:bg-blue-500/15 hover:border-blue-500/40 transition-all shadow-inner group"
+                    >
+                      <span className="text-[#1455bb] font-black text-base sm:text-lg tracking-tight tabular-nums group-hover:scale-105 transition-transform">
+                        {displayId}
+                      </span>
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-blue-500/70 mt-0.5">
+                        Site ID
+                      </span>
                     </div>
 
-                    {/* Exact Classic Histats Metrics Line */}
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-slate-600 font-sans">
-                      {/* Users Online */}
-                      <span>
-                        Users online :{" "}
-                        <strong
-                          className={`font-black ${
-                            usersOnline > 0 ? "text-[#cc0000]" : "text-slate-500"
+                    {/* Middle: Domain Name, Telemetry Badges, Snapshot */}
+                    <div className="min-w-0 flex-1 space-y-2">
+                      {/* Domain Name + Favicon + Selected Badge */}
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <WebsiteFavicon
+                          name={site.name}
+                          domain={site.domain}
+                          className="w-5 h-5 shadow-2xs"
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => handleSelectSite(site)}
+                          className="text-left font-black text-slate-900 text-sm sm:text-base hover:text-[#1455bb] transition-colors cursor-pointer truncate"
+                        >
+                          {domainDisplay}
+                        </button>
+
+                        {isSelected && (
+                          <span className="text-[10px] uppercase font-black px-2.5 py-0.5 rounded-full bg-blue-100 text-[#1455bb] border border-blue-200/90 shadow-2xs flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#1455bb]" />
+                            <span>Selected</span>
+                          </span>
+                        )}
+                      </div>
+
+                      {/* ============================================================ */}
+                      {/* BEAUTIFULLY STYLED TELEMETRY METRIC CHIPS                    */}
+                      {/* ============================================================ */}
+                      <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                        {/* 1. Users Online Chip (Glowing Pulse) */}
+                        <div
+                          className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border shadow-2xs transition-all ${
+                            usersOnline > 0
+                              ? "bg-rose-50/90 border-rose-200/90 text-rose-800"
+                              : "bg-slate-50/80 border-slate-200/80 text-slate-600"
                           }`}
                         >
-                          {usersOnline.toLocaleString()}
-                        </strong>
-                      </span>
+                          <span className="relative flex h-2 w-2 shrink-0">
+                            {usersOnline > 0 && (
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+                            )}
+                            <span
+                              className={`relative inline-flex rounded-full h-2 w-2 ${
+                                usersOnline > 0 ? "bg-rose-500" : "bg-slate-400"
+                              }`}
+                            />
+                          </span>
+                          <span className="text-[11px] font-semibold text-slate-500">
+                            Users online :
+                          </span>
+                          <span
+                            className={`font-black text-xs tabular-nums ${
+                              usersOnline > 0
+                                ? "text-rose-600"
+                                : "text-slate-700"
+                            }`}
+                          >
+                            {usersOnline.toLocaleString()}
+                          </span>
+                        </div>
 
-                      {/* Visitors Today */}
-                      <span>
-                        visitors today :{" "}
-                        <strong className="text-[#008800] font-bold">
-                          {visitorsToday.toLocaleString()}
-                        </strong>
-                      </span>
+                        {/* 2. Visitors Today Chip */}
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50/90 border border-emerald-200/90 text-emerald-900 shadow-2xs">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                          <span className="text-[11px] font-semibold text-emerald-700/80">
+                            visitors today :
+                          </span>
+                          <span className="font-black text-xs text-emerald-700 tabular-nums">
+                            {visitorsToday.toLocaleString()}
+                          </span>
+                        </div>
 
-                      {/* Page Views Today */}
-                      <span>
-                        Page views today :{" "}
-                        <strong className="text-[#008800] font-bold">
-                          {pageviewsToday.toLocaleString()}
-                        </strong>
-                      </span>
+                        {/* 3. Page Views Today Chip */}
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50/90 border border-blue-200/90 text-blue-900 shadow-2xs">
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                          <span className="text-[11px] font-semibold text-blue-700/80">
+                            Page views today :
+                          </span>
+                          <span className="font-black text-xs text-blue-700 tabular-nums">
+                            {pageviewsToday.toLocaleString()}
+                          </span>
+                        </div>
 
-                      {/* Total Visitors */}
-                      <span>
-                        Total visitors :{" "}
-                        <strong className="text-slate-700 font-bold">
-                          {totalVisitors.toLocaleString()}
-                        </strong>
-                      </span>
+                        {/* 4. Total Visitors Chip */}
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/80 border border-slate-200/90 text-slate-800 shadow-2xs">
+                          <span className="text-[11px] font-semibold text-slate-500">
+                            Total visitors :
+                          </span>
+                          <span className="font-black text-xs text-slate-900 tabular-nums">
+                            {totalVisitors.toLocaleString()}
+                          </span>
+                        </div>
 
-                      {/* Total Page Views */}
-                      <span>
-                        Total page views :{" "}
-                        <strong className="text-slate-700 font-bold">
-                          {totalPageviews.toLocaleString()}
-                        </strong>
-                      </span>
-                    </div>
+                        {/* 5. Total Page Views Chip */}
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50/80 border border-indigo-200/80 text-indigo-950 shadow-2xs">
+                          <span className="text-[11px] font-semibold text-indigo-600/90">
+                            Total page views :
+                          </span>
+                          <span className="font-black text-xs text-indigo-900 tabular-nums">
+                            {totalPageviews.toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
 
-                    {/* Snapshot Timestamp */}
-                    <div className="text-[10.5px] text-slate-400">
-                      Snapshot: {rowSnapshot}
+                      {/* Animated Clock & Snapshot Timestamp */}
                     </div>
                   </div>
+
+                  {/* Right: 5 Animated Squircle Action Buttons from useAnimations */}
+                  <div className="flex items-center gap-2 shrink-0 self-end md:self-center pt-2 md:pt-0">
+                    {/* 1. Open Website in New Window (Animated externalLink) */}
+                    <a
+                      href={domainUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={`Open ${site.domain} in new tab`}
+                      className="w-10 h-10 rounded-2xl bg-white/80 hover:bg-white backdrop-blur-md border border-white/90 hover:border-blue-300 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md flex items-center justify-center transition-all cursor-pointer active:scale-95 group"
+                    >
+                      <UseAnimations
+                        animation={externalLink}
+                        size={18}
+                        strokeColor="#64748b"
+                        interaction="hover"
+                      />
+                    </a>
+
+                    {/* 2. Public / Private Lock (Animated lock toggle) */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        alert(
+                          `Website "${site.name}" statistics are currently ${
+                            site.isPublic
+                              ? "PUBLIC (Unlocked)"
+                              : "PRIVATE (Locked)"
+                          }.`,
+                        );
+                      }}
+                      title={
+                        site.isPublic
+                          ? "Public Statistics (Unlocked)"
+                          : "Private Statistics (Locked)"
+                      }
+                      className="w-10 h-10 rounded-2xl bg-white/80 hover:bg-white backdrop-blur-md border border-white/90 hover:border-amber-300 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md flex items-center justify-center transition-all cursor-pointer active:scale-95 group"
+                    >
+                      <UseAnimations
+                        animation={lock}
+                        size={18}
+                        strokeColor="#f59e0b"
+                        active={!site.isPublic}
+                        interaction="hover"
+                      />
+                    </button>
+
+                    {/* 3. Analytics Activity / Reports (Animated activity pulse) */}
+                    <button
+                      type="button"
+                      onClick={() => handleSelectSite(site, "/summary")}
+                      title={`Open Analytics for ${site.name}`}
+                      className="w-10 h-10 rounded-2xl bg-white/80 hover:bg-white backdrop-blur-md border border-white/90 hover:border-blue-300 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md flex items-center justify-center transition-all cursor-pointer active:scale-95 group"
+                    >
+                      <UseAnimations
+                        animation={activity}
+                        size={20}
+                        strokeColor="#1455bb"
+                        interaction="hover"
+                      />
+                    </button>
+
+                    {/* 4. Configuration & Tracker Code (Animated settings gear) */}
+                    <button
+                      type="button"
+                      onClick={() => openTrackingModal(site)}
+                      title={`Configure & Get Tracking Code for ${site.name}`}
+                      className="w-10 h-10 rounded-2xl bg-white/80 hover:bg-white backdrop-blur-md border border-white/90 hover:border-blue-300 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md flex items-center justify-center transition-all cursor-pointer active:scale-95 group"
+                    >
+                      <UseAnimations
+                        animation={settings}
+                        size={18}
+                        strokeColor="#475569"
+                        interaction="hover"
+                      />
+                    </button>
+
+                    {/* 5. Delete Website (Animated trash2 opening lid) */}
+                    <button
+                      type="button"
+                      onClick={() => setDeleteConfirmSite(site)}
+                      title={`Delete ${site.name}`}
+                      className="w-10 h-10 rounded-2xl bg-white/80 hover:bg-rose-50 backdrop-blur-md border border-white/90 hover:border-rose-300 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md flex items-center justify-center transition-all cursor-pointer active:scale-95 group"
+                    >
+                      <UseAnimations
+                        animation={trash2}
+                        size={18}
+                        strokeColor="#e11d48"
+                        interaction="hover"
+                      />
+                    </button>
+                  </div>
                 </div>
-
-                {/* Right Side: Histats Classic 5 Action Icons */}
-                <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 self-end sm:self-center pt-2 sm:pt-0">
-                  {/* 1. Open Website in New Window */}
-                  <a
-                    href={domainUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={`Open ${site.domain} in new tab`}
-                    className="p-1 rounded text-slate-400 hover:text-[#1a5db4] hover:bg-slate-100 transition-colors cursor-pointer"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-
-                  {/* 2. Lock / Padlock (Public / Private toggle) */}
-                  <button
-                    onClick={() => {
-                      alert(
-                        `Website "${site.name}" statistics are currently ${
-                          site.isPublic ? "PUBLIC" : "PRIVATE"
-                        }.`
-                      );
-                    }}
-                    title={site.isPublic ? "Public Statistics (Unlocked)" : "Private Statistics (Locked)"}
-                    className="p-1 rounded text-amber-500 hover:bg-amber-50 transition-colors cursor-pointer"
-                  >
-                    {site.isPublic ? (
-                      <Unlock className="w-4 h-4 text-amber-500" />
-                    ) : (
-                      <Lock className="w-4 h-4 text-amber-600" />
-                    )}
-                  </button>
-
-                  {/* 3. Bar Chart Icon (Select website and view Realtime Analytics) */}
-                  <button
-                    onClick={() => handleSelectSite(site, "/realtime")}
-                    title={`View Live Stats for ${site.name}`}
-                    className="p-1 rounded text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-colors cursor-pointer group"
-                  >
-                    <div className="flex items-end gap-0.5 h-4 w-4 justify-center">
-                      <span className="w-1 h-2 bg-[#2563eb] rounded-xs group-hover:scale-y-110 transition-transform"></span>
-                      <span className="w-1 h-3.5 bg-[#dc2626] rounded-xs group-hover:scale-y-110 transition-transform"></span>
-                      <span className="w-1 h-2.5 bg-[#16a34a] rounded-xs group-hover:scale-y-110 transition-transform"></span>
-                    </div>
-                  </button>
-
-                  {/* 4. Wrench / Settings & Counter Code */}
-                  <button
-                    onClick={() => openTrackingModal(site)}
-                    title={`Configure & Get Counter CODE for ${site.name}`}
-                    className="p-1 rounded text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
-                  >
-                    <Wrench className="w-4 h-4 text-slate-600" />
-                  </button>
-
-                  {/* 5. Delete Website (Red Cross) */}
-                  <button
-                    onClick={() => setDeleteConfirmSite(site)}
-                    title={`Delete ${site.name}`}
-                    className="p-1 rounded text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
-                  >
-                    <X className="w-4 h-4 text-rose-600 font-bold" />
-                  </button>
-                </div>
-              </div>
-            );
-          })
-        )}
+              );
+            })
+          )}
+        </div>
       </div>
 
-      {/* Modal for creating website */}
+      {/* ============================================================ */}
+      {/* MODAL: REGISTER NEW WEBSITE (Full Glassmorphism)             */}
+      {/* ============================================================ */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in">
-          <div className="relative w-full max-w-md rounded-xl border border-slate-200 bg-white shadow-2xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-extrabold text-base text-slate-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-md rounded-3xl border border-white/90 bg-white/85 backdrop-blur-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.2)] p-6 sm:p-7 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="font-black text-lg text-slate-900">
                 Register New Website
               </h3>
               <button
+                type="button"
                 onClick={() => setModalOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <UseAnimations
+                  animation={plusToX}
+                  size={18}
+                  strokeColor="#64748b"
+                  active={true}
+                />
               </button>
             </div>
 
             {error && (
-              <div className="mb-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs">
+              <div className="p-3 rounded-2xl bg-rose-50/90 border border-rose-200 text-rose-700 text-xs font-semibold">
                 {error}
               </div>
             )}
 
             <form onSubmit={handleCreate} className="space-y-4 text-xs">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1.5">
+                <label className="block font-black text-slate-700 mb-1.5">
                   Website Name
                 </label>
                 <input
@@ -426,12 +574,12 @@ export default function ControlPanelPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. My Website"
                   required
-                  className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-300 focus:border-[#1d5b9f] focus:outline-none text-slate-900 text-xs"
+                  className="w-full px-4 py-2.5 rounded-2xl bg-white/80 border border-slate-200/90 focus:border-[#1455bb] focus:bg-white focus:outline-none text-slate-900 text-xs font-semibold shadow-2xs transition-all"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1.5">
+                <label className="block font-black text-slate-700 mb-1.5">
                   Domain Name
                 </label>
                 <input
@@ -440,38 +588,42 @@ export default function ControlPanelPage() {
                   onChange={(e) => setDomain(e.target.value)}
                   placeholder="e.g. mywebsite.com"
                   required
-                  className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-300 focus:border-[#1d5b9f] focus:outline-none text-slate-900 text-xs font-mono"
+                  className="w-full px-4 py-2.5 rounded-2xl bg-white/80 border border-slate-200/90 focus:border-[#1455bb] focus:bg-white focus:outline-none text-slate-900 text-xs font-mono shadow-2xs transition-all"
                 />
                 <span className="text-[11px] text-slate-500 mt-1 block">
                   Enter domain without http:// or trailing slash.
                 </span>
               </div>
 
-              <div className="flex items-center gap-2 pt-1">
+              <div className="flex items-center gap-2.5 pt-1">
                 <input
                   type="checkbox"
-                  id="cp_isPublic"
+                  id="isPublicCheck"
                   checked={isPublic}
                   onChange={(e) => setIsPublic(e.target.checked)}
-                  className="rounded border-slate-300 text-[#1d5b9f] focus:ring-[#1d5b9f]"
+                  className="rounded text-[#1455bb] focus:ring-[#1455bb] w-4 h-4 cursor-pointer"
                 />
-                <label htmlFor="cp_isPublic" className="text-slate-700 select-none cursor-pointer">
-                  Public Statistics (enable public live stats)
+                <label
+                  htmlFor="isPublicCheck"
+                  className="text-slate-700 font-bold cursor-pointer select-none"
+                >
+                  Make statistics publicly viewable (anyone can see counter
+                  stats)
                 </label>
               </div>
 
-              <div className="pt-3 flex justify-end gap-2.5">
+              <div className="flex items-center justify-end gap-2.5 pt-3">
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold"
+                  className="px-4 py-2.5 rounded-2xl text-slate-600 hover:bg-slate-100 font-bold text-xs transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 rounded-lg bg-[#1d5b9f] hover:bg-[#16487e] text-white font-bold disabled:opacity-50 shadow-sm"
+                  className="px-5 py-2.5 rounded-2xl bg-[#1455bb] hover:bg-[#1047a0] text-white font-black text-xs shadow-md shadow-blue-600/20 transition-all cursor-pointer disabled:opacity-50 active:scale-95"
                 >
                   {submitting ? "Registering..." : "Register Website"}
                 </button>
@@ -481,32 +633,39 @@ export default function ControlPanelPage() {
         </div>
       )}
 
-      {/* Confirmation Modal for deleting website */}
+      {/* ============================================================ */}
+      {/* MODAL: DELETE CONFIRMATION (Full Glassmorphism + Animated)   */}
+      {/* ============================================================ */}
       {deleteConfirmSite && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-fade-in">
-          <div className="relative w-full max-w-md rounded-2xl border border-slate-200 bg-white shadow-2xl p-6 space-y-4">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 shrink-0">
-                <AlertTriangle className="w-5 h-5 text-rose-600" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-md rounded-3xl border border-white/90 bg-white/85 backdrop-blur-2xl shadow-2xl p-6 sm:p-7 space-y-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-rose-100 border border-rose-200 text-rose-600 flex items-center justify-center shrink-0 shadow-xs">
+                <UseAnimations
+                  animation={alertTriangle}
+                  size={26}
+                  strokeColor="#e11d48"
+                  loop={true}
+                />
               </div>
-              <div className="flex-1">
-                <h3 className="font-extrabold text-base text-slate-900">
-                  Delete Website
+              <div>
+                <h3 className="font-black text-base text-slate-900">
+                  Delete Website?
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Are you sure you want to delete <b className="text-slate-900">{deleteConfirmSite.name}</b> (<span className="font-mono text-[#1d5b9f]">{deleteConfirmSite.domain}</span>)?
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  This action cannot be undone. All visitor telemetry will be
+                  permanently deleted.
                 </p>
               </div>
-              <button
-                onClick={() => setDeleteConfirmSite(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
-              >
-                <X className="w-5 h-5" />
-              </button>
             </div>
 
-            <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs leading-relaxed">
-              All analytics data, visitor logs, hourly traffic stats, and sessions for this website will be permanently removed. This action cannot be undone.
+            <div className="p-3.5 rounded-2xl bg-white/70 border border-slate-200/90 text-xs shadow-2xs">
+              <div className="font-extrabold text-slate-900">
+                {deleteConfirmSite.name}
+              </div>
+              <div className="text-slate-500 font-mono text-[11px] mt-0.5">
+                {deleteConfirmSite.domain}
+              </div>
             </div>
 
             <div className="flex items-center justify-end gap-2.5 pt-2">
@@ -514,7 +673,7 @@ export default function ControlPanelPage() {
                 type="button"
                 onClick={() => setDeleteConfirmSite(null)}
                 disabled={deleting}
-                className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold cursor-pointer transition-colors"
+                className="px-4 py-2.5 rounded-2xl text-slate-600 hover:bg-slate-100 font-bold text-xs transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -522,10 +681,9 @@ export default function ControlPanelPage() {
                 type="button"
                 onClick={handleConfirmDelete}
                 disabled={deleting}
-                className="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm cursor-pointer transition-all disabled:opacity-50"
+                className="px-5 py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs shadow-md shadow-rose-600/20 transition-all cursor-pointer disabled:opacity-50 active:scale-95"
               >
-                <Trash2 className="w-4 h-4" />
-                <span>{deleting ? "Deleting..." : "Delete Website"}</span>
+                {deleting ? "Deleting..." : "Yes, Delete"}
               </button>
             </div>
           </div>

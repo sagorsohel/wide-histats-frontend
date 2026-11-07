@@ -69,9 +69,6 @@ export default function GeographyPage() {
     ) => {
       const siteId = overrideSiteId || activeSiteIdRef.current;
       if (!siteId) return;
-      if (!isSilent && !hasDataRef.current) {
-        setLoading(true);
-      }
       const win = overrideWindow !== undefined ? overrideWindow : customWindow;
       let from: string;
       let to: string;
@@ -84,6 +81,17 @@ export default function GeographyPage() {
         to = dates.to;
       }
       const q = `websiteId=${siteId}&from=${from}&to=${to}&limit=50`;
+
+      if (!isSilent && !hasDataRef.current) {
+        const cached = api.getCached<any>(`/api/v1/analytics/geography?${q}`);
+        if (cached?.data?.countries) {
+          setCountries(cached.data.countries);
+          if (cached.data.cities) setCities(cached.data.cities);
+          setLoading(false);
+        } else {
+          setLoading(true);
+        }
+      }
 
       try {
         const res = await api.get<{

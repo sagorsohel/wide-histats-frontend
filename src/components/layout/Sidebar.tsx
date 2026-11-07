@@ -230,11 +230,11 @@ export const Sidebar: React.FC = () => {
     setMounted(true);
   }, []);
 
-  // Helper to generate URLs with 7-digit ID format: /<page>/?id=<7-digit-id>
+  // Helper to generate URLs with 7-digit ID format: /<page>?id=<7-digit-id>
   const getHref = (href: string) => {
     const site7Digit = getSite7DigitId(selectedWebsite);
     if (!site7Digit) return href;
-    const cleanHref = href.endsWith("/") ? href : `${href}/`;
+    const cleanHref = href.replace(/\/$/, "");
     return `${cleanHref}?id=${site7Digit}`;
   };
 
@@ -437,115 +437,91 @@ export const Sidebar: React.FC = () => {
                   const itemHref = getHref(item.href);
 
                   if (isActive) {
-                    // Active Card with animated icon
+                    // Active Card (Instant 0ms Next.js navigation)
                     return (
-                      <UseAnimations
+                      <Link
                         key={item.href}
-                        animation={item.animation}
-                        size={18}
-                        strokeColor="#ffffff"
-                        interaction="hover"
-                        loop={item.isLive}
-                        render={(eventProps, animationProps) => (
-                          <Link
-                            {...eventProps}
-                            href={itemHref}
-                            className="block p-3 rounded-xl bg-gradient-to-r from-[#1455bb] to-[#1a62d4] text-white shadow-md shadow-blue-600/25 transition-all group scale-[1.01]"
-                          >
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex items-center gap-2.5 min-w-0">
-                                <div className="w-7 h-7 rounded-lg bg-white/20 text-white flex items-center justify-center shrink-0 shadow-2xs">
-                                  <span
-                                    {...animationProps}
-                                    className="flex items-center justify-center"
-                                  />
-                                </div>
-                                <div className="min-w-0">
-                                  <div className="font-extrabold text-xs text-white truncate leading-tight">
-                                    {item.label}
-                                  </div>
-                                  <div className="text-[10px] text-blue-100/80 truncate mt-0.5">
-                                    {item.subtitle}
-                                  </div>
-                                </div>
-                              </div>
-
-                              {item.isLive ? (
-                                <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-white text-[#1455bb] shadow-xs flex items-center gap-1 shrink-0">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                  <span>
-                                    {typeof activeCount === "number" &&
-                                    activeCount > 0
-                                      ? `${activeCount} Live`
-                                      : "Live"}
-                                  </span>
-                                </span>
-                              ) : item.badge ? (
-                                <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-white/20 text-white border border-white/30 shrink-0">
-                                  {item.badge}
-                                </span>
-                              ) : (
-                                <ChevronRight className="w-3.5 h-3.5 text-white/70 shrink-0 group-hover:translate-x-0.5 transition-transform" />
-                              )}
+                        prefetch={true}
+                        href={itemHref}
+                        className="block p-3 rounded-xl bg-gradient-to-r from-[#1455bb] to-[#1a62d4] text-white shadow-md shadow-blue-600/25 transition-all group scale-[1.01] cursor-pointer"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-7 h-7 rounded-lg bg-white/20 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                              <item.icon className="w-4 h-4 text-white" strokeColor="#ffffff" />
                             </div>
-                          </Link>
-                        )}
-                      />
+                            <div className="min-w-0">
+                              <div className="font-extrabold text-xs text-white truncate leading-tight">
+                                {item.label}
+                              </div>
+                              <div className="text-[10px] text-blue-100/80 truncate mt-0.5">
+                                {item.subtitle}
+                              </div>
+                            </div>
+                          </div>
+
+                          {item.isLive ? (
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-white text-[#1455bb] shadow-xs flex items-center gap-1 shrink-0">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                              <span>
+                                {typeof activeCount === "number" &&
+                                activeCount > 0
+                                  ? `${activeCount} Live`
+                                  : "Live"}
+                              </span>
+                            </span>
+                          ) : item.badge ? (
+                            <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-white/20 text-white border border-white/30 shrink-0">
+                              {item.badge}
+                            </span>
+                          ) : (
+                            <ChevronRight className="w-3.5 h-3.5 text-white/70 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                          )}
+                        </div>
+                      </Link>
                     );
                   }
 
-                  // Inactive Card with animated icon
+                  // Inactive Card (Instant 0ms Next.js navigation)
                   return (
-                    <UseAnimations
+                    <Link
                       key={item.href}
-                      animation={item.animation}
-                      size={18}
-                      strokeColor="#1455bb"
-                      interaction="hover"
-                      loop={item.isLive}
-                      render={(eventProps, animationProps) => (
-                        <Link
-                          {...eventProps}
-                          href={itemHref}
-                          className="block p-2.5 rounded-xl bg-white border border-slate-200/90 text-slate-800 shadow-2xs hover:border-blue-300 hover:shadow-xs hover:translate-x-0.5 transition-all group"
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <div className="w-7 h-7 rounded-lg bg-slate-100 text-[#1455bb] group-hover:bg-blue-50 flex items-center justify-center shrink-0 transition-colors">
-                                <span
-                                  {...animationProps}
-                                  className="flex items-center justify-center"
-                                />
-                              </div>
-                              <div className="min-w-0">
-                                <div className="font-bold text-xs text-slate-800 group-hover:text-blue-600 truncate leading-tight transition-colors">
-                                  {item.label}
-                                </div>
-                                <div className="text-[10px] text-slate-400 truncate mt-0.5">
-                                  {item.subtitle}
-                                </div>
-                              </div>
-                            </div>
-
-                            {item.isLive ? (
-                              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1 shrink-0">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                <span>
-                                  {typeof activeCount === "number" &&
-                                  activeCount > 0
-                                    ? activeCount
-                                    : "LIVE"}
-                                </span>
-                              </span>
-                            ) : item.badge ? (
-                              <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
-                                {item.badge}
-                              </span>
-                            ) : null}
+                      prefetch={true}
+                      href={itemHref}
+                      className="block p-2.5 rounded-xl bg-white border border-slate-200/90 text-slate-800 shadow-2xs hover:border-blue-300 hover:shadow-xs hover:translate-x-0.5 transition-all group cursor-pointer"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-7 h-7 rounded-lg bg-slate-100 text-[#1455bb] group-hover:bg-blue-50 flex items-center justify-center shrink-0 transition-colors">
+                            <item.icon className="w-4 h-4 text-[#1455bb]" strokeColor="#1455bb" />
                           </div>
-                        </Link>
-                      )}
-                    />
+                          <div className="min-w-0">
+                            <div className="font-bold text-xs text-slate-800 group-hover:text-blue-600 truncate leading-tight transition-colors">
+                              {item.label}
+                            </div>
+                            <div className="text-[10px] text-slate-400 truncate mt-0.5">
+                              {item.subtitle}
+                            </div>
+                          </div>
+                        </div>
+
+                        {item.isLive ? (
+                          <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1 shrink-0">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <span>
+                              {typeof activeCount === "number" &&
+                              activeCount > 0
+                                ? activeCount
+                                : "LIVE"}
+                            </span>
+                          </span>
+                        ) : item.badge ? (
+                          <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
+                            {item.badge}
+                          </span>
+                        ) : null}
+                      </div>
+                    </Link>
                   );
                 })}
               </div>

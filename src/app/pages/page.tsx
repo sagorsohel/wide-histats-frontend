@@ -68,9 +68,6 @@ export default function PagesReportPage() {
     ) => {
       const siteId = overrideSiteId || activeSiteIdRef.current;
       if (!siteId) return;
-      if (!isSilent && !hasDataRef.current) {
-        setLoading(true);
-      }
       const win = overrideWindow !== undefined ? overrideWindow : customWindow;
       let from: string;
       let to: string;
@@ -83,6 +80,16 @@ export default function PagesReportPage() {
         to = dates.to;
       }
       const q = `websiteId=${siteId}&from=${from}&to=${to}&limit=50`;
+
+      if (!isSilent && !hasDataRef.current) {
+        const cached = api.getCached<PageStat[]>(`/api/v1/analytics/pages?${q}`);
+        if (cached?.data) {
+          setPages(cached.data);
+          setLoading(false);
+        } else {
+          setLoading(true);
+        }
+      }
 
       try {
         const [pRes, landRes, exitRes] = await Promise.all([

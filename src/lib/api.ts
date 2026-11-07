@@ -208,15 +208,10 @@ class ApiClient {
     endpoint: string,
     options?: { skipCache?: boolean; ttlMs?: number }
   ): Promise<ApiResponse<T>> {
-    // Zero-caching: analytics and live traffic are always fetched fresh unless explicitly opt-in cached
-    const isLiveAnalytics =
-      endpoint.includes("/analytics/") ||
-      endpoint.includes("/traffic") ||
-      endpoint.includes("/realtime") ||
-      endpoint.includes("/summary");
+    // High-performance client-side SWR cache (30s default) ensures instantaneous 0ms page transitions
+    const ttl = options?.ttlMs ?? 30000;
 
-    const shouldCheckCache = !options?.skipCache && !isLiveAnalytics && options?.ttlMs;
-    if (shouldCheckCache) {
+    if (!options?.skipCache && ttl > 0) {
       const cached = this.getCached<T>(endpoint);
       if (cached) {
         return cached;
@@ -225,12 +220,11 @@ class ApiClient {
 
     const res = await this.request<T>(endpoint, { method: "GET" });
 
-    // Only cache if explicitly requested with ttlMs and not live analytics
-    if (res.success && options?.ttlMs && !isLiveAnalytics) {
+    if (res.success && ttl > 0) {
       this.cache.set(endpoint, {
         data: res,
         timestamp: Date.now(),
-        ttl: options.ttlMs,
+        ttl,
       });
 
       if (this.cache.size > 200) {

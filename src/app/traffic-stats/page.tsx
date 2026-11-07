@@ -48,10 +48,6 @@ export default function TrafficStatsPage() {
         return;
       }
 
-      if (!isSilent && !trafficData) {
-        setLoading(true);
-      }
-
       // Format start and end of selected day in local time
       const from = new Date(targetDate);
       from.setHours(0, 0, 0, 0);
@@ -59,11 +55,20 @@ export default function TrafficStatsPage() {
       const to = new Date(targetDate);
       to.setHours(23, 59, 59, 999);
 
+      const endpoint = `/api/v1/analytics/traffic?websiteId=${selectedWebsite.id}&from=${from.toISOString()}&to=${to.toISOString()}`;
+
+      if (!isSilent && !trafficData) {
+        const cached = api.getCached<TrafficStatsData>(endpoint);
+        if (cached?.data) {
+          setTrafficData(cached.data);
+          setLoading(false);
+        } else {
+          setLoading(true);
+        }
+      }
+
       try {
-        const res = await api.get<TrafficStatsData>(
-          `/api/v1/analytics/traffic?websiteId=${selectedWebsite.id}&from=${from.toISOString()}&to=${to.toISOString()}`,
-          { skipCache: true }
-        );
+        const res = await api.get<TrafficStatsData>(endpoint, { skipCache: isSilent });
 
         if (res.success && res.data) {
           setTrafficData(res.data);

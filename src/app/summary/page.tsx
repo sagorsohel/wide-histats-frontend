@@ -112,9 +112,6 @@ export default function SummaryPage() {
       return;
     }
 
-    if (!isSilent && !hasDataRef.current) {
-      setLoading(true);
-    }
     const win = overrideWindow !== undefined ? overrideWindow : customWindow;
     let from: string;
     let to: string;
@@ -128,6 +125,16 @@ export default function SummaryPage() {
       to = dates.to;
     }
     const q = `websiteId=${siteId}&from=${from}&to=${to}`;
+
+    if (!isSilent && !hasDataRef.current) {
+      const cached = api.getCached<OverviewStats>(`/api/v1/analytics/overview?${q}`);
+      if (cached?.data) {
+        setOverview(cached.data);
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+    }
 
     try {
       const [

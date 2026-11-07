@@ -44,9 +44,6 @@ export default function DevicesReportPage() {
   const loadData = useCallback(async (isSilent = false, overrideSiteId?: string, overrideWindow?: CustomDateWindow | null) => {
     const siteId = overrideSiteId || activeSiteIdRef.current;
     if (!siteId) return;
-    if (!isSilent && !hasDataRef.current) {
-      setLoading(true);
-    }
     const win = overrideWindow !== undefined ? overrideWindow : customWindow;
     let from: string;
     let to: string;
@@ -59,6 +56,16 @@ export default function DevicesReportPage() {
       to = dates.to;
     }
     const q = `websiteId=${siteId}&from=${from}&to=${to}`;
+
+    if (!isSilent && !hasDataRef.current) {
+      const cached = api.getCached<DeviceStat[]>(`/api/v1/analytics/devices?${q}`);
+      if (cached?.data) {
+        setDevices(cached.data);
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+    }
 
     try {
       const [devRes, brRes, osRes] = await Promise.all([

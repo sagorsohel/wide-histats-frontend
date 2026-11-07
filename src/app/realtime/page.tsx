@@ -500,19 +500,20 @@ export default function RealtimeHistatsPage() {
 
     // Guarantee displayed popular pages sum perfectly matches Users Online LIVE count
     if (onlineCount > 0 && pages.length > 0) {
-      const topSlice = pages.slice(0, 8);
-      const sliceSum = topSlice.reduce((sum, p) => sum + (p.count || 0), 0);
+      const displaySlice = pages.slice(0, 25);
+      const sliceSum = displaySlice.reduce((sum, p) => sum + (p.count || 0), 0);
       if (sliceSum > 0 && sliceSum !== onlineCount) {
         let remaining = onlineCount;
-        pages = pages.map((p, idx) => {
-          if (idx >= 8) return { ...p, count: 1 };
-          if (idx === Math.min(topSlice.length - 1, 7)) {
+        pages = displaySlice.map((p, idx) => {
+          if (idx === displaySlice.length - 1) {
             return { ...p, count: Math.max(1, remaining) };
           }
           const scaled = Math.max(1, Math.round(((p.count || 1) / sliceSum) * onlineCount));
           remaining = Math.max(0, remaining - scaled);
           return { ...p, count: scaled };
         });
+      } else {
+        pages = displaySlice;
       }
     }
 
@@ -526,19 +527,20 @@ export default function RealtimeHistatsPage() {
 
     // Guarantee displayed popular referrers sum perfectly matches Users Online LIVE count
     if (onlineCount > 0 && referrers.length > 0) {
-      const topSlice = referrers.slice(0, 8);
-      const sliceSum = topSlice.reduce((sum, r) => sum + (r.count || 0), 0);
+      const displaySlice = referrers.slice(0, 25);
+      const sliceSum = displaySlice.reduce((sum, r) => sum + (r.count || 0), 0);
       if (sliceSum > 0 && sliceSum !== onlineCount) {
         let remaining = onlineCount;
-        referrers = referrers.map((r, idx) => {
-          if (idx >= 8) return { ...r, count: 1 };
-          if (idx === Math.min(topSlice.length - 1, 7)) {
+        referrers = displaySlice.map((r, idx) => {
+          if (idx === displaySlice.length - 1) {
             return { ...r, count: Math.max(1, remaining) };
           }
           const scaled = Math.max(1, Math.round(((r.count || 1) / sliceSum) * onlineCount));
           remaining = Math.max(0, remaining - scaled);
           return { ...r, count: scaled };
         });
+      } else {
+        referrers = displaySlice;
       }
     }
 
@@ -1008,7 +1010,7 @@ export default function RealtimeHistatsPage() {
                         No active page hits yet
                       </div>
                     ) : (
-                      displayPages.slice(0, 8).map((page, idx) => {
+                      displayPages.map((page, idx) => {
                         const pageUrl = getFullUrl(page.url, page.path);
                         return (
                           <div
@@ -1072,7 +1074,7 @@ export default function RealtimeHistatsPage() {
                         No active referrer sources yet
                       </div>
                     ) : (
-                      displayReferrers.slice(0, 8).map((ref, idx) => {
+                      displayReferrers.map((ref, idx) => {
                         const isUrl =
                           ref.referrer &&
                           (ref.referrer.startsWith("http://") ||

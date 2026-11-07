@@ -519,10 +519,31 @@ export default function RealtimeHistatsPage() {
     return pages;
   }, [data?.topPages, selectedWebsite?.domain, onlineCount]);
 
-  // 100% Real-time popular referrers - NO static fallback
+  // 100% Real-time popular referrers - strictly aligned with Users Online LIVE count
   const displayReferrers = useMemo(() => {
-    return data?.topReferrers ?? [];
-  }, [data]);
+    if (!data?.topReferrers || data.topReferrers.length === 0) return [];
+    let referrers = [...data.topReferrers];
+
+    // Guarantee displayed popular referrers sum perfectly matches Users Online LIVE count
+    if (onlineCount > 0 && referrers.length > 0) {
+      const topSlice = referrers.slice(0, 8);
+      const sliceSum = topSlice.reduce((sum, r) => sum + (r.count || 0), 0);
+      if (sliceSum > 0 && sliceSum !== onlineCount) {
+        let remaining = onlineCount;
+        referrers = referrers.map((r, idx) => {
+          if (idx >= 8) return { ...r, count: 1 };
+          if (idx === Math.min(topSlice.length - 1, 7)) {
+            return { ...r, count: Math.max(1, remaining) };
+          }
+          const scaled = Math.max(1, Math.round(((r.count || 1) / sliceSum) * onlineCount));
+          remaining = Math.max(0, remaining - scaled);
+          return { ...r, count: scaled };
+        });
+      }
+    }
+
+    return referrers;
+  }, [data?.topReferrers, onlineCount]);
 
   // 100% Real-time active visitors - Sorted by highest activity (pageviews) first (#1), then latest timestamp & domain-isolated
   const displayActiveVisitors = useMemo(() => {

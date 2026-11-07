@@ -13,26 +13,15 @@ import { Monitor, Smartphone, Tablet, Globe, Cpu } from "lucide-react";
 import { BrowserIcon, OsIcon } from "@/components/common/BrandIcons";
 import { useTabFocus } from "@/hooks/useTabFocus";
 
-// Module-level memory cache for 0ms instant display when navigating to Devices / Browsers
-let memoryDevicesCache: {
-  siteId: string;
-  range: RangeOption;
-  devices: DeviceStat[];
-  browsers: BrowserStat[];
-  osList: OsStat[];
-} | null = null;
-
 export default function DevicesReportPage() {
   const { selectedWebsite } = useWebsite();
 
-  const isCached = !!(selectedWebsite?.id && memoryDevicesCache?.siteId === selectedWebsite.id && memoryDevicesCache.devices.length > 0);
-
-  const [range, setRange] = useState<RangeOption>(() => (isCached && memoryDevicesCache ? memoryDevicesCache.range : "today"));
+  const [range, setRange] = useState<RangeOption>("today");
   const [customWindow, setCustomWindow] = useState<CustomDateWindow | null>(null);
-  const [devices, setDevices] = useState<DeviceStat[]>(() => (isCached && memoryDevicesCache ? memoryDevicesCache.devices : []));
-  const [browsers, setBrowsers] = useState<BrowserStat[]>(() => (isCached && memoryDevicesCache ? memoryDevicesCache.browsers : []));
-  const [osList, setOsList] = useState<OsStat[]>(() => (isCached && memoryDevicesCache ? memoryDevicesCache.osList : []));
-  const [loading, setLoading] = useState(!isCached);
+  const [devices, setDevices] = useState<DeviceStat[]>([]);
+  const [browsers, setBrowsers] = useState<BrowserStat[]>([]);
+  const [osList, setOsList] = useState<OsStat[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const getDateRange = useCallback((option: RangeOption) => {
     const now = new Date();
@@ -48,7 +37,7 @@ export default function DevicesReportPage() {
     return { from: from.toISOString(), to: now.toISOString() };
   }, []);
 
-  const hasDataRef = React.useRef(isCached);
+  const hasDataRef = React.useRef(false);
   const activeSiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
   activeSiteIdRef.current = selectedWebsite?.id || null;
 
@@ -87,15 +76,6 @@ export default function DevicesReportPage() {
       if (brRes.success && brRes.data) setBrowsers(brRes.data);
       if (osRes.success && osRes.data) setOsList(osRes.data);
       hasDataRef.current = true;
-
-      // Save in module cache for 0ms instant display on subsequent link navigation
-      memoryDevicesCache = {
-        siteId,
-        range,
-        devices: devRes.data || [],
-        browsers: brRes.data || [],
-        osList: osRes.data || [],
-      };
     } catch (err) {
       console.error(err);
     } finally {
@@ -125,7 +105,6 @@ export default function DevicesReportPage() {
     if (selectedWebsite?.id && selectedWebsite.id !== prevWebsiteIdRef.current) {
       prevWebsiteIdRef.current = selectedWebsite.id;
       activeSiteIdRef.current = selectedWebsite.id;
-      memoryDevicesCache = null;
       setDevices([]);
       setBrowsers([]);
       setOsList([]);

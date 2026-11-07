@@ -49,46 +49,26 @@ import { formatNumber, formatDuration } from "@/lib/utils";
 import { useTabFocus } from "@/hooks/useTabFocus";
 import { WebsiteFavicon } from "@/components/common/WebsiteFavicon";
 
-// Module-level cache so returning to Summary page renders in 0ms without waiting or skeleton flash
-let memorySummaryCache: {
-  siteId: string;
-  range: RangeOption;
-  overview: OverviewStats | null;
-  timeseries: TimeseriesPoint[];
-  pages: PageStat[];
-  sources: SourceStat[];
-  countries: CountryStat[];
-  cities: CityStat[];
-  devices: DeviceStat[];
-  browsers: BrowserStat[];
-  operatingSystems: OsStat[];
-  landingPages: LandingExitPageStat[];
-  exitPages: LandingExitPageStat[];
-  referrers: ReferrerStat[];
-} | null = null;
-
 export default function SummaryPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { selectedWebsite, websites } = useWebsite();
 
-  const isCached = !!(selectedWebsite?.id && memorySummaryCache?.siteId === selectedWebsite.id && memorySummaryCache.overview);
-
-  const [range, setRange] = useState<RangeOption>(() => (isCached && memorySummaryCache ? memorySummaryCache.range : "today"));
+  const [range, setRange] = useState<RangeOption>("today");
   const [customWindow, setCustomWindow] = useState<CustomDateWindow | null>(null);
-  const [overview, setOverview] = useState<OverviewStats | null>(() => (isCached && memorySummaryCache ? memorySummaryCache.overview : null));
-  const [timeseries, setTimeseries] = useState<TimeseriesPoint[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.timeseries : []));
-  const [pages, setPages] = useState<PageStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.pages : []));
-  const [sources, setSources] = useState<SourceStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.sources : []));
-  const [countries, setCountries] = useState<CountryStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.countries : []));
-  const [cities, setCities] = useState<CityStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.cities : []));
-  const [devices, setDevices] = useState<DeviceStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.devices : []));
-  const [browsers, setBrowsers] = useState<BrowserStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.browsers : []));
-  const [operatingSystems, setOperatingSystems] = useState<OsStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.operatingSystems : []));
-  const [landingPages, setLandingPages] = useState<LandingExitPageStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.landingPages : []));
-  const [exitPages, setExitPages] = useState<LandingExitPageStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.exitPages : []));
-  const [referrers, setReferrers] = useState<ReferrerStat[]>(() => (isCached && memorySummaryCache ? memorySummaryCache.referrers : []));
-  const [loading, setLoading] = useState(!isCached);
+  const [overview, setOverview] = useState<OverviewStats | null>(null);
+  const [timeseries, setTimeseries] = useState<TimeseriesPoint[]>([]);
+  const [pages, setPages] = useState<PageStat[]>([]);
+  const [sources, setSources] = useState<SourceStat[]>([]);
+  const [countries, setCountries] = useState<CountryStat[]>([]);
+  const [cities, setCities] = useState<CityStat[]>([]);
+  const [devices, setDevices] = useState<DeviceStat[]>([]);
+  const [browsers, setBrowsers] = useState<BrowserStat[]>([]);
+  const [operatingSystems, setOperatingSystems] = useState<OsStat[]>([]);
+  const [landingPages, setLandingPages] = useState<LandingExitPageStat[]>([]);
+  const [exitPages, setExitPages] = useState<LandingExitPageStat[]>([]);
+  const [referrers, setReferrers] = useState<ReferrerStat[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Protected route check
   useEffect(() => {
@@ -121,7 +101,7 @@ export default function SummaryPage() {
     };
   }, []);
 
-  const hasDataRef = React.useRef(isCached);
+  const hasDataRef = React.useRef(false);
   const activeSiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
   activeSiteIdRef.current = selectedWebsite?.id || null;
 
@@ -192,24 +172,6 @@ export default function SummaryPage() {
       if (landingRes.success && landingRes.data) setLandingPages(landingRes.data);
       if (exitRes.success && exitRes.data) setExitPages(exitRes.data);
       hasDataRef.current = true;
-
-      // Save to memory cache for 0ms instant reload on next link visit
-      memorySummaryCache = {
-        siteId,
-        range,
-        overview: overviewRes.data || null,
-        timeseries: timeseriesRes.data || [],
-        pages: pagesRes.data || [],
-        sources: sourcesRes.data?.sources || [],
-        countries: geoRes.data?.countries || [],
-        cities: geoRes.data?.cities || [],
-        devices: devicesRes.data || [],
-        browsers: browsersRes.data || [],
-        operatingSystems: osRes.data || [],
-        landingPages: landingRes.data || [],
-        exitPages: exitRes.data || [],
-        referrers: sourcesRes.data?.referrers || [],
-      };
     } catch (err) {
       console.error("Failed to load dashboard data", err);
     } finally {
@@ -239,7 +201,6 @@ export default function SummaryPage() {
     if (selectedWebsite?.id && selectedWebsite.id !== prevWebsiteIdRef.current) {
       prevWebsiteIdRef.current = selectedWebsite.id;
       activeSiteIdRef.current = selectedWebsite.id;
-      memorySummaryCache = null;
       setOverview(null);
       setTimeseries([]);
       setPages([]);

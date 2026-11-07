@@ -21,15 +21,6 @@ import {
 } from "lucide-react";
 import { useTabFocus } from "@/hooks/useTabFocus";
 
-// Module-level memory cache for 0ms instant display when navigating to Traffic by Url
-let memoryPagesCache: {
-  siteId: string;
-  range: RangeOption;
-  pages: PageStat[];
-  landingPages: { path: string; sessions: number }[];
-  exitPages: { path: string; sessions: number }[];
-} | null = null;
-
 interface TitleItem {
   title: string;
   samplePath: string;
@@ -40,26 +31,16 @@ interface TitleItem {
 export default function PagesReportPage() {
   const { selectedWebsite } = useWebsite();
 
-  const isCached = !!(
-    selectedWebsite?.id &&
-    memoryPagesCache?.siteId === selectedWebsite.id &&
-    memoryPagesCache.pages.length > 0
-  );
-
-  const [range, setRange] = useState<RangeOption>(() =>
-    isCached && memoryPagesCache ? memoryPagesCache.range : "today",
-  );
+  const [range, setRange] = useState<RangeOption>("today");
   const [customWindow, setCustomWindow] = useState<CustomDateWindow | null>(null);
-  const [pages, setPages] = useState<PageStat[]>(() =>
-    isCached && memoryPagesCache ? memoryPagesCache.pages : [],
-  );
+  const [pages, setPages] = useState<PageStat[]>([]);
   const [landingPages, setLandingPages] = useState<
     { path: string; sessions: number }[]
-  >(() => (isCached && memoryPagesCache ? memoryPagesCache.landingPages : []));
+  >([]);
   const [exitPages, setExitPages] = useState<
     { path: string; sessions: number }[]
-  >(() => (isCached && memoryPagesCache ? memoryPagesCache.exitPages : []));
-  const [loading, setLoading] = useState(!isCached);
+  >([]);
+  const [loading, setLoading] = useState(true);
 
   const getDateRange = useCallback((option: RangeOption) => {
     const now = new Date();
@@ -75,7 +56,7 @@ export default function PagesReportPage() {
     return { from: from.toISOString(), to: now.toISOString() };
   }, []);
 
-  const hasDataRef = useRef(isCached);
+  const hasDataRef = useRef(false);
   const activeSiteIdRef = useRef<string | null>(selectedWebsite?.id || null);
   activeSiteIdRef.current = selectedWebsite?.id || null;
 
@@ -123,15 +104,6 @@ export default function PagesReportPage() {
         if (landRes.success && landRes.data) setLandingPages(landRes.data);
         if (exitRes.success && exitRes.data) setExitPages(exitRes.data);
         hasDataRef.current = true;
-
-        // Save in module cache for 0ms instant display on subsequent link navigation
-        memoryPagesCache = {
-          siteId,
-          range,
-          pages: pRes.data || [],
-          landingPages: landRes.data || [],
-          exitPages: exitRes.data || [],
-        };
       } catch (err) {
         console.error(err);
       } finally {
@@ -163,7 +135,6 @@ export default function PagesReportPage() {
     if (selectedWebsite?.id && selectedWebsite.id !== prevWebsiteIdRef.current) {
       prevWebsiteIdRef.current = selectedWebsite.id;
       activeSiteIdRef.current = selectedWebsite.id;
-      memoryPagesCache = null;
       setPages([]);
       setLandingPages([]);
       setExitPages([]);

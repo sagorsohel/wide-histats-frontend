@@ -62,7 +62,7 @@ export default function TrafficStatsPage() {
       try {
         const res = await api.get<TrafficStatsData>(
           `/api/v1/analytics/traffic?websiteId=${selectedWebsite.id}&from=${from.toISOString()}&to=${to.toISOString()}`,
-          { ttlMs: 15000 }
+          { skipCache: true }
         );
 
         if (res.success && res.data) {

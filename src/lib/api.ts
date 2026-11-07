@@ -167,6 +167,7 @@ class ApiClient {
       let response = await fetch(`${API_BASE}${endpoint}`, {
         ...options,
         headers,
+        cache: "no-store",
         credentials: "include",
       });
 
@@ -207,8 +208,15 @@ class ApiClient {
     endpoint: string,
     options?: { skipCache?: boolean; ttlMs?: number }
   ): Promise<ApiResponse<T>> {
-    // 0ms instant return if valid response is cached in RAM
-    if (!options?.skipCache) {
+    // Zero-caching: analytics and live traffic are always fetched fresh unless explicitly opt-in cached
+    const isLiveAnalytics =
+      endpoint.includes("/analytics/") ||
+      endpoint.includes("/traffic") ||
+      endpoint.includes("/realtime") ||
+      endpoint.includes("/summary");
+
+    const shouldCheckCache = !options?.skipCache && !isLiveAnalytics && options?.ttlMs;
+    if (shouldCheckCache) {
       const cached = this.getCached<T>(endpoint);
       if (cached) {
         return cached;
@@ -217,28 +225,14 @@ class ApiClient {
 
     const res = await this.request<T>(endpoint, { method: "GET" });
 
-    // Cache successful GET responses in memory
-    if (res.success) {
-      let ttl = options?.ttlMs;
-      if (!ttl) {
-        if (endpoint.includes("/analytics/realtime")) {
-          ttl = 3000; // 3 seconds for realtime
-        } else if (endpoint.includes("/websites")) {
-          ttl = 60000; // 1 minute for website telemetry / control panel
-        } else if (endpoint.includes("/analytics/")) {
-          ttl = 30000; // 30 seconds for analytics reports
-        } else {
-          ttl = 15000; // 15 seconds default
-        }
-      }
-
+    // Only cache if explicitly requested with ttlMs and not live analytics
+    if (res.success && options?.ttlMs && !isLiveAnalytics) {
       this.cache.set(endpoint, {
         data: res,
         timestamp: Date.now(),
-        ttl,
+        ttl: options.ttlMs,
       });
 
-      // Keep cache size bounded
       if (this.cache.size > 200) {
         const oldestKey = this.cache.keys().next().value;
         if (oldestKey) this.cache.delete(oldestKey);

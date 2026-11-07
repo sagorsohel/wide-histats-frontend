@@ -276,29 +276,25 @@ export default function GeographyPage() {
             <div className="h-full flex flex-col justify-between bg-white/80 backdrop-blur-xl backdrop-saturate-150 rounded-3xl border border-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_10px_30px_-5px_rgba(0,0,0,0.04)] p-5 sm:p-6 transition-all duration-300 hover:shadow-[0_15px_35px_-5px_rgba(0,0,0,0.06)]">
               <div className="flex-1 flex flex-col">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100/80">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-blue-50/90 text-blue-600 border border-blue-100/80 flex items-center justify-center shrink-0 shadow-xs">
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0 shadow-xs">
                       <Globe2 className="w-5 h-5" />
                     </div>
-                    <div>
-                      <h3 className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight">
+                    <div className="min-w-0">
+                      <h3 className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight truncate">
                         Visitors by Country
                       </h3>
-                      <p className="text-xs text-slate-500 mt-0.5">
+                      <p className="text-xs text-slate-500 mt-0.5 truncate">
                         Geographic distribution of your audience
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-slate-400 hidden sm:inline">
-                      Global reach
-                    </span>
-                    <span className="text-xs font-bold text-blue-600 px-2.5 py-1 rounded-full bg-blue-50/80 border border-blue-100/80">
-                      {countries.length} countries
-                    </span>
-                  </div>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-600 border border-blue-200/80 shadow-2xs whitespace-nowrap shrink-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                    <span>{countries.length} countries</span>
+                  </span>
                 </div>
 
                 {/* Content List */}
@@ -392,29 +388,25 @@ export default function GeographyPage() {
             <div className="h-full flex flex-col justify-between bg-white/80 backdrop-blur-xl backdrop-saturate-150 rounded-3xl border border-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_10px_30px_-5px_rgba(0,0,0,0.04)] p-5 sm:p-6 transition-all duration-300 hover:shadow-[0_15px_35px_-5px_rgba(0,0,0,0.06)]">
               <div className="flex-1 flex flex-col">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100/80">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-indigo-50/90 text-indigo-600 border border-indigo-100/80 flex items-center justify-center shrink-0 shadow-xs">
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center shrink-0 shadow-xs">
                       <Building2 className="w-5 h-5" />
                     </div>
-                    <div>
-                      <h3 className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight">
+                    <div className="min-w-0">
+                      <h3 className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight truncate">
                         Top Cities
                       </h3>
-                      <p className="text-xs text-slate-500 mt-0.5">
+                      <p className="text-xs text-slate-500 mt-0.5 truncate">
                         Metropolitan breakdown of incoming visitors
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-slate-400 hidden sm:inline">
-                      Urban regions
-                    </span>
-                    <span className="text-xs font-bold text-indigo-600 px-2.5 py-1 rounded-full bg-indigo-50/80 border border-indigo-100/80">
-                      {cities.length} cities
-                    </span>
-                  </div>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-600 border border-indigo-200/80 shadow-2xs whitespace-nowrap shrink-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                    <span>{cities.length} cities</span>
+                  </span>
                 </div>
 
                 {/* Content List */}

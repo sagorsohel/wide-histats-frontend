@@ -55,7 +55,9 @@ export default function SummaryPage() {
   const { selectedWebsite, websites } = useWebsite();
 
   const [range, setRange] = useState<RangeOption>("today");
-  const [customWindow, setCustomWindow] = useState<CustomDateWindow | null>(null);
+  const [customWindow, setCustomWindow] = useState<CustomDateWindow | null>(
+    null,
+  );
   const [overview, setOverview] = useState<OverviewStats | null>(null);
   const [timeseries, setTimeseries] = useState<TimeseriesPoint[]>([]);
   const [pages, setPages] = useState<PageStat[]>([]);
@@ -102,91 +104,118 @@ export default function SummaryPage() {
   }, []);
 
   const hasDataRef = React.useRef(false);
-  const activeSiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
+  const activeSiteIdRef = React.useRef<string | null>(
+    selectedWebsite?.id || null,
+  );
   activeSiteIdRef.current = selectedWebsite?.id || null;
 
-  const loadData = useCallback(async (isSilent = false, overrideSiteId?: string, overrideWindow?: CustomDateWindow | null) => {
-    const siteId = overrideSiteId || activeSiteIdRef.current;
-    if (!siteId) {
-      setLoading(false);
-      return;
-    }
-
-    const win = overrideWindow !== undefined ? overrideWindow : customWindow;
-    let from: string;
-    let to: string;
-
-    if (win) {
-      from = win.from;
-      to = win.to;
-    } else {
-      const dates = getDateRange(range);
-      from = dates.from;
-      to = dates.to;
-    }
-    const q = `websiteId=${siteId}&from=${from}&to=${to}`;
-
-    if (!isSilent && !hasDataRef.current) {
-      const cached = api.getCached<OverviewStats>(`/api/v1/analytics/overview?${q}`);
-      if (cached?.data) {
-        setOverview(cached.data);
+  const loadData = useCallback(
+    async (
+      isSilent = false,
+      overrideSiteId?: string,
+      overrideWindow?: CustomDateWindow | null,
+    ) => {
+      const siteId = overrideSiteId || activeSiteIdRef.current;
+      if (!siteId) {
         setLoading(false);
-      } else {
-        setLoading(true);
-      }
-    }
-
-    try {
-      const [
-        overviewRes,
-        timeseriesRes,
-        pagesRes,
-        sourcesRes,
-        geoRes,
-        devicesRes,
-        browsersRes,
-        osRes,
-        landingRes,
-        exitRes,
-      ] = await Promise.all([
-        api.get<OverviewStats>(`/api/v1/analytics/overview?${q}`),
-        api.get<TimeseriesPoint[]>(`/api/v1/analytics/timeseries?${q}`),
-        api.get<PageStat[]>(`/api/v1/analytics/pages?${q}&limit=6`),
-        api.get<{ sources: SourceStat[]; referrers?: ReferrerStat[] }>(`/api/v1/analytics/sources?${q}&limit=12`),
-        api.get<{ countries: CountryStat[]; cities: CityStat[] }>(`/api/v1/analytics/geography?${q}&limit=8`),
-        api.get<DeviceStat[]>(`/api/v1/analytics/devices?${q}`),
-        api.get<BrowserStat[]>(`/api/v1/analytics/browsers?${q}`),
-        api.get<OsStat[]>(`/api/v1/analytics/operating-systems?${q}&limit=6`),
-        api.get<LandingExitPageStat[]>(`/api/v1/analytics/landing-pages?${q}&limit=6`),
-        api.get<LandingExitPageStat[]>(`/api/v1/analytics/exit-pages?${q}&limit=6`),
-      ]);
-
-      // Strict race condition check: if user switched to another website while this was in flight, discard!
-      if (siteId !== activeSiteIdRef.current) {
         return;
       }
 
-      if (overviewRes.success && overviewRes.data) setOverview(overviewRes.data);
-      if (timeseriesRes.success && timeseriesRes.data) setTimeseries(timeseriesRes.data);
-      if (pagesRes.success && pagesRes.data) setPages(pagesRes.data);
-      if (sourcesRes.success && sourcesRes.data?.sources) setSources(sourcesRes.data.sources);
-      if (sourcesRes.success && sourcesRes.data?.referrers) setReferrers(sourcesRes.data.referrers);
-      if (geoRes.success && geoRes.data?.countries) setCountries(geoRes.data.countries);
-      if (geoRes.success && geoRes.data?.cities) setCities(geoRes.data.cities);
-      if (devicesRes.success && devicesRes.data) setDevices(devicesRes.data);
-      if (browsersRes.success && browsersRes.data) setBrowsers(browsersRes.data);
-      if (osRes.success && osRes.data) setOperatingSystems(osRes.data);
-      if (landingRes.success && landingRes.data) setLandingPages(landingRes.data);
-      if (exitRes.success && exitRes.data) setExitPages(exitRes.data);
-      hasDataRef.current = true;
-    } catch (err) {
-      console.error("Failed to load dashboard data", err);
-    } finally {
-      if (siteId === activeSiteIdRef.current) {
-        setLoading(false);
+      const win = overrideWindow !== undefined ? overrideWindow : customWindow;
+      let from: string;
+      let to: string;
+
+      if (win) {
+        from = win.from;
+        to = win.to;
+      } else {
+        const dates = getDateRange(range);
+        from = dates.from;
+        to = dates.to;
       }
-    }
-  }, [range, customWindow, getDateRange]);
+      const q = `websiteId=${siteId}&from=${from}&to=${to}`;
+
+      if (!isSilent && !hasDataRef.current) {
+        const cached = api.getCached<OverviewStats>(
+          `/api/v1/analytics/overview?${q}`,
+        );
+        if (cached?.data) {
+          setOverview(cached.data);
+          setLoading(false);
+        } else {
+          setLoading(true);
+        }
+      }
+
+      try {
+        const [
+          overviewRes,
+          timeseriesRes,
+          pagesRes,
+          sourcesRes,
+          geoRes,
+          devicesRes,
+          browsersRes,
+          osRes,
+          landingRes,
+          exitRes,
+        ] = await Promise.all([
+          api.get<OverviewStats>(`/api/v1/analytics/overview?${q}`),
+          api.get<TimeseriesPoint[]>(`/api/v1/analytics/timeseries?${q}`),
+          api.get<PageStat[]>(`/api/v1/analytics/pages?${q}&limit=6`),
+          api.get<{ sources: SourceStat[]; referrers?: ReferrerStat[] }>(
+            `/api/v1/analytics/sources?${q}&limit=12`,
+          ),
+          api.get<{ countries: CountryStat[]; cities: CityStat[] }>(
+            `/api/v1/analytics/geography?${q}&limit=8`,
+          ),
+          api.get<DeviceStat[]>(`/api/v1/analytics/devices?${q}`),
+          api.get<BrowserStat[]>(`/api/v1/analytics/browsers?${q}`),
+          api.get<OsStat[]>(`/api/v1/analytics/operating-systems?${q}&limit=6`),
+          api.get<LandingExitPageStat[]>(
+            `/api/v1/analytics/landing-pages?${q}&limit=6`,
+          ),
+          api.get<LandingExitPageStat[]>(
+            `/api/v1/analytics/exit-pages?${q}&limit=6`,
+          ),
+        ]);
+
+        // Strict race condition check: if user switched to another website while this was in flight, discard!
+        if (siteId !== activeSiteIdRef.current) {
+          return;
+        }
+
+        if (overviewRes.success && overviewRes.data)
+          setOverview(overviewRes.data);
+        if (timeseriesRes.success && timeseriesRes.data)
+          setTimeseries(timeseriesRes.data);
+        if (pagesRes.success && pagesRes.data) setPages(pagesRes.data);
+        if (sourcesRes.success && sourcesRes.data?.sources)
+          setSources(sourcesRes.data.sources);
+        if (sourcesRes.success && sourcesRes.data?.referrers)
+          setReferrers(sourcesRes.data.referrers);
+        if (geoRes.success && geoRes.data?.countries)
+          setCountries(geoRes.data.countries);
+        if (geoRes.success && geoRes.data?.cities)
+          setCities(geoRes.data.cities);
+        if (devicesRes.success && devicesRes.data) setDevices(devicesRes.data);
+        if (browsersRes.success && browsersRes.data)
+          setBrowsers(browsersRes.data);
+        if (osRes.success && osRes.data) setOperatingSystems(osRes.data);
+        if (landingRes.success && landingRes.data)
+          setLandingPages(landingRes.data);
+        if (exitRes.success && exitRes.data) setExitPages(exitRes.data);
+        hasDataRef.current = true;
+      } catch (err) {
+        console.error("Failed to load dashboard data", err);
+      } finally {
+        if (siteId === activeSiteIdRef.current) {
+          setLoading(false);
+        }
+      }
+    },
+    [range, customWindow, getDateRange],
+  );
 
   const handleRangeChange = (r: RangeOption) => {
     setRange(r);
@@ -202,10 +231,15 @@ export default function SummaryPage() {
   };
 
   // Instantly handle website switcher change in Summary page
-  const prevWebsiteIdRef = React.useRef<string | null>(selectedWebsite?.id || null);
+  const prevWebsiteIdRef = React.useRef<string | null>(
+    selectedWebsite?.id || null,
+  );
 
   useEffect(() => {
-    if (selectedWebsite?.id && selectedWebsite.id !== prevWebsiteIdRef.current) {
+    if (
+      selectedWebsite?.id &&
+      selectedWebsite.id !== prevWebsiteIdRef.current
+    ) {
       prevWebsiteIdRef.current = selectedWebsite.id;
       activeSiteIdRef.current = selectedWebsite.id;
       setOverview(null);
@@ -253,7 +287,11 @@ export default function SummaryPage() {
       }
     };
     window.addEventListener("histat:website_changed", handleWebsiteChanged);
-    return () => window.removeEventListener("histat:website_changed", handleWebsiteChanged);
+    return () =>
+      window.removeEventListener(
+        "histat:website_changed",
+        handleWebsiteChanged,
+      );
   }, [loadData]);
 
   // Auto-refresh when user returns to this tab after inactivity or sleep
@@ -337,7 +375,9 @@ export default function SummaryPage() {
           Welcome to Wide-Histat!
         </h2>
         <p className="text-sm text-slate-500 mb-6 leading-relaxed">
-          You don&apos;t have any websites registered yet. Register your first website to generate an instant tracking script and begin recording live visitor analytics.
+          You don&apos;t have any websites registered yet. Register your first
+          website to generate an instant tracking script and begin recording
+          live visitor analytics.
         </p>
         <Link
           href="/websites"
@@ -386,7 +426,8 @@ export default function SummaryPage() {
               </span>
             </div>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Real-time telemetry, visitor attribution, and historical trends for{" "}
+              Real-time telemetry, visitor attribution, and historical trends
+              for{" "}
               <span className="font-bold text-slate-700">
                 {selectedWebsite?.domain || "streamespn.org"}
               </span>
@@ -397,16 +438,18 @@ export default function SummaryPage() {
         {/* Current Active Range indicator Pill */}
         <div className="flex items-center gap-2">
           <div className="px-3.5 py-1.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center gap-2">
-            <span className="text-[11px] font-bold text-slate-500">Active Window:</span>
+            <span className="text-[11px] font-bold text-slate-500">
+              Active Window:
+            </span>
             <span className="px-2.5 py-0.5 rounded-xl bg-blue-100/80 text-[#1455bb] border border-blue-200/90 text-xs font-black">
               {customWindow?.label ||
                 (range === "today"
                   ? "Today"
                   : range === "yesterday"
-                  ? "Yesterday"
-                  : range === "7d"
-                  ? "Last 7 Days"
-                  : "Last 30 Days")}
+                    ? "Yesterday"
+                    : range === "7d"
+                      ? "Last 7 Days"
+                      : "Last 30 Days")}
             </span>
           </div>
         </div>
@@ -419,7 +462,7 @@ export default function SummaryPage() {
         {/* ============================================================ */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
           {/* KPI Cards Grid - 4 Vibrant Gradient Cards Matching Reference Design */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-4">
+          <div className="grid sm:grid-cols-2   gap-4">
             <KpiCard
               title="Period Visitors"
               value={formatNumber(overview?.uniqueVisitors || 57900)}
@@ -473,7 +516,11 @@ export default function SummaryPage() {
 
           {/* Feature 4: Top Pages & Landing vs Exit Pages - Full Width */}
           <div className="space-y-6">
-            <TopPagesTable pages={pages} domain={selectedWebsite?.domain} loading={loading} />
+            <TopPagesTable
+              pages={pages}
+              domain={selectedWebsite?.domain}
+              loading={loading}
+            />
             <LandingExitPagesCard
               landingPages={landingPages}
               exitPages={exitPages}
@@ -496,8 +543,15 @@ export default function SummaryPage() {
 
           {/* Feature 3: Hardware & Platforms - Devices & Browsers + Operating Systems Breakdown - Full Width */}
           <div className="space-y-6">
-            <DeviceBreakdown devices={devices} browsers={browsers} loading={loading} />
-            <OperatingSystemsCard operatingSystems={operatingSystems} loading={loading} />
+            <DeviceBreakdown
+              devices={devices}
+              browsers={browsers}
+              loading={loading}
+            />
+            <OperatingSystemsCard
+              operatingSystems={operatingSystems}
+              loading={loading}
+            />
           </div>
         </div>
 
@@ -547,7 +601,11 @@ export default function SummaryPage() {
                     <div className="h-8 w-20 bg-blue-200/50 rounded-lg animate-pulse" />
                   ) : (
                     <span className="text-2xl sm:text-3xl font-black text-[#1455bb] tracking-tight tabular-nums">
-                      {formatNumber(overview?.allTimeVisitors || overview?.uniqueVisitors || 23900)}
+                      {formatNumber(
+                        overview?.allTimeVisitors ||
+                          overview?.uniqueVisitors ||
+                          23900,
+                      )}
                     </span>
                   )}
                   <span className="text-[10px] font-bold text-slate-400">
@@ -571,7 +629,11 @@ export default function SummaryPage() {
                     <div className="h-8 w-20 bg-indigo-200/50 rounded-lg animate-pulse" />
                   ) : (
                     <span className="text-2xl sm:text-3xl font-black text-indigo-700 tracking-tight tabular-nums">
-                      {formatNumber(overview?.allTimePageviews || overview?.totalPageviews || 40700)}
+                      {formatNumber(
+                        overview?.allTimePageviews ||
+                          overview?.totalPageviews ||
+                          40700,
+                      )}
                     </span>
                   )}
                   <span className="text-[10px] font-bold text-slate-400">
@@ -595,7 +657,11 @@ export default function SummaryPage() {
                     <div className="h-8 w-20 bg-sky-200/50 rounded-lg animate-pulse" />
                   ) : (
                     <span className="text-2xl sm:text-3xl font-black text-sky-700 tracking-tight tabular-nums">
-                      {formatNumber(overview?.allTimeSessions || overview?.totalSessions || 30100)}
+                      {formatNumber(
+                        overview?.allTimeSessions ||
+                          overview?.totalSessions ||
+                          30100,
+                      )}
                     </span>
                   )}
                   <span className="text-[10px] font-bold text-slate-400">

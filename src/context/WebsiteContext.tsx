@@ -24,7 +24,8 @@ interface WebsiteContextType {
   reloadWebsites: () => Promise<void>;
   createWebsite: (name: string, domain: string, isPublic?: boolean) => Promise<Website | null>;
   trackingModalWebsite: Website | null;
-  openTrackingModal: (website: Website) => void;
+  trackingModalTab: "settings" | "code";
+  openTrackingModal: (website: Website, tab?: "settings" | "code") => void;
   closeTrackingModal: () => void;
 }
 
@@ -33,7 +34,7 @@ const WebsiteContext = createContext<WebsiteContextType | undefined>(undefined);
 export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const dispatch = useAppDispatch();
   const { user } = useAuth();
-  const { websites, selectedWebsite, loading, trackingModalWebsite } = useAppSelector(
+  const { websites, selectedWebsite, loading, trackingModalWebsite, trackingModalTab } = useAppSelector(
     (state) => state.website
   );
 
@@ -117,8 +118,8 @@ export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return null;
   };
 
-  const openTrackingModal = (website: Website) => {
-    dispatch(openTrackingModalAction(website));
+  const openTrackingModal = (website: Website, tab: "settings" | "code" = "code") => {
+    dispatch(openTrackingModalAction({ website, tab }));
   };
 
   const closeTrackingModal = () => {
@@ -135,6 +136,7 @@ export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ child
         reloadWebsites,
         createWebsite,
         trackingModalWebsite,
+        trackingModalTab: trackingModalTab || "code",
         openTrackingModal,
         closeTrackingModal,
       }}

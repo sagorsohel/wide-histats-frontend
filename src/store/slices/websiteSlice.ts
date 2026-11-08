@@ -9,6 +9,7 @@ export interface WebsiteState {
   selectedWebsite: Website | null;
   loading: boolean;
   trackingModalWebsite: Website | null;
+  trackingModalTab: "settings" | "code";
 }
 
 const getStoredSelectedWebsite = (): Website | null => {
@@ -26,6 +27,7 @@ const initialState: WebsiteState = {
   selectedWebsite: null,
   loading: false,
   trackingModalWebsite: null,
+  trackingModalTab: "code",
 };
 
 export const fetchWebsites = createAsyncThunk(
@@ -89,8 +91,19 @@ export const websiteSlice = createSlice({
         }
       }
     },
-    openTrackingModal: (state, action: PayloadAction<Website>) => {
-      state.trackingModalWebsite = action.payload;
+    openTrackingModal: (
+      state,
+      action: PayloadAction<
+        Website | { website: Website; tab?: "settings" | "code" }
+      >
+    ) => {
+      if ("website" in action.payload) {
+        state.trackingModalWebsite = action.payload.website;
+        state.trackingModalTab = action.payload.tab || "code";
+      } else {
+        state.trackingModalWebsite = action.payload;
+        state.trackingModalTab = "code";
+      }
     },
     closeTrackingModal: (state) => {
       state.trackingModalWebsite = null;

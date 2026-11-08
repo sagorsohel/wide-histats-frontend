@@ -624,7 +624,7 @@ export const Sidebar: React.FC = () => {
         {selectedWebsite && (
           <button
             type="button"
-            onClick={() => openTrackingModal(selectedWebsite)}
+            onClick={() => openTrackingModal(selectedWebsite, "code")}
             title="Get Tracker Code"
             className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-blue-100 flex items-center justify-center transition-all cursor-pointer mt-auto group"
           >
@@ -795,7 +795,7 @@ export const Sidebar: React.FC = () => {
           {selectedWebsite ? (
             <button
               type="button"
-              onClick={() => openTrackingModal(selectedWebsite)}
+              onClick={() => openTrackingModal(selectedWebsite, "code")}
               className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#1455bb] hover:bg-[#1047a0] active:scale-[0.98] text-white font-bold text-xs shadow-xs shadow-blue-600/20 transition-all cursor-pointer group"
             >
               <UseAnimations

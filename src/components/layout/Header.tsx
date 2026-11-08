@@ -46,7 +46,6 @@ export const Header: React.FC = () => {
     <>
       <header className="border-b border-slate-200/90 bg-white/85 backdrop-blur-xl sticky top-0 z-40 shadow-2xs shrink-0">
         <div className="h-16 px-3 sm:px-5 lg:px-7 flex items-center justify-between gap-3">
-          
           {/* ============================================================ */}
           {/* LEFT: Mobile Hamburger + Clean Brand Logo                    */}
           {/* ============================================================ */}
@@ -92,11 +91,9 @@ export const Header: React.FC = () => {
           {/* All moved to right side with cohesive frosted glass design   */}
           {/* ============================================================ */}
           <div className="flex items-center gap-2 sm:gap-2.5 lg:gap-3 shrink-0">
-            
             {/* Desktop Control Panel & Website Pill (Moved to Right Side in Glass Design) */}
             {!isAuthPage && (
               <div className="hidden md:flex items-center gap-2 lg:gap-2.5">
-                
                 {/* 1. Control Panel Button (Frosted Glass Pill) */}
                 <Link
                   href="/control-panel"
@@ -114,8 +111,7 @@ export const Header: React.FC = () => {
                 {/* 2. Active Website Pill (Frosted Glass with Favicon & External Link) */}
                 {selectedWebsite && (
                   <div className="flex items-center gap-1.5 bg-white/75 hover:bg-white/95 backdrop-blur-md border border-slate-200/90 hover:border-blue-300 rounded-2xl p-1 pr-1.5 shadow-2xs transition-all">
-                    <Link
-                      href={`/summary/?id=${getSite7DigitId(selectedWebsite)}`}
+                    <div
                       title={`Active Website: ${selectedWebsite.name} (${selectedWebsite.domain}) - View Analytics`}
                       className="flex items-center gap-2 px-2 py-0.5 text-xs font-extrabold text-slate-800 hover:text-[#1455bb] transition-colors select-none"
                     >
@@ -127,38 +123,15 @@ export const Header: React.FC = () => {
                       <span className="max-w-[120px] lg:max-w-[170px] truncate">
                         {selectedWebsite.name}
                       </span>
-                    </Link>
+                    </div>
 
                     {/* Direct Open Link in New Tab */}
-                    <a
-                      href={
-                        selectedWebsite.domain.startsWith("http")
-                          ? selectedWebsite.domain
-                          : `https://${selectedWebsite.domain}`
-                      }
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title={`Open ${selectedWebsite.domain} in new tab`}
-                      className="p-1 rounded-xl bg-slate-100/80 hover:bg-white text-slate-500 hover:text-[#1455bb] border border-slate-200/60 shadow-2xs transition-all flex items-center justify-center shrink-0"
-                    >
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
                   </div>
                 )}
               </div>
             )}
 
             {/* 3. Tracking Code Snippet Button (Frosted Glass Pill) */}
-            {!isAuthPage && !isControlPanel && selectedWebsite && (
-              <button
-                type="button"
-                onClick={() => openTrackingModal(selectedWebsite)}
-                className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl border border-blue-200/80 bg-blue-50/70 hover:bg-blue-100/80 backdrop-blur-md text-[#1455bb] text-xs font-extrabold transition-all shadow-2xs cursor-pointer active:scale-95"
-              >
-                <Code className="w-3.5 h-3.5" />
-                <span>Tracking Code</span>
-              </button>
-            )}
 
             {/* 4. User Account Dropdown (Frosted Glass Avatar) */}
             {user ? (
@@ -418,7 +391,8 @@ export const Header: React.FC = () => {
                           (pathname === "/summery" ||
                             pathname === "/summery/")) ||
                         (item.href === "/traffic-stats" &&
-                          (pathname === "/traffic" || pathname === "/traffic/"));
+                          (pathname === "/traffic" ||
+                            pathname === "/traffic/"));
 
                       const site7Digit = getSite7DigitId(selectedWebsite);
                       const itemHref = site7Digit

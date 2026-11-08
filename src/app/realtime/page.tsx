@@ -638,12 +638,48 @@ export default function RealtimeHistatsPage() {
     return pages;
   }, [data?.topPages, selectedWebsite?.domain, onlineCount]);
 
-  // 100% Real-time popular referrers - strictly aligned with Users Online LIVE count
+  // 100% Real-time popular referrers - strictly aligned with Users Online LIVE count & aggregated by clean domain
   const displayReferrers = useMemo(() => {
     if (!data?.topReferrers || data.topReferrers.length === 0) return [];
-    let referrers = [...data.topReferrers];
 
-    // Guarantee displayed popular referrers sum perfectly matches Users Online LIVE count
+    // 1. Normalize and aggregate duplicate referrers by domain
+    const aggregatedMap = new Map<string, { referrer: string; count: number }>();
+
+    for (const r of data.topReferrers) {
+      let rawRef = (r.referrer || "").trim();
+      let cleanKey = "";
+      let displayRef = rawRef;
+
+      if (!rawRef || rawRef.toLowerCase() === "direct" || rawRef.toLowerCase() === "none") {
+        cleanKey = "direct";
+        displayRef = "direct";
+      } else {
+        let clean = rawRef.replace(/^https?:\/\//i, "").replace(/^www\./i, "");
+        const slashIdx = clean.indexOf("/");
+        if (slashIdx !== -1) {
+          clean = clean.slice(0, slashIdx);
+        }
+        cleanKey = clean.toLowerCase().trim();
+        displayRef = cleanKey || "direct";
+      }
+
+      const existing = aggregatedMap.get(cleanKey);
+      if (existing) {
+        existing.count = (existing.count || 0) + (r.count || 0);
+      } else {
+        aggregatedMap.set(cleanKey, {
+          referrer: displayRef,
+          count: r.count || 1,
+        });
+      }
+    }
+
+    // 2. Sort descending by count
+    let referrers = Array.from(aggregatedMap.values()).sort(
+      (a, b) => (b.count || 0) - (a.count || 0),
+    );
+
+    // 3. Guarantee displayed popular referrers sum perfectly matches Users Online LIVE count
     if (onlineCount > 0 && referrers.length > 0) {
       const displaySlice = referrers.slice(0, 25);
       const sliceSum = displaySlice.reduce((sum, r) => sum + (r.count || 0), 0);

@@ -1,4 +1,5 @@
 import React from "react";
+import { WebsiteFavicon } from "./WebsiteFavicon";
 
 export interface IconProps {
   size?: number;
@@ -604,50 +605,94 @@ export const ReferrerBrandIcon: React.FC<{
   size?: number;
   className?: string;
 }> = ({ referrer, browser, size = 15, className = "" }) => {
-  const ref = (referrer || "").toLowerCase().trim();
+  const raw = (referrer || "").trim();
+  const ref = raw.toLowerCase();
 
-  // Search Engines
-  if (ref.includes("google")) return <GoogleIcon size={size} className={className} />;
-  if (ref.includes("bing")) return <BingIcon size={size} className={className} />;
-  if (ref.includes("duckduckgo")) return <DuckDuckGoIcon size={size} className={className} />;
-  if (ref.includes("yandex")) return <YandexIcon size={size} className={className} />;
-  if (ref.includes("yahoo")) return <YahooIcon size={size} className={className} />;
+  // 1. Direct / Unknown traffic
+  if (!ref || ref === "direct" || ref === "none" || ref === "unknown" || ref === "-") {
+    return (
+      <span
+        title="Direct traffic"
+        className={`inline-flex items-center justify-center shrink-0 ${className}`}
+        style={{ width: `${size}px`, height: `${size}px` }}
+      >
+        <svg
+          className="text-[#1455bb]"
+          style={{ width: `${size}px`, height: `${size}px` }}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+          <path d="M2 12h20" />
+        </svg>
+      </span>
+    );
+  }
 
-  // Social & Messaging Channels
-  if (ref.includes("facebook") || ref.includes("fb.me") || ref.includes("fb.com")) {
+  // 2. Search Engines
+  if (ref.includes("google.")) return <GoogleIcon size={size} className={className} />;
+  if (ref.includes("bing.")) return <BingIcon size={size} className={className} />;
+  if (ref.includes("duckduckgo.")) return <DuckDuckGoIcon size={size} className={className} />;
+  if (ref.includes("yandex.")) return <YandexIcon size={size} className={className} />;
+  if (ref.includes("yahoo.")) return <YahooIcon size={size} className={className} />;
+
+  // 3. Social & Messaging Channels (Strict host / domain matching - NEVER substring match "t.co" which hits blogspot.com!)
+  if (ref.includes("facebook.") || ref === "fb.me" || ref === "fb.com" || ref.endsWith(".facebook.com")) {
     return <FacebookIcon size={size} className={className} />;
   }
-  if (ref.includes("twitter") || ref.includes("t.co") || ref.includes("x.com")) {
+  if (
+    ref.includes("twitter.") ||
+    ref.includes("x.com") ||
+    ref === "t.co" ||
+    ref.startsWith("t.co/") ||
+    ref.includes("://t.co") ||
+    ref.includes(".t.co")
+  ) {
     return <TwitterXIcon size={size} className={className} />;
   }
-  if (ref.includes("youtube") || ref.includes("youtu.be")) {
+  if (ref.includes("youtube.") || ref.includes("youtu.be")) {
     return <YouTubeIcon size={size} className={className} />;
   }
-  if (ref.includes("telegram") || ref.includes("t.me")) {
+  if (ref.includes("telegram.") || ref === "t.me" || ref.startsWith("t.me/") || ref.includes("://t.me")) {
     return <TelegramIcon size={size} className={className} />;
   }
-  if (ref.includes("reddit")) {
+  if (ref.includes("reddit.")) {
     return <RedditIcon size={size} className={className} />;
   }
-  if (ref.includes("instagram")) {
+  if (ref.includes("instagram.")) {
     return <InstagramIcon size={size} className={className} />;
   }
-  if (ref.includes("linkedin")) {
+  if (ref.includes("linkedin.")) {
     return <LinkedInIcon size={size} className={className} />;
   }
-  if (ref.includes("pinterest")) {
+  if (ref.includes("pinterest.")) {
     return <PinterestIcon size={size} className={className} />;
   }
-  if (ref.includes("tiktok")) {
+  if (ref.includes("tiktok.")) {
     return <TikTokIcon size={size} className={className} />;
   }
-  if (ref.includes("whatsapp") || ref.includes("wa.me")) {
+  if (ref.includes("whatsapp.") || ref === "wa.me" || ref.startsWith("wa.me/") || ref.includes("://wa.me")) {
     return <WhatsAppIcon size={size} className={className} />;
   }
-  if (ref.includes("blogspot") || ref.includes("blogger")) {
-    return <BloggerIcon size={size} className={className} />;
+
+  // 4. Any web domain referrer (e.g. htwo.hyundai.com, russel-viper-pro.blogspot.com, ensfea.fr)
+  // Fetch and display real Website Favicon!
+  if (ref.includes(".")) {
+    return (
+      <WebsiteFavicon
+        domain={raw}
+        size={size}
+        className={className}
+        fallbackIcon="globe"
+      />
+    );
   }
 
-  // Fallback to real browser icon if direct or web
+  // 5. Fallback browser icon
   return <BrowserIcon browser={browser} size={size} className={className} />;
 };

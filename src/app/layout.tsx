@@ -34,10 +34,8 @@ export default function RootLayout({
                 <Header />
                 <div className="flex-1 flex overflow-hidden h-[calc(100vh-4rem)]">
                   <Sidebar />
-                  <main className="flex-1 min-w-0 h-full overflow-y-auto p-2 sm:p-4 lg:p-6 bg-[#eef2f7]/50">
-                    <div className="w-full">
-                      {children}
-                    </div>
+                  <main className="flex-1 min-w-0 h-full overflow-y-auto p-2 sm:p-4 lg:p-6 bg-[#F1F5F9]">
+                    <div className="w-full">{children}</div>
                   </main>
                 </div>
               </div>

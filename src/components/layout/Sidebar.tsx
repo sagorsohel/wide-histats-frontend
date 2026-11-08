@@ -172,12 +172,7 @@ export const HistatsLiveBroadcastIcon: React.FC<{
           fill={mainColor}
           className="histats-beacon-dot"
         />
-        <circle
-          cx="12"
-          cy="7.2"
-          r="1"
-          fill={isWhite ? "#1455bb" : "#ffffff"}
-        />
+        <circle cx="12" cy="7.2" r="1" fill={isWhite ? "#1455bb" : "#ffffff"} />
 
         {/* Inner Right Radio Wave Arc */}
         <path
@@ -647,7 +642,7 @@ export const Sidebar: React.FC = () => {
       {/* COLUMN 2: Secondary Navigation Panel (Width: 236px)          */}
       {/* Clean card items starting directly from top                  */}
       {/* ============================================================ */}
-      <div className="w-[236px] bg-[#f8fafc] flex flex-col justify-between overflow-hidden relative z-10">
+      <div className="w-[236px] bg-[#F1F5F9] flex flex-col justify-between overflow-hidden relative z-10">
         {/* Navigation Cards List (Starts directly from top without redundant website block) */}
         <div className="flex-1 overflow-y-auto p-3 space-y-3.5 custom-scrollbar">
           {NAV_GROUPS.map((group) => (

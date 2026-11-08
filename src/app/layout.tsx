@@ -9,9 +9,39 @@ import { TrackingModalWrapper } from "@/components/analytics/TrackingModalWrappe
 import { UrlWebsiteSync } from "@/components/common/UrlWebsiteSync";
 
 export const metadata: Metadata = {
-  title: "Wide-Histat — Real-Time Website Analytics Platform",
+  title: "Analycos — Free Web Stats, Hit Counter & Visitor Tracking",
   description:
-    "Privacy-friendly, high-performance web analytics platform with real-time visitor tracking and interactive reports.",
+    "Monitor website visitors, pageviews, and traffic sources with Analycos. Free web statistics, hit counters, and visitor tracking tools to understand your audience.",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
+  openGraph: {
+    title: "Analycos — Free Web Stats, Hit Counter & Visitor Tracking",
+    description:
+      "Monitor website visitors, pageviews, and traffic sources with Analycos. Free web statistics, hit counters, and visitor tracking tools to understand your audience.",
+    siteName: "Analycos",
+    type: "website",
+    images: [
+      {
+        url: "/favicon.svg",
+        width: 100,
+        height: 100,
+        alt: "Analycos Logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Analycos — Free Web Stats, Hit Counter & Visitor Tracking",
+    description:
+      "Monitor website visitors, pageviews, and traffic sources with Analycos. Free web statistics, hit counters, and visitor tracking tools to understand your audience.",
+    images: ["/favicon.svg"],
+  },
 };
 
 export default function RootLayout({

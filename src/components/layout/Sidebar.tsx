@@ -39,6 +39,7 @@ export interface NavItem {
     stroke: string;
     inactive3D: string;
     active3D: string;
+    cardBorderGradient?: string;
   };
 }
 
@@ -241,6 +242,8 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: createAnimatedIcon(grid, 18),
         theme: {
           stroke: "#2563eb",
+          cardBorderGradient:
+            "from-blue-200 via-indigo-200 to-blue-300 group-hover:from-blue-500 group-hover:via-indigo-500 group-hover:to-blue-600",
           inactive3D:
             "bg-gradient-to-b from-blue-50 to-blue-100 text-blue-600 border border-blue-200/90 shadow-[0_2px_4px_rgba(37,99,235,0.15),inset_0_1px_0_rgba(255,255,255,0.9)] group-hover:border-blue-400 group-hover:shadow-[0_4px_8px_rgba(37,99,235,0.25)]",
           active3D:
@@ -255,6 +258,8 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: createAnimatedIcon(trendingUp, 18),
         theme: {
           stroke: "#059669",
+          cardBorderGradient:
+            "from-emerald-200 via-teal-200 to-emerald-300 group-hover:from-emerald-500 group-hover:via-teal-500 group-hover:to-emerald-600",
           inactive3D:
             "bg-gradient-to-b from-emerald-50 to-emerald-100 text-emerald-600 border border-emerald-200/90 shadow-[0_2px_4px_rgba(16,185,129,0.15),inset_0_1px_0_rgba(255,255,255,0.9)] group-hover:border-emerald-400 group-hover:shadow-[0_4px_8px_rgba(16,185,129,0.25)]",
           active3D:
@@ -271,6 +276,8 @@ export const NAV_GROUPS: NavGroup[] = [
         isLive: true,
         theme: {
           stroke: "#e11d48",
+          cardBorderGradient:
+            "from-rose-200 via-red-200 to-rose-300 group-hover:from-rose-500 group-hover:via-red-500 group-hover:to-rose-600",
           inactive3D:
             "bg-gradient-to-b from-rose-50 to-rose-100 text-rose-600 border border-rose-200/90 shadow-[0_2px_4px_rgba(244,63,94,0.18),inset_0_1px_0_rgba(255,255,255,0.9)] group-hover:border-rose-400 group-hover:shadow-[0_4px_8px_rgba(244,63,94,0.3)]",
           active3D:
@@ -290,6 +297,8 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: createAnimatedIcon(explore, 18),
         theme: {
           stroke: "#d97706",
+          cardBorderGradient:
+            "from-amber-200 via-orange-200 to-amber-300 group-hover:from-amber-500 group-hover:via-orange-500 group-hover:to-amber-600",
           inactive3D:
             "bg-gradient-to-b from-amber-50 to-amber-100 text-amber-600 border border-amber-200/90 shadow-[0_2px_4px_rgba(245,158,11,0.18),inset_0_1px_0_rgba(255,255,255,0.9)] group-hover:border-amber-400 group-hover:shadow-[0_4px_8px_rgba(245,158,11,0.3)]",
           active3D:
@@ -309,6 +318,8 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: createAnimatedIcon(smartphone, 18),
         theme: {
           stroke: "#7c3aed",
+          cardBorderGradient:
+            "from-purple-200 via-violet-200 to-purple-300 group-hover:from-purple-500 group-hover:via-violet-500 group-hover:to-purple-600",
           inactive3D:
             "bg-gradient-to-b from-purple-50 to-purple-100 text-purple-600 border border-purple-200/90 shadow-[0_2px_4px_rgba(139,92,246,0.18),inset_0_1px_0_rgba(255,255,255,0.9)] group-hover:border-purple-400 group-hover:shadow-[0_4px_8px_rgba(139,92,246,0.3)]",
           active3D:
@@ -323,6 +334,8 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: createAnimatedIcon(globe, 18),
         theme: {
           stroke: "#0284c7",
+          cardBorderGradient:
+            "from-sky-200 via-cyan-200 to-blue-300 group-hover:from-sky-500 group-hover:via-cyan-500 group-hover:to-blue-600",
           inactive3D:
             "bg-gradient-to-b from-sky-50 to-cyan-100 text-sky-600 border border-sky-200/90 shadow-[0_2px_4px_rgba(2,132,199,0.18),inset_0_1px_0_rgba(255,255,255,0.9)] group-hover:border-sky-400 group-hover:shadow-[0_4px_8px_rgba(2,132,199,0.3)]",
           active3D:
@@ -342,6 +355,8 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: createAnimatedIcon(fileText, 18),
         theme: {
           stroke: "#db2777",
+          cardBorderGradient:
+            "from-pink-200 via-rose-200 to-pink-300 group-hover:from-pink-500 group-hover:via-rose-500 group-hover:to-pink-600",
           inactive3D:
             "bg-gradient-to-b from-pink-50 to-pink-100 text-pink-600 border border-pink-200/90 shadow-[0_2px_4px_rgba(236,72,153,0.18),inset_0_1px_0_rgba(255,255,255,0.9)] group-hover:border-pink-400 group-hover:shadow-[0_4px_8px_rgba(236,72,153,0.3)]",
           active3D:
@@ -361,6 +376,8 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: createAnimatedIcon(settings, 18),
         theme: {
           stroke: "#475569",
+          cardBorderGradient:
+            "from-slate-200 via-gray-300 to-slate-300 group-hover:from-slate-500 group-hover:via-gray-500 group-hover:to-slate-600",
           inactive3D:
             "bg-gradient-to-b from-slate-100 to-slate-200 text-slate-700 border border-slate-300/90 shadow-[0_2px_4px_rgba(100,116,139,0.18),inset_0_1px_0_rgba(255,255,255,0.9)] group-hover:border-slate-400 group-hover:shadow-[0_4px_8px_rgba(100,116,139,0.3)]",
           active3D:
@@ -654,107 +671,121 @@ export const Sidebar: React.FC = () => {
                   const itemHref = getHref(item.href);
 
                   if (isActive) {
-                    // Active Card (Instant 0ms Next.js navigation)
+                    // Active Card (Instant 0ms Next.js navigation with Gradient Border)
                     return (
                       <Link
                         key={item.href}
                         prefetch={true}
                         href={itemHref}
-                        className="block p-3 rounded-xl bg-gradient-to-r from-[#1455bb] to-[#1a62d4] text-white shadow-md shadow-blue-600/25 transition-all group scale-[1.01] cursor-pointer"
+                        className="block rounded-xl group scale-[1.01] transition-all cursor-pointer shadow-md shadow-blue-600/25"
                       >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            {/* 3D Animated Icon Box (Active) */}
-                            <div
-                              className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 group-hover:scale-110 group-hover:-translate-y-0.5 ${
-                                item.theme?.active3D ||
-                                "bg-white/20 text-white shadow-2xs"
-                              }`}
-                            >
-                              <item.icon
-                                className="w-4 h-4 text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]"
-                                strokeColor="#ffffff"
-                              />
-                            </div>
-                            <div className="min-w-0">
-                              <div className="font-extrabold text-xs text-white truncate leading-tight">
-                                {item.label}
+                        <div className="p-[1.5px] rounded-xl bg-gradient-to-r from-blue-300 via-indigo-300 to-sky-300 shadow-2xs">
+                          <div className="p-3 rounded-[10.5px] bg-gradient-to-r from-[#1455bb] to-[#1a62d4] text-white">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                {/* 3D Animated Icon Box (Active) */}
+                                <div
+                                  className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 group-hover:scale-110 group-hover:-translate-y-0.5 ${
+                                    item.theme?.active3D ||
+                                    "bg-white/20 text-white shadow-2xs"
+                                  }`}
+                                >
+                                  <item.icon
+                                    className="w-4 h-4 text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]"
+                                    strokeColor="#ffffff"
+                                  />
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="font-extrabold text-xs text-white truncate leading-tight">
+                                    {item.label}
+                                  </div>
+                                  <div className="text-[10px] text-blue-100/80 truncate mt-0.5">
+                                    {item.subtitle}
+                                  </div>
+                                </div>
                               </div>
-                              <div className="text-[10px] text-blue-100/80 truncate mt-0.5">
-                                {item.subtitle}
-                              </div>
+
+                              {item.isLive ? (
+                                <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-white text-[#1455bb] shadow-xs flex items-center gap-1 shrink-0">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                  <span>
+                                    {typeof activeCount === "number" &&
+                                    activeCount > 0
+                                      ? `${activeCount} Live`
+                                      : "Live"}
+                                  </span>
+                                </span>
+                              ) : item.badge ? (
+                                <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-white/20 text-white border border-white/30 shrink-0">
+                                  {item.badge}
+                                </span>
+                              ) : (
+                                <ChevronRight className="w-3.5 h-3.5 text-white/70 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                              )}
                             </div>
                           </div>
-
-                          {item.isLive ? (
-                            <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-white text-[#1455bb] shadow-xs flex items-center gap-1 shrink-0">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                              <span>
-                                {typeof activeCount === "number" &&
-                                activeCount > 0
-                                  ? `${activeCount} Live`
-                                  : "Live"}
-                              </span>
-                            </span>
-                          ) : item.badge ? (
-                            <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-white/20 text-white border border-white/30 shrink-0">
-                              {item.badge}
-                            </span>
-                          ) : (
-                            <ChevronRight className="w-3.5 h-3.5 text-white/70 shrink-0 group-hover:translate-x-0.5 transition-transform" />
-                          )}
                         </div>
                       </Link>
                     );
                   }
 
-                  // Inactive Card (Instant 0ms Next.js navigation)
+                  // Inactive Card (Instant 0ms Next.js navigation with Gradient Border)
                   return (
                     <Link
                       key={item.href}
                       prefetch={true}
                       href={itemHref}
-                      className="block p-2.5 rounded-xl bg-white border border-slate-200/90 text-slate-800 shadow-2xs hover:border-blue-300 hover:shadow-xs hover:translate-x-0.5 transition-all group cursor-pointer"
+                      className="block rounded-xl group hover:translate-x-0.5 transition-all duration-200 cursor-pointer shadow-2xs hover:shadow-xs"
                     >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          {/* 3D Animated Icon Box (Inactive - Distinct theme color per item) */}
-                          <div
-                            className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 group-hover:scale-110 group-hover:-translate-y-0.5 ${
-                              item.theme?.inactive3D ||
-                              "bg-slate-100 text-[#1455bb]"
-                            }`}
-                          >
-                            <item.icon
-                              className="w-4 h-4 drop-shadow-[0_1px_1px_rgba(0,0,0,0.08)]"
-                              strokeColor={item.theme?.stroke || "#1455bb"}
-                            />
-                          </div>
-                          <div className="min-w-0">
-                            <div className="font-bold text-xs text-slate-800 group-hover:text-blue-600 truncate leading-tight transition-colors">
-                              {item.label}
+                      {/* Gradient Border Frame (1.5px padding reveals vibrant border gradient) */}
+                      <div
+                        className={`p-[1.5px] rounded-xl bg-gradient-to-r ${
+                          item.theme?.cardBorderGradient ||
+                          "from-slate-200 via-slate-300 to-slate-200 group-hover:from-blue-400 group-hover:to-indigo-500"
+                        } transition-all duration-300`}
+                      >
+                        <div className="p-2.5 rounded-[10.5px] bg-white">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              {/* 3D Animated Icon Box (Inactive - Distinct theme color per item) */}
+                              <div
+                                className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 group-hover:scale-110 group-hover:-translate-y-0.5 ${
+                                  item.theme?.inactive3D ||
+                                  "bg-slate-100 text-[#1455bb]"
+                                }`}
+                              >
+                                <item.icon
+                                  className="w-4 h-4 drop-shadow-[0_1px_1px_rgba(0,0,0,0.08)]"
+                                  strokeColor={item.theme?.stroke || "#1455bb"}
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-bold text-xs text-slate-800 group-hover:text-blue-600 truncate leading-tight transition-colors">
+                                  {item.label}
+                                </div>
+                                <div className="text-[10px] text-slate-400 truncate mt-0.5">
+                                  {item.subtitle}
+                                </div>
+                              </div>
                             </div>
-                            <div className="text-[10px] text-slate-400 truncate mt-0.5">
-                              {item.subtitle}
-                            </div>
+
+                            {item.isLive ? (
+                              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1 shrink-0">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                <span>
+                                  {typeof activeCount === "number" &&
+                                  activeCount > 0
+                                    ? activeCount
+                                    : "LIVE"}
+                                </span>
+                              </span>
+                            ) : item.badge ? (
+                              <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
+                                {item.badge}
+                              </span>
+                            ) : null}
                           </div>
                         </div>
-
-                        {item.isLive ? (
-                          <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1 shrink-0">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            <span>
-                              {typeof activeCount === "number" &&
-                              activeCount > 0
-                                ? activeCount
-                                : "LIVE"}
-                            </span>
-                          </span>
-                        ) : item.badge ? (
-                          <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
-                            {item.badge}
-                          </span>
-                        ) : null}
                       </div>
                     </Link>
                   );

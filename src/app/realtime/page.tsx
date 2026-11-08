@@ -42,6 +42,7 @@ import {
   Plus,
   Minus,
   CornerDownRight,
+  X,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useTabFocus } from "@/hooks/useTabFocus";
@@ -49,7 +50,7 @@ import { useTabFocus } from "@/hooks/useTabFocus";
 const RealtimeGeoMap = dynamic(
   () =>
     import("@/components/analytics/RealtimeGeoMap").then(
-      (m) => m.RealtimeGeoMap
+      (m) => m.RealtimeGeoMap,
     ),
   {
     ssr: false,
@@ -58,7 +59,7 @@ const RealtimeGeoMap = dynamic(
         Loading Global Telemetry Map...
       </div>
     ),
-  }
+  },
 );
 
 type TabType =
@@ -100,6 +101,19 @@ export default function RealtimeHistatsPage() {
   const [showSearch, setShowSearch] = useState(false);
   const [mapZoom, setMapZoom] = useState(1);
   const [currentTime, setCurrentTime] = useState<number>(() => Date.now());
+  const [confirmUrlModal, setConfirmUrlModal] = useState<{
+    url: string;
+    title?: string;
+  } | null>(null);
+
+  const handleUrlClick = useCallback(
+    (e: React.MouseEvent, url: string, title?: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setConfirmUrlModal({ url, title });
+    },
+    [],
+  );
 
   // Track IDs of newly arrived hits for the smooth slide-down stack animation
   const [animatingHitIds, setAnimatingHitIds] = useState<
@@ -305,10 +319,10 @@ export default function RealtimeHistatsPage() {
       const newHit: RealtimeRecentHit = {
         id:
           event.id ||
-          ("hit-" +
+          "hit-" +
             Date.now() +
             "-" +
-            Math.random().toString(36).substring(2, 7)),
+            Math.random().toString(36).substring(2, 7),
         websiteId: activeId,
         path: event.path || "/",
         title: event.title || event.path || "Home Page",
@@ -454,7 +468,10 @@ export default function RealtimeHistatsPage() {
       const rawHitTime = new Date(isoOrDateStr).getTime();
       if (isNaN(rawHitTime)) return '1"';
       const calibratedHitTime = rawHitTime + clockDriftOffset;
-      const diffSec = Math.max(1, Math.floor((currentTime - calibratedHitTime) / 1000));
+      const diffSec = Math.max(
+        1,
+        Math.floor((currentTime - calibratedHitTime) / 1000),
+      );
       if (diffSec < 60) {
         return `${diffSec}"`;
       }
@@ -468,7 +485,6 @@ export default function RealtimeHistatsPage() {
     },
     [currentTime, clockDriftOffset],
   );
-
 
   // Active Count & Pages Count - Exact Real-Time Count Right Now with Website Context Fallback
   const onlineCount = useMemo(() => {
@@ -497,8 +513,12 @@ export default function RealtimeHistatsPage() {
     let pages = data.topPages.map((page) => ({
       ...page,
       url: page.url
-        ? (siteDomain ? page.url.replace(/techblog\.example\.com|example\.com/g, siteDomain) : page.url)
-        : (siteDomain ? `https://${siteDomain}${page.path}` : page.path),
+        ? siteDomain
+          ? page.url.replace(/techblog\.example\.com|example\.com/g, siteDomain)
+          : page.url
+        : siteDomain
+          ? `https://${siteDomain}${page.path}`
+          : page.path,
     }));
 
     // Guarantee displayed popular pages sum perfectly matches Users Online LIVE count
@@ -511,7 +531,10 @@ export default function RealtimeHistatsPage() {
           if (idx === displaySlice.length - 1) {
             return { ...p, count: Math.max(1, remaining) };
           }
-          const scaled = Math.max(1, Math.round(((p.count || 1) / sliceSum) * onlineCount));
+          const scaled = Math.max(
+            1,
+            Math.round(((p.count || 1) / sliceSum) * onlineCount),
+          );
           remaining = Math.max(0, remaining - scaled);
           return { ...p, count: scaled };
         });
@@ -538,7 +561,10 @@ export default function RealtimeHistatsPage() {
           if (idx === displaySlice.length - 1) {
             return { ...r, count: Math.max(1, remaining) };
           }
-          const scaled = Math.max(1, Math.round(((r.count || 1) / sliceSum) * onlineCount));
+          const scaled = Math.max(
+            1,
+            Math.round(((r.count || 1) / sliceSum) * onlineCount),
+          );
           remaining = Math.max(0, remaining - scaled);
           return { ...r, count: scaled };
         });
@@ -601,7 +627,6 @@ export default function RealtimeHistatsPage() {
       return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
     });
   }, [data, selectedWebsite?.domain]);
-
 
   const todayVisitorsCount = useMemo(() => {
     if (data?.todayVisitors !== undefined && data.todayVisitors > 0)
@@ -909,8 +934,13 @@ export default function RealtimeHistatsPage() {
                         />
                         <a
                           href={getFullUrl(hit.url, hit.path)}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          onClick={(e) =>
+                            handleUrlClick(
+                              e,
+                              getFullUrl(hit.url, hit.path),
+                              hit.title || hit.path,
+                            )
+                          }
                           title={getFullUrl(hit.url, hit.path)}
                           className="truncate text-[#222222] font-normal hover:text-[#004f9e] hover:underline cursor-pointer group flex-1 min-w-0"
                         >
@@ -920,13 +950,33 @@ export default function RealtimeHistatsPage() {
                         </a>
                       </div>
 
-                      {/* Geolocation Country & City matching Histats */}
-                      <div className="flex items-center gap-1.5 text-slate-700 shrink-0 min-w-[140px] max-w-[200px] justify-start text-[11px]">
-                        <CountryFlag code={hit.countryCode} />
-                        <span className="truncate text-slate-800">
-                          {hit.city && hit.city !== hit.countryCode
-                            ? hit.city
-                            : "-"}
+                      {/* Country Flag, Browser Icon, Device Icon (City name removed) */}
+                      <div className="flex items-center gap-2 text-slate-700 shrink-0 justify-end text-[11px] pr-2">
+                        <span
+                          title={getCountryName(hit.countryCode, hit.country)}
+                          className="inline-flex items-center cursor-default"
+                        >
+                          <CountryFlag code={hit.countryCode} />
+                        </span>
+                        <span
+                          title={`Browser: ${hit.browser || "Web"}`}
+                          className="inline-flex items-center cursor-default"
+                        >
+                          <BrowserIcon
+                            browser={hit.browser}
+                            os={hit.os}
+                            size={14}
+                          />
+                        </span>
+                        <span
+                          title={`Device: ${hit.deviceType || "desktop"} (${hit.os || "OS"})`}
+                          className="inline-flex items-center cursor-default"
+                        >
+                          <OsIcon
+                            os={hit.os}
+                            deviceType={hit.deviceType}
+                            size={14}
+                          />
                         </span>
                       </div>
                     </div>
@@ -1093,8 +1143,14 @@ export default function RealtimeHistatsPage() {
                       data?.topCountries && data.topCountries.length > 0
                         ? data.topCountries
                         : onlineCount > 0
-                        ? [{ country: "South Africa", code: "ZA", count: onlineCount }]
-                        : []
+                          ? [
+                              {
+                                country: "South Africa",
+                                code: "ZA",
+                                count: onlineCount,
+                              },
+                            ]
+                          : []
                     }
                     height="230px"
                   />
@@ -1349,10 +1405,15 @@ export default function RealtimeHistatsPage() {
                           />
                           <a
                             href={getFullUrl(hit.url, hit.path)}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            onClick={(e) =>
+                              handleUrlClick(
+                                e,
+                                getFullUrl(hit.url, hit.path),
+                                hit.title || hit.path,
+                              )
+                            }
                             title={getFullUrl(hit.url, hit.path)}
-                            className="text-[#1b62b7] hover:underline font-medium truncate flex-1 min-w-0"
+                            className="text-[#1b62b7] hover:underline font-medium truncate flex-1 min-w-0 cursor-pointer"
                           >
                             {hit.title || hit.path}
                           </a>
@@ -1368,10 +1429,15 @@ export default function RealtimeHistatsPage() {
                             <ExternalLink className="w-3 h-3 text-[#1b62b7] shrink-0" />
                             <a
                               href={hit.referrer!}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                              onClick={(e) =>
+                                handleUrlClick(
+                                  e,
+                                  hit.referrer!,
+                                  "Referring Site",
+                                )
+                              }
                               title={hit.referrer!}
-                              className="text-[#1b62b7] hover:underline font-mono text-[11px] truncate"
+                              className="text-[#1b62b7] hover:underline font-mono text-[11px] truncate cursor-pointer"
                             >
                               {hit.referrer}
                             </a>
@@ -1642,8 +1708,9 @@ export default function RealtimeHistatsPage() {
                         />
                         <a
                           href={pageUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          onClick={(e) =>
+                            handleUrlClick(e, pageUrl, page.title || page.path)
+                          }
                           title={pageUrl}
                           className="font-medium text-slate-800 hover:text-[#1b62b7] hover:underline cursor-pointer truncate group flex-1 min-w-0"
                         >
@@ -1742,8 +1809,14 @@ export default function RealtimeHistatsPage() {
                 data?.topCountries && data.topCountries.length > 0
                   ? data.topCountries
                   : onlineCount > 0
-                  ? [{ country: "South Africa", code: "ZA", count: onlineCount }]
-                  : []
+                    ? [
+                        {
+                          country: "South Africa",
+                          code: "ZA",
+                          count: onlineCount,
+                        },
+                      ]
+                    : []
               }
               height="420px"
             />
@@ -1811,6 +1884,77 @@ export default function RealtimeHistatsPage() {
           </div>
         )}
       </div>
+
+      {/* URL Navigation Confirmation Modal */}
+      {confirmUrlModal && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => setConfirmUrlModal(null)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-2xl border border-slate-200 max-w-md w-full p-5 text-left transition-all"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center shrink-0 text-[#004f9e]">
+                <ExternalLink className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-slate-800">
+                  Confirm Visit
+                </h3>
+                <p className="text-xs text-slate-600 mt-1">
+                  Do you want to visit this page or URL?
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setConfirmUrlModal(null)}
+                className="text-slate-400 hover:text-slate-600 p-1 -mr-1 -mt-1 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {confirmUrlModal.title && (
+              <div className="mt-3.5 text-xs font-semibold text-slate-800 truncate">
+                {confirmUrlModal.title}
+              </div>
+            )}
+
+            <div className="mt-2 p-2.5 bg-slate-50 border border-slate-200 rounded text-[11px] font-mono text-[#004f9e] break-all select-all flex items-center gap-1.5">
+              <span className="truncate flex-1">{confirmUrlModal.url}</span>
+            </div>
+
+            <div className="mt-5 flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setConfirmUrlModal(null)}
+                className="px-4 py-2 text-xs bg-red-600 font-semibold text-white  hover:bg-red-700 border border-slate-300 rounded shadow-2xs transition-colors cursor-pointer"
+              >
+                No, cancel it.
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    window.open(
+                      confirmUrlModal.url,
+                      "_blank",
+                      "noopener,noreferrer",
+                    );
+                  }
+                  setConfirmUrlModal(null);
+                }}
+                className="px-4 py-2 text-xs font-semibold text-white bg-[#004f9e] hover:bg-[#003b77] rounded shadow-2xs transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <span>Yes, please open it.</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -261,17 +261,6 @@ export default function GeographyPage() {
         {/* ============================================================ */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
           {/* Privacy Notice Alert per specification */}
-          <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200/80 backdrop-blur-md flex items-start gap-3 text-xs text-slate-700 shadow-2xs">
-            <Info className="w-4 h-4 text-[#1455bb] shrink-0 mt-0.5" />
-            <p className="leading-relaxed">
-              <strong className="text-slate-900 font-semibold">
-                Privacy Notice:
-              </strong>{" "}
-              IP-based geolocation is approximate and derived safely on the
-              server side without storing raw IP addresses. Locations may be
-              affected by VPNs, proxies, and cellular towers.
-            </p>
-          </div>
 
           {/* Interactive Global Telemetry Map */}
 

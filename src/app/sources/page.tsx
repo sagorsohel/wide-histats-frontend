@@ -303,16 +303,15 @@ export default function SourcesPage() {
         </div>
       </div>
 
-      {/* 2-Column Responsive Layout: Left (Main Tables), Right (Always Shown Calendar) */}
-      <div className="flex flex-col xl:flex-row gap-6 items-start relative z-10">
-        {/* ============================================================ */}
-        {/* LEFT / MAIN CONTENT COLUMN                                   */}
-        {/* ============================================================ */}
-        <div className="flex-1 min-w-0 space-y-6 w-full">
-          {/* 1. HISTATS SUMMARY COMPARISON TABLE */}
-          <div className="w-full bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
-            <div className="w-full overflow-x-auto scrollbar-none">
-              <table className="w-full text-left border-collapse min-w-full">
+      {/* ============================================================ */}
+      {/* 1. TOP ROW: SUMMARY TABLE & COMPACT CALENDAR (SIDE-BY-SIDE)   */}
+      {/* ============================================================ */}
+      <div className="flex flex-col lg:flex-row gap-5 items-stretch relative z-10">
+        {/* Left: Histats Summary Comparison Table */}
+        <div className="flex-1 min-w-0 flex flex-col">
+          <div className="w-full h-full bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden flex flex-col justify-between">
+            <div className="w-full overflow-x-auto scrollbar-none flex-1 flex flex-col">
+              <table className="w-full text-left border-collapse min-w-full flex-1">
                 <thead>
                   <tr className="bg-gradient-to-r from-[#1455bb] via-[#165dce] to-[#124cb0] text-white text-[11px] sm:text-xs font-bold border-b border-blue-900/40">
                     <th className="py-2.5 px-3 sm:px-4 tracking-wide text-left font-bold text-white/95">
@@ -329,7 +328,7 @@ export default function SourcesPage() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="text-[11px] sm:text-xs font-medium divide-y divide-slate-100">
+                <tbody className="text-[11px] sm:text-xs font-medium divide-y divide-slate-100 flex-1">
                   {/* Row 1: Total page views */}
                   <tr className="hover:bg-blue-50/40 transition-colors">
                     <td className="py-2.5 px-3 sm:px-4 text-slate-800 font-medium">
@@ -404,6 +403,25 @@ export default function SourcesPage() {
               </table>
             </div>
           </div>
+        </div>
+
+        {/* Right: Authentic Compact Histats Calendar (Exact image match) */}
+        <div className="shrink-0 flex items-center justify-center lg:justify-end">
+          <HistatsCalendar
+            selectedPreset={range}
+            onPresetChange={handleRangeChange}
+            currentWindow={customWindow}
+            onDateChange={handleCalendarDateChange}
+            showNewAndLost={showNewAndLost}
+            onToggleNewAndLost={setShowNewAndLost}
+          />
+        </div>
+      </div>
+
+      {/* ============================================================ */}
+      {/* 2. SUBSEQUENT FULL-WIDTH SECTIONS                            */}
+      {/* ============================================================ */}
+      <div className="space-y-6 w-full relative z-10 pt-1">
 
       {/* SUBHEADER CONTROLS BAR: Total rows, Page numbers, and Rows to show */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#f8fafc] border border-slate-200/90 rounded-xl px-4 py-2.5 text-xs text-slate-700 shadow-2xs">
@@ -860,47 +878,6 @@ export default function SourcesPage() {
         </div>
       </div>
     </div>
-
-    {/* ============================================================ */}
-    {/* RIGHT COLUMN: ALWAYS SHOWN CALENDAR                          */}
-    {/* ============================================================ */}
-    <div className="w-full xl:w-72 2xl:w-80 shrink-0 space-y-5 xl:sticky xl:top-6">
-      <div className="rounded-3xl bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.04)] p-4 sm:p-5 space-y-3">
-        <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-4.5 rounded-full bg-gradient-to-b from-[#1455bb] to-blue-400 shadow-sm" />
-            <h3 className="text-xs font-black uppercase tracking-wider text-slate-800">
-              Analytics Calendar
-            </h3>
-          </div>
-          {customWindow?.label ? (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-100 text-[#1455bb] border border-blue-200">
-              {customWindow.label}
-            </span>
-          ) : null}
-        </div>
-
-        <DateRangePicker
-          inline={true}
-          selectedRange={range}
-          onChange={handleRangeChange}
-          customWindow={customWindow}
-          onCustomRangeChange={handleCalendarDateChange}
-        />
-
-        {/* Show new and lost referrers checkbox */}
-        <label className="flex items-center gap-2 pt-2.5 border-t border-slate-100 text-xs font-semibold text-slate-700 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={showNewAndLost}
-            onChange={(e) => setShowNewAndLost(e.target.checked)}
-            className="w-4 h-4 rounded border-slate-300 text-[#1455bb] focus:ring-blue-500 cursor-pointer"
-          />
-          <span>Show new and lost referrers</span>
-        </label>
-      </div>
-    </div>
   </div>
-</div>
   );
 }

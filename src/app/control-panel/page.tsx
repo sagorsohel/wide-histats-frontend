@@ -172,7 +172,7 @@ export default function ControlPanelPage() {
       {/* ============================================================ */}
       {/* MAIN FROSTED GLASS CONTAINER (Full Glassmorphic Canvas)      */}
       {/* ============================================================ */}
-      <div className="relative w-full max-w-[1600px] mx-auto rounded-[32px] bg-white/65 backdrop-blur-2xl border border-white/85 shadow-[0_20px_60px_-15px_rgba(20,85,187,0.12),inset_0_1px_2px_rgba(255,255,255,0.95)] p-5 sm:p-7 lg:p-9 space-y-6 z-10 flex-1 flex flex-col">
+      <div className="relative w-full max-w-[1260px] mx-auto rounded-[32px] bg-white/65 backdrop-blur-2xl border border-white/85 shadow-[0_20px_60px_-15px_rgba(20,85,187,0.12),inset_0_1px_2px_rgba(255,255,255,0.95)] p-5 sm:p-7 lg:p-9 space-y-6 z-10 flex-1 flex flex-col">
         {/* Specular Shimmer Highlight on Top Edge */}
         <div className="absolute top-0 left-10 right-10 h-px bg-gradient-to-r from-transparent via-white/90 to-transparent pointer-events-none" />
 

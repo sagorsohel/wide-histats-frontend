@@ -498,7 +498,7 @@ export default function RealtimeHistatsPage() {
     return data?.activeCount ?? 0;
   }, [data?.activeCount, selectedWebsite?.usersOnline]);
 
-  // 100% Real-time popular pages - strictly isolated to current domain & aligned with Users Online
+  // 100% Real-time popular pages - strictly isolated to current domain & deduplicated/aggregated so identical links never show separately
   const displayPages = useMemo(() => {
     if (!data?.topPages || data.topPages.length === 0) return [];
 
@@ -510,18 +510,92 @@ export default function RealtimeHistatsPage() {
           .trim()
       : "";
 
-    let pages = data.topPages.map((page) => ({
-      ...page,
-      url: page.url
-        ? siteDomain
-          ? page.url.replace(/techblog\.example\.com|example\.com/g, siteDomain)
-          : page.url
-        : siteDomain
-          ? `https://${siteDomain}${page.path}`
-          : page.path,
-    }));
+    // 1. Resolve domain & clean URL for each incoming page
+    const rawPages = data.topPages.map((page) => {
+      let resolvedUrl = page.url;
+      if (resolvedUrl) {
+        if (siteDomain) {
+          resolvedUrl = resolvedUrl.replace(/techblog\.example\.com|example\.com/g, siteDomain);
+        }
+      } else {
+        const cleanPath = page.path.startsWith("/") ? page.path : `/${page.path}`;
+        resolvedUrl = siteDomain ? `https://${siteDomain}${cleanPath}` : cleanPath;
+      }
+      return {
+        ...page,
+        url: resolvedUrl,
+      };
+    });
 
-    // Guarantee displayed popular pages sum perfectly matches Users Online LIVE count
+    // 2. Aggregate identical links / pages into a single row with summed counts
+    const aggregatedMap = new Map<string, { path: string; title: string; url: string; count: number }>();
+    const titleToKeyMap = new Map<string, string>();
+
+    for (const p of rawPages) {
+      let linkKey = "";
+      const rawTarget = (p.url || p.path || "").trim();
+      try {
+        if (rawTarget.startsWith("http://") || rawTarget.startsWith("https://")) {
+          const parsed = new URL(rawTarget);
+          const pathname =
+            parsed.pathname.length > 1 && parsed.pathname.endsWith("/")
+              ? parsed.pathname.slice(0, -1)
+              : parsed.pathname;
+          linkKey = `${parsed.origin.toLowerCase()}${pathname}${parsed.search}`;
+        } else {
+          let clean = rawTarget.replace(/^https?:\/\/[^\/]+/i, "");
+          if (!clean.startsWith("/")) clean = "/" + clean;
+          if (clean.length > 1 && clean.endsWith("/")) clean = clean.slice(0, -1);
+          linkKey = clean.toLowerCase();
+        }
+      } catch {
+        linkKey = rawTarget.toLowerCase();
+      }
+
+      const cleanTitle = (p.title || "").trim().toLowerCase();
+      const isSpecificTitle =
+        cleanTitle.length > 5 &&
+        !cleanTitle.includes("home page") &&
+        cleanTitle !== "home";
+
+      let targetKey = linkKey;
+      if (!aggregatedMap.has(targetKey) && isSpecificTitle && titleToKeyMap.has(cleanTitle)) {
+        targetKey = titleToKeyMap.get(cleanTitle)!;
+      }
+
+      const existing = aggregatedMap.get(targetKey);
+      if (existing) {
+        existing.count = (existing.count || 0) + (p.count || 0);
+        if (
+          p.title &&
+          (!existing.title ||
+            existing.title === existing.path ||
+            p.title.length > existing.title.length)
+        ) {
+          existing.title = p.title;
+        }
+        if (p.url && !existing.url) {
+          existing.url = p.url;
+        }
+      } else {
+        aggregatedMap.set(targetKey, {
+          path: p.path || "/",
+          title: p.title || p.path || "Page",
+          url: p.url || "",
+          count: p.count || 1,
+        });
+        if (isSpecificTitle) {
+          titleToKeyMap.set(cleanTitle, targetKey);
+        }
+      }
+    }
+
+    // 3. Sort descending by aggregated total count
+    let pages = Array.from(aggregatedMap.values()).sort(
+      (a, b) => (b.count || 0) - (a.count || 0),
+    );
+
+    // 4. Guarantee displayed popular pages sum perfectly matches Users Online LIVE count
     if (onlineCount > 0 && pages.length > 0) {
       const displaySlice = pages.slice(0, 25);
       const sliceSum = displaySlice.reduce((sum, p) => sum + (p.count || 0), 0);
@@ -653,9 +727,10 @@ export default function RealtimeHistatsPage() {
   const browsingPagesCount = useMemo(() => {
     if (data?.browsingPagesCount !== undefined && data.browsingPagesCount > 0)
       return data.browsingPagesCount;
+    if (displayPages.length > 0) return displayPages.length;
     if (data?.topPages && data.topPages.length > 0) return data.topPages.length;
     return Math.max(1, Math.min(25, Math.floor(onlineCount / 14)));
-  }, [data?.browsingPagesCount, data?.topPages, onlineCount]);
+  }, [data?.browsingPagesCount, displayPages.length, data?.topPages, onlineCount]);
 
   const getDeviceIcon = (device?: string, os?: string) => {
     return (
@@ -721,7 +796,7 @@ export default function RealtimeHistatsPage() {
   }, [displayHits, searchQuery]);
 
   return (
-    <div className="w-full max-w-[1550px] mx-auto text-[12px] font-sans antialiased bg-[#f8fafc] border border-slate-200/90 shadow-sm rounded-2xl overflow-hidden select-text">
+    <div className="w-full mx-auto text-[12px] font-sans antialiased bg-[#f8fafc] border border-slate-200/90 shadow-sm rounded-2xl overflow-hidden select-text">
       {/* 1. Top Website Banner */}
       <div className="bg-gradient-to-r from-[#1455bb] via-[#124cb0] to-[#0f3f94] text-white px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-blue-400/20">
         <div className="flex items-center gap-2">

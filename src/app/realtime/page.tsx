@@ -926,12 +926,24 @@ export default function RealtimeHistatsPage() {
 
                       {/* Page Title & Link with Website Favicon */}
                       <div className="flex-1 flex items-center gap-1.5 truncate max-w-[650px] lg:max-w-[800px] min-w-0">
-                        <WebsiteFavicon
-                          url={hit.url}
-                          domain={selectedWebsite?.domain}
-                          size={14}
-                          fallbackIcon="link"
-                        />
+                        <div
+                          className="shrink-0 cursor-pointer"
+                          onClick={(e) =>
+                            handleUrlClick(
+                              e,
+                              getFullUrl(hit.url, hit.path),
+                              hit.title || hit.path,
+                            )
+                          }
+                          title={getFullUrl(hit.url, hit.path)}
+                        >
+                          <WebsiteFavicon
+                            url={hit.url}
+                            domain={selectedWebsite?.domain}
+                            size={14}
+                            fallbackIcon="link"
+                          />
+                        </div>
                         <a
                           href={getFullUrl(hit.url, hit.path)}
                           onClick={(e) =>
@@ -950,17 +962,33 @@ export default function RealtimeHistatsPage() {
                         </a>
                       </div>
 
-                      {/* Country Flag, Browser Icon, Device Icon (City name removed) */}
-                      <div className="flex items-center gap-2 text-slate-700 shrink-0 justify-end text-[11px] pr-2">
-                        <span
-                          title={getCountryName(hit.countryCode, hit.country)}
-                          className="inline-flex items-center cursor-default"
-                        >
-                          <CountryFlag code={hit.countryCode} />
-                        </span>
+                      {/* Geolocation & Device Details: Pixel-perfect aligned tabular columns */}
+                      <div className="flex items-center gap-2.5 text-slate-700 shrink-0 justify-end text-[11px] pr-1">
+                        {/* Flag & City Column: Fixed width so all flags align in a straight vertical line */}
+                        <div className="flex items-center gap-1.5 w-[20px] md:w-[130px] lg:w-[150px] shrink-0 justify-start overflow-hidden">
+                          <span
+                            title={getCountryName(hit.countryCode, hit.country)}
+                            className="inline-flex items-center justify-center w-[18px] shrink-0 cursor-default"
+                          >
+                            <CountryFlag code={hit.countryCode} />
+                          </span>
+                          <span
+                            title={
+                              hit.city ||
+                              getCountryName(hit.countryCode, hit.country)
+                            }
+                            className="hidden md:inline-block truncate flex-1 text-slate-700 cursor-default text-left"
+                          >
+                            {hit.city && hit.city !== hit.countryCode
+                              ? hit.city
+                              : "-"}
+                          </span>
+                        </div>
+
+                        {/* Browser Icon Column: Fixed width */}
                         <span
                           title={`Browser: ${hit.browser || "Web"}`}
-                          className="inline-flex items-center cursor-default"
+                          className="inline-flex items-center justify-center w-[16px] shrink-0 cursor-default"
                         >
                           <BrowserIcon
                             browser={hit.browser}
@@ -968,9 +996,11 @@ export default function RealtimeHistatsPage() {
                             size={14}
                           />
                         </span>
+
+                        {/* Device Icon Column: Fixed width */}
                         <span
                           title={`Device: ${hit.deviceType || "desktop"} (${hit.os || "OS"})`}
-                          className="inline-flex items-center cursor-default"
+                          className="inline-flex items-center justify-center w-[16px] shrink-0 cursor-default"
                         >
                           <OsIcon
                             os={hit.os}

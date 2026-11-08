@@ -2,6 +2,7 @@
 
 import React from "react";
 import { CountryFlag } from "@/components/common/CountryFlag";
+import { AnalycosLogo } from "@/components/common/AnalycosLogo";
 import {
   Search,
   Compass,
@@ -22,15 +23,7 @@ export const LandingMockup: React.FC = () => {
           <div className="flex items-center gap-3">
             {/* Logo */}
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 relative flex items-center justify-center">
-                <svg viewBox="0 0 36 36" className="w-5 h-5 -rotate-90">
-                  <circle cx="18" cy="18" r="13" fill="none" stroke="#e2e8f0" strokeWidth="4" />
-                  <circle cx="18" cy="18" r="13" fill="none" stroke="#2563eb" strokeWidth="4" strokeDasharray="25 75" />
-                  <circle cx="18" cy="18" r="13" fill="none" stroke="#06b6d4" strokeWidth="4" strokeDasharray="25 75" strokeDashoffset="-25" />
-                  <circle cx="18" cy="18" r="13" fill="none" stroke="#f97316" strokeWidth="4" strokeDasharray="25 75" strokeDashoffset="-50" />
-                  <circle cx="18" cy="18" r="13" fill="none" stroke="#eab308" strokeWidth="4" strokeDasharray="25 75" strokeDashoffset="-75" />
-                </svg>
-              </div>
+              <AnalycosLogo size={20} animated={true} speed="normal" />
               <span className="font-extrabold text-sm text-slate-900 tracking-tight">Analycos</span>
             </div>
 

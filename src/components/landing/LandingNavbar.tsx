@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
+import { AnalycosLogo } from "@/components/common/AnalycosLogo";
 
 export const LandingNavbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -12,64 +13,7 @@ export const LandingNavbar: React.FC = () => {
       <div className="w-full max-w-[1260px] mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          {/* Multi-colored donut ring logo exactly like screenshot */}
-          <div className="relative w-8 h-8 flex items-center justify-center">
-            <svg viewBox="0 0 36 36" className="w-8 h-8 transform -rotate-90">
-              {/* Background ring */}
-              <circle
-                cx="18"
-                cy="18"
-                r="13"
-                fill="none"
-                stroke="#e2e8f0"
-                strokeWidth="4"
-              />
-              {/* Blue segment */}
-              <circle
-                cx="18"
-                cy="18"
-                r="13"
-                fill="none"
-                stroke="#2563eb"
-                strokeWidth="4"
-                strokeDasharray="25 75"
-                strokeDashoffset="0"
-              />
-              {/* Cyan / Teal segment */}
-              <circle
-                cx="18"
-                cy="18"
-                r="13"
-                fill="none"
-                stroke="#06b6d4"
-                strokeWidth="4"
-                strokeDasharray="25 75"
-                strokeDashoffset="-25"
-              />
-              {/* Orange segment */}
-              <circle
-                cx="18"
-                cy="18"
-                r="13"
-                fill="none"
-                stroke="#f97316"
-                strokeWidth="4"
-                strokeDasharray="25 75"
-                strokeDashoffset="-50"
-              />
-              {/* Yellow/Amber segment */}
-              <circle
-                cx="18"
-                cy="18"
-                r="13"
-                fill="none"
-                stroke="#eab308"
-                strokeWidth="4"
-                strokeDasharray="25 75"
-                strokeDashoffset="-75"
-              />
-            </svg>
-          </div>
+          <AnalycosLogo size={32} animated={true} speed="normal" />
           <span className="font-extrabold text-xl tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
             Analycos
           </span>

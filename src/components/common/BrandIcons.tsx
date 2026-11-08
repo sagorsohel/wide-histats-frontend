@@ -696,3 +696,5 @@ export const ReferrerBrandIcon: React.FC<{
   // 5. Fallback browser icon
   return <BrowserIcon browser={browser} size={size} className={className} />;
 };
+
+export { AnalycosLogo } from "./AnalycosLogo";

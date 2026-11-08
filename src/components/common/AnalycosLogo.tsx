@@ -11,19 +11,55 @@ interface AnalycosLogoProps {
   textClassName?: string;
 }
 
+export const AnalycosAnimatedText: React.FC<{
+  className?: string;
+  sizeClass?: string;
+}> = ({
+  className = "",
+  sizeClass = "text-xl",
+}) => {
+  return (
+    <span
+      className={`font-black tracking-tight relative select-none inline-flex items-center ${sizeClass} ${className}`}
+    >
+      <span
+        className="bg-gradient-to-r from-[#1455bb] via-[#2563eb] via-[#00bcd4] via-[#ff6d00] via-[#fbbc04] to-[#1455bb] bg-[length:300%_auto] bg-clip-text text-transparent group-hover:scale-[1.02] transition-transform duration-300"
+        style={{
+          animation: "analycos-text-shimmer 3.5s ease-in-out infinite",
+        }}
+      >
+        Analycos
+      </span>
+      <style>{`
+        @keyframes analycos-text-shimmer {
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
+          }
+        }
+      `}</style>
+    </span>
+  );
+};
+
 export const AnalycosLogo: React.FC<AnalycosLogoProps> = ({
   size = 32,
   className = "",
   animated = true,
-  speed = "normal",
+  speed = "fast",
   showText = false,
-  textClassName = "font-extrabold text-slate-900 tracking-tight",
+  textClassName = "",
 }) => {
-  // Cycle duration for one full percentage-fill & push sequence
+  // Snappy fast cycle durations for prompt responsiveness
   const cycleDuration =
-    speed === "fast" ? "3.2s" : speed === "slow" ? "6.5s" : "4.6s";
+    speed === "fast" ? "1.9s" : speed === "slow" ? "4.2s" : "2.6s";
   const colorCycleDuration =
-    speed === "fast" ? "6.4s" : speed === "slow" ? "13s" : "9.2s";
+    speed === "fast" ? "3.8s" : speed === "slow" ? "8.4s" : "5.2s";
 
   return (
     <div className={`inline-flex items-center gap-2.5 ${className}`}>
@@ -46,8 +82,8 @@ export const AnalycosLogo: React.FC<AnalycosLogoProps> = ({
           <style>
             {`
               /* ========================================================
-                 1. STEPPING PUSH ROTATION ("dhakka diye diye jabe")
-                 Rotates in snappy stepped impulses as each arc fills up!
+                 1. FAST STEPPING PUSH ROTATION ("dhakka diye diye jabe")
+                 Snappy stepped impulse pushes as each arc fills up!
                  ======================================================== */
               @keyframes analycos-step-push {
                 0% {
@@ -81,7 +117,7 @@ export const AnalycosLogo: React.FC<AnalycosLogoProps> = ({
                 85% {
                   transform: rotate(335deg);
                 }
-                /* Completion spin & smooth reset for next cycle */
+                /* Snappy completion spin & smooth reset */
                 93% {
                   transform: rotate(360deg);
                 }
@@ -91,25 +127,23 @@ export const AnalycosLogo: React.FC<AnalycosLogoProps> = ({
               }
 
               /* ========================================================
-                 2. LIVE COLOR SHIFTING ("color change hobe")
+                 2. LIVE DYNAMIC COLOR SHIFT ("color change hobe")
                  ======================================================== */
               @keyframes analycos-color-shift {
                 0% {
-                  filter: hue-rotate(0deg) saturate(1.1);
+                  filter: hue-rotate(0deg) saturate(1.15);
                 }
                 50% {
-                  filter: hue-rotate(180deg) saturate(1.25);
+                  filter: hue-rotate(180deg) saturate(1.3);
                 }
                 100% {
-                  filter: hue-rotate(360deg) saturate(1.1);
+                  filter: hue-rotate(360deg) saturate(1.15);
                 }
               }
 
               /* ========================================================
-                 3. PERCENTAGE PROGRESSIVE FILL-UP ("fillup hobe")
+                 3. FAST PERCENTAGE PROGRESSIVE FILL-UP ("fillup hobe")
                  Circumference = 226.2
-                 Each color draws in like a percentage meter, pushing
-                 the boundary until the entire circle is 100% filled!
                  ======================================================== */
 
               /* Blue Segment (fills 0% to 30%, length 0 -> 67.5) */
@@ -117,7 +151,7 @@ export const AnalycosLogo: React.FC<AnalycosLogoProps> = ({
                 0% {
                   stroke-dasharray: 0 226.2;
                   stroke-dashoffset: 0;
-                  opacity: 0.6;
+                  opacity: 0.7;
                 }
                 18%, 85% {
                   stroke-dasharray: 67.5 226.2;
@@ -242,14 +276,6 @@ export const AnalycosLogo: React.FC<AnalycosLogoProps> = ({
             strokeWidth="15"
           />
 
-          {/* 
-            Circumference = 2 * PI * 36 = 226.195
-            Arc 1 (Blue): ~30% = 67.5 length
-            Arc 2 (Cyan): ~20% = 45 length
-            Arc 3 (Orange): ~35% = 79.5 length
-            Arc 4 (Yellow): ~15% = 34.2 length
-          */}
-
           {/* Blue segment (0% to 30%) */}
           <circle
             cx="50"
@@ -300,7 +326,12 @@ export const AnalycosLogo: React.FC<AnalycosLogoProps> = ({
         </svg>
       </div>
 
-      {showText && <span className={textClassName}>Analycos</span>}
+      {showText && (
+        <AnalycosAnimatedText
+          className={textClassName}
+          sizeClass={Number(size) >= 32 ? "text-xl" : "text-base"}
+        />
+      )}
     </div>
   );
 };

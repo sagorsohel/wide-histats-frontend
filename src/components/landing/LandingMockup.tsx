@@ -23,7 +23,7 @@ export const LandingMockup: React.FC = () => {
           <div className="flex items-center gap-3">
             {/* Logo */}
             <div className="flex items-center gap-2">
-              <AnalycosLogo size={20} animated={true} speed="normal" />
+              <AnalycosLogo size={20} animated={true} speed="fast" />
               <span className="font-extrabold text-sm text-slate-900 tracking-tight">Analycos</span>
             </div>
 

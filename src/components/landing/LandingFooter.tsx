@@ -11,7 +11,7 @@ export const LandingFooter: React.FC = () => {
         {/* Left: Brand & Copyright */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 font-bold text-slate-900">
-            <AnalycosLogo size={18} animated={true} speed="normal" />
+            <AnalycosLogo size={18} animated={true} speed="fast" />
             <span>Analycos</span>
           </div>
           <span>&copy; {new Date().getFullYear()} Analycos. All rights reserved.</span>

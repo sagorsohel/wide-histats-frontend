@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import { AnalycosLogo } from "@/components/common/AnalycosLogo";
+import { AnalycosLogo, AnalycosAnimatedText } from "@/components/common/AnalycosLogo";
 
 export const LandingNavbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -13,10 +13,8 @@ export const LandingNavbar: React.FC = () => {
       <div className="w-full max-w-[1260px] mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <AnalycosLogo size={32} animated={true} speed="normal" />
-          <span className="font-extrabold text-xl tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
-            Analycos
-          </span>
+          <AnalycosLogo size={32} animated={true} speed="fast" />
+          <AnalycosAnimatedText sizeClass="text-2xl" />
         </Link>
 
         {/* Center Navigation Links */}

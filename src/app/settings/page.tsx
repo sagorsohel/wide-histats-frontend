@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useWebsite } from "@/context/WebsiteContext";
 import { api } from "@/lib/api";
@@ -93,6 +94,28 @@ export default function SettingsPage() {
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, [timezone]);
+
+  if (!websites || websites.length === 0) {
+    return (
+      <div className="py-20 flex flex-col items-center justify-center text-center max-w-lg mx-auto">
+        <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#1455bb] mb-4 shadow-sm">
+          <Globe className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-extrabold text-slate-900 mb-2">
+          No websites registered yet
+        </h2>
+        <p className="text-xs text-slate-500 mb-6 leading-relaxed">
+          Please register a website first to configure time zone, regional tracking, and analytics preferences.
+        </p>
+        <Link
+          href="/control-panel"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1455bb] hover:bg-[#1047a0] text-white font-bold text-xs shadow-md shadow-blue-500/20 transition-all"
+        >
+          Register your first website
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-4xl pb-12">

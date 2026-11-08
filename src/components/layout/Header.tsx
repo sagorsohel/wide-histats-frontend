@@ -149,7 +149,7 @@ export const Header: React.FC = () => {
                       className="fixed inset-0 z-40"
                       onClick={() => setUserDropdownOpen(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-56 rounded-3xl border border-white/90 bg-white/90 backdrop-blur-2xl shadow-2xl p-2 z-50 animate-slide-down">
+                    <div className="absolute right-0 mt-2 w-56 rounded-3xl border border-slate-200/90 bg-white shadow-2xl p-2 z-50 animate-slide-down">
                       <div className="px-3.5 py-2.5 border-b border-slate-100">
                         <div className="font-extrabold text-sm text-slate-900 truncate">
                           {user.name}
@@ -168,14 +168,16 @@ export const Header: React.FC = () => {
                           <Globe className="w-4 h-4 text-slate-500" />
                           <span>Manage Websites</span>
                         </Link>
-                        <Link
-                          href="/settings"
-                          onClick={() => setUserDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                        >
-                          <Activity className="w-4 h-4 text-slate-500" />
-                          <span>Settings</span>
-                        </Link>
+                        {websites && websites.length > 0 && (
+                          <Link
+                            href="/settings"
+                            onClick={() => setUserDropdownOpen(false)}
+                            className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                          >
+                            <Activity className="w-4 h-4 text-slate-500" />
+                            <span>Settings</span>
+                          </Link>
+                        )}
                       </div>
 
                       <div className="border-t border-slate-100 pt-1">

@@ -819,7 +819,7 @@ export default function RealtimeHistatsPage() {
   }, [displayHits, searchQuery]);
 
   return (
-    <div className="w-full mx-auto text-[12px] font-sans antialiased bg-[#f8fafc] border border-slate-200/90 shadow-sm rounded-2xl overflow-hidden select-text">
+    <div className="w-full mx-auto text-[12px] font-sans antialiased bg-[#F1F5F9] border-none shadow-sm rounded-2xl overflow-hidden select-text">
       {/* 1. Top Website Banner */}
       <div className="bg-gradient-to-r from-[#1455bb] via-[#124cb0] to-[#0f3f94] text-white px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-blue-400/20">
         <div className="flex items-center gap-2">
@@ -972,11 +972,11 @@ export default function RealtimeHistatsPage() {
       </div>
 
       {/* 4. Tab Body Area */}
-      <div className="p-3 sm:p-4 bg-[#f8fafc]">
+      <div className="p-3 sm:p-4 bg-[#F1F5F9] border-none">
         {activeTab === "summary" && (
           <div className="space-y-3.5">
             {/* Top Box: Recent Hits Stream */}
-            <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden">
+            <div className="bg-white border border-gray-300 rounded-xl shadow-xs overflow-hidden">
               <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between">
                 <span className="font-bold text-slate-800 text-[12px] tracking-tight">
                   Recent
@@ -1019,7 +1019,7 @@ export default function RealtimeHistatsPage() {
                       <div
                         key={hit.id || idx}
                         style={{
-                          backgroundColor: isZebra ? "#00000017" : "#ffffff",
+                          backgroundColor: isZebra ? "#e5eef7ff" : "#ffffff",
                         }}
                         className="px-2.5 py-1.5 flex items-center justify-between border-b border-slate-200/50 transition-colors gap-2 text-[11px] hover:brightness-95"
                       >
@@ -1128,7 +1128,7 @@ export default function RealtimeHistatsPage() {
               {/* Left Column: Popular Pages & Popular Referrers */}
               <div className="space-y-3.5">
                 {/* Box 1: Popular Pages */}
-                <div className="bg-white border-2  border-[#155ccb] rounded-xl shadow-xs overflow-hidden">
+                <div className="bg-white border-2  border-gray-300 rounded-xl shadow-xs overflow-hidden">
                   <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between">
                     <span className="font-bold text-slate-800 text-[12px] tracking-tight">
                       Popular pages
@@ -1198,7 +1198,7 @@ export default function RealtimeHistatsPage() {
                 </div>
 
                 {/* Box 2: Popular Referrers */}
-                <div className="bg-white border-[#155ccb]  border-2 rounded-xl shadow-xs overflow-hidden">
+                <div className="bg-white border-white  border-2 rounded-xl shadow-xs overflow-hidden">
                   <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between">
                     <span className="font-bold text-slate-800 text-[12px] tracking-tight">
                       Popular referrer

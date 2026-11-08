@@ -177,13 +177,18 @@ export default function DevicesReportPage() {
     <div className="space-y-6">
       {/* Top Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80">
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Devices &amp; Technology
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Browser families, operating systems, and device form factors
-          </p>
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-r from-[#1455bb] to-[#1a62d4] flex items-center justify-center text-white shadow-md shadow-blue-600/20 shrink-0">
+            <Monitor className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              Devices &amp; Technology
+            </h1>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              Browser families, operating systems, and device form factors
+            </p>
+          </div>
         </div>
 
         {/* Current Active Range indicator Pill */}
@@ -214,7 +219,7 @@ export default function DevicesReportPage() {
       {/* Device Categories Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
-          { key: "desktop", label: "Desktop", icon: Monitor, color: "text-[#1d5b9f]", bg: "bg-blue-50 border-blue-200" },
+          { key: "desktop", label: "Desktop", icon: Monitor, color: "text-[#1455bb]", bg: "bg-blue-50 border-blue-200" },
           { key: "mobile", label: "Mobile", icon: Smartphone, color: "text-emerald-600", bg: "bg-emerald-50 border-emerald-200" },
           { key: "tablet", label: "Tablet", icon: Tablet, color: "text-purple-600", bg: "bg-purple-50 border-purple-200" },
         ].map(({ key, label, icon: Icon, color, bg }) => {
@@ -223,7 +228,7 @@ export default function DevicesReportPage() {
           const percentage = Math.round((sessions / totalDeviceSessions) * 100);
 
           return (
-            <div key={key} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs flex flex-col justify-between hover:border-[#1d5b9f]/40 transition-colors">
+            <div key={key} className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col justify-between hover:border-[#1455bb]/40 transition-colors">
               <div className="flex items-center justify-between mb-4">
                 <span className="font-bold text-slate-900 text-base">{label}</span>
                 <div className={`w-10 h-10 rounded-xl border flex items-center justify-center ${bg}`}>
@@ -246,7 +251,7 @@ export default function DevicesReportPage() {
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                   <div
-                    className="bg-gradient-to-r from-[#1d5b9f] to-blue-500 h-full rounded-full"
+                    className="bg-gradient-to-r from-[#1455bb] to-[#1a62d4] h-full rounded-full"
                     style={{ width: `${loading && devices.length === 0 ? 0 : percentage}%` }}
                   />
                 </div>
@@ -259,9 +264,9 @@ export default function DevicesReportPage() {
       {/* Two Column Breakdown: Browsers & Operating Systems */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Browsers Table */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs">
           <div className="flex items-center gap-2 mb-4">
-            <Globe className="w-4 h-4 text-[#1d5b9f]" />
+            <Globe className="w-4 h-4 text-[#1455bb]" />
             <h3 className="font-bold text-base text-slate-900">Browser Breakdown</h3>
           </div>
 
@@ -297,12 +302,12 @@ export default function DevicesReportPage() {
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="font-bold text-slate-900 tabular-nums">{b.sessions} visits</span>
-                        <span className="text-[#1d5b9f] font-bold w-10 text-right">{percentage}%</span>
+                        <span className="text-[#1455bb] font-bold w-10 text-right">{percentage}%</span>
                       </div>
                     </div>
                     <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
                       <div
-                        className="bg-[#1d5b9f] h-full rounded-full"
+                        className="bg-[#1455bb] h-full rounded-full"
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
@@ -314,7 +319,7 @@ export default function DevicesReportPage() {
         </div>
 
         {/* Operating Systems Table */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs">
           <div className="flex items-center gap-2 mb-4">
             <Cpu className="w-4 h-4 text-emerald-600" />
             <h3 className="font-bold text-base text-slate-900">Operating Systems</h3>

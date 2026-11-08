@@ -212,21 +212,26 @@ export default function GeographyPage() {
     <div className="space-y-6">
       {/* Top Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80">
-        <div>
-          <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
-            <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Geography &amp; Locations
-            </h1>
-            <span className="text-xs px-2.5 py-1 rounded-full bg-blue-50/90 text-[#1d5b9f] border border-blue-200/80 font-bold shadow-2xs">
-              {countries.length} Countries
-            </span>
-            <span className="text-xs px-2.5 py-1 rounded-full bg-indigo-50/90 text-indigo-700 border border-indigo-200/80 font-bold shadow-2xs hidden sm:inline-block">
-              {cities.length} Cities
-            </span>
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-r from-[#1455bb] to-[#1a62d4] flex items-center justify-center text-white shadow-md shadow-blue-600/20 shrink-0">
+            <Globe2 className="w-5 h-5" />
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Global audience breakdown resolved via IP geolocation telemetry
-          </p>
+          <div>
+            <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                Geography &amp; Locations
+              </h1>
+              <span className="text-xs px-2.5 py-1 rounded-full bg-blue-50 text-[#1455bb] border border-blue-200/80 font-bold shadow-2xs">
+                {countries.length} Countries
+              </span>
+              <span className="text-xs px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/80 font-bold shadow-2xs hidden sm:inline-block">
+                {cities.length} Cities
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              Global audience breakdown resolved via IP geolocation telemetry
+            </p>
+          </div>
         </div>
 
         {/* Current Active Range indicator Pill */}
@@ -257,7 +262,7 @@ export default function GeographyPage() {
         <div className="flex-1 min-w-0 space-y-6 w-full">
           {/* Privacy Notice Alert per specification */}
           <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200/80 backdrop-blur-md flex items-start gap-3 text-xs text-slate-700 shadow-2xs">
-            <Info className="w-4 h-4 text-[#1d5b9f] shrink-0 mt-0.5" />
+            <Info className="w-4 h-4 text-[#1455bb] shrink-0 mt-0.5" />
             <p className="leading-relaxed">
               <strong className="text-slate-900 font-semibold">
                 Privacy Notice:
@@ -273,12 +278,12 @@ export default function GeographyPage() {
           {/* Two Column Breakdown: Countries & Cities (Strictly Equal Height) */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
             {/* Visitors by Country Box */}
-            <div className="h-full flex flex-col justify-between bg-white/80 backdrop-blur-xl backdrop-saturate-150 rounded-3xl border border-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_10px_30px_-5px_rgba(0,0,0,0.04)] p-5 sm:p-6 transition-all duration-300 hover:shadow-[0_15px_35px_-5px_rgba(0,0,0,0.06)]">
+            <div className="h-full flex flex-col justify-between bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5 sm:p-6 transition-all duration-300">
               <div className="flex-1 flex flex-col">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0 shadow-xs">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#1455bb] border border-blue-100 flex items-center justify-center shrink-0 shadow-xs">
                       <Globe2 className="w-5 h-5" />
                     </div>
                     <div className="min-w-0">
@@ -291,8 +296,8 @@ export default function GeographyPage() {
                     </div>
                   </div>
 
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-600 border border-blue-200/80 shadow-2xs whitespace-nowrap shrink-0">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-[#1455bb] border border-blue-200/80 shadow-2xs whitespace-nowrap shrink-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#1455bb]" />
                     <span>{countries.length} countries</span>
                   </span>
                 </div>
@@ -385,7 +390,7 @@ export default function GeographyPage() {
             </div>
 
             {/* Top Cities Box */}
-            <div className="h-full flex flex-col justify-between bg-white/80 backdrop-blur-xl backdrop-saturate-150 rounded-3xl border border-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_10px_30px_-5px_rgba(0,0,0,0.04)] p-5 sm:p-6 transition-all duration-300 hover:shadow-[0_15px_35px_-5px_rgba(0,0,0,0.06)]">
+            <div className="h-full flex flex-col justify-between bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5 sm:p-6 transition-all duration-300">
               <div className="flex-1 flex flex-col">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 gap-3">

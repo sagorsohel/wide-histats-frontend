@@ -272,7 +272,7 @@ export default function SourcesPage() {
       {/* Page Title & Navigation Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80">
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#1d5b9f] to-[#144275] flex items-center justify-center text-white shadow-md shadow-blue-900/10 shrink-0">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-r from-[#1455bb] to-[#1a62d4] flex items-center justify-center text-white shadow-md shadow-blue-600/20 shrink-0">
             <Compass className="w-5 h-5" />
           </div>
           <div>
@@ -310,11 +310,11 @@ export default function SourcesPage() {
         {/* ============================================================ */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
           {/* 1. HISTATS SUMMARY COMPARISON TABLE */}
-          <div className="w-full bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+          <div className="w-full bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
             <div className="w-full overflow-x-auto scrollbar-none">
               <table className="w-full text-left border-collapse min-w-full">
                 <thead>
-                  <tr className="bg-gradient-to-r from-[#1d5796] via-[#215f9e] to-[#1a4a7f] text-white text-[11px] sm:text-xs font-bold border-b border-[#164375]">
+                  <tr className="bg-gradient-to-r from-[#1455bb] via-[#165dce] to-[#124cb0] text-white text-[11px] sm:text-xs font-bold border-b border-blue-900/40">
                     <th className="py-2.5 px-3 sm:px-4 tracking-wide text-left font-bold text-white/95">
                       Summary
                     </th>
@@ -331,7 +331,7 @@ export default function SourcesPage() {
                 </thead>
                 <tbody className="text-[11px] sm:text-xs font-medium divide-y divide-slate-100">
                   {/* Row 1: Total page views */}
-                  <tr className="hover:bg-slate-50/80 transition-colors">
+                  <tr className="hover:bg-blue-50/40 transition-colors">
                     <td className="py-2.5 px-3 sm:px-4 text-slate-800 font-medium">
                       Total page views
                     </td>
@@ -341,7 +341,7 @@ export default function SourcesPage() {
                     <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
                       {loading && !data ? "..." : summary.refPageviews.toLocaleString()}
                     </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-semibold text-[#1d5b9f] tabular-nums whitespace-nowrap">
+                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-semibold text-[#1455bb] tabular-nums whitespace-nowrap">
                       {loading && !data ? "..." : `(${summary.pageviewsPct.toFixed(2)} %)`}
                     </td>
                   </tr>
@@ -358,13 +358,13 @@ export default function SourcesPage() {
                     <td className="py-2.5 px-2.5 sm:px-3 text-right font-black text-slate-950 tabular-nums whitespace-nowrap">
                       {loading && !data ? "..." : summary.refVisitors.toLocaleString()}
                     </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-[#1d5b9f] tabular-nums whitespace-nowrap">
+                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-[#1455bb] tabular-nums whitespace-nowrap">
                       {loading && !data ? "..." : `(${summary.visitorsPct.toFixed(2)} %)`}
                     </td>
                   </tr>
 
                   {/* Row 3: Total new visitors */}
-                  <tr className="hover:bg-slate-50/80 transition-colors">
+                  <tr className="hover:bg-blue-50/40 transition-colors">
                     <td className="py-2.5 px-3 sm:px-4 text-slate-800 font-medium">
                       Total new visitors
                     </td>
@@ -374,13 +374,13 @@ export default function SourcesPage() {
                     <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
                       {loading && !data ? "..." : summary.refNewVisitors.toLocaleString()}
                     </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-semibold text-[#1d5b9f] tabular-nums whitespace-nowrap">
+                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-semibold text-[#1455bb] tabular-nums whitespace-nowrap">
                       {loading && !data ? "..." : `(${summary.newVisitorsPct.toFixed(2)} %)`}
                     </td>
                   </tr>
 
                   {/* Row 4: Page views per visit */}
-                  <tr className="hover:bg-slate-50/80 transition-colors">
+                  <tr className="hover:bg-blue-50/40 transition-colors">
                     <td className="py-2.5 px-3 sm:px-4 text-slate-800 font-medium">
                       Page views per visit
                     </td>
@@ -392,7 +392,7 @@ export default function SourcesPage() {
                     </td>
                     <td
                       className={`py-2.5 px-2.5 sm:px-3 text-right font-semibold tabular-nums whitespace-nowrap ${
-                        summary.ppvDiffPct < 0 ? "text-rose-600" : "text-[#1d5b9f]"
+                        summary.ppvDiffPct < 0 ? "text-rose-600" : "text-[#1455bb]"
                       }`}
                     >
                       {loading && !data
@@ -406,14 +406,14 @@ export default function SourcesPage() {
           </div>
 
       {/* SUBHEADER CONTROLS BAR: Total rows, Page numbers, and Rows to show */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#f8fafc] border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-700">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#f8fafc] border border-slate-200/90 rounded-xl px-4 py-2.5 text-xs text-slate-700 shadow-2xs">
         <div className="flex items-center gap-4">
           <span className="font-bold text-slate-900">
             Total rows: <span className="font-mono text-emerald-700">{totalRows}</span>
           </span>
 
           {searchQuery && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-[#1d5b9f] border border-blue-200 rounded font-medium text-[11px]">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-[#1455bb] border border-blue-200 rounded font-medium text-[11px]">
               Filtered by: &ldquo;{searchQuery}&rdquo;
               <button
                 type="button"
@@ -437,8 +437,8 @@ export default function SourcesPage() {
                 onClick={() => setCurrentPage(p)}
                 className={`px-1.5 py-0.5 rounded font-bold text-xs transition-colors ${
                   currentPage === p
-                    ? "text-[#1d5b9f] underline"
-                    : "text-slate-600 hover:text-[#1d5b9f]"
+                    ? "text-[#1455bb] underline"
+                    : "text-slate-600 hover:text-[#1455bb]"
                 }`}
               >
                 {p}
@@ -453,7 +453,7 @@ export default function SourcesPage() {
             <select
               value={rowsPerPage}
               onChange={(e) => setRowsPerPage(Number(e.target.value))}
-              className="bg-white border border-slate-300 text-slate-800 font-semibold rounded px-2 py-1 text-xs focus:ring-1 focus:ring-[#1d5b9f] focus:outline-hidden cursor-pointer"
+              className="bg-white border border-slate-300 text-slate-800 font-semibold rounded px-2 py-1 text-xs focus:ring-1 focus:ring-[#1455bb] focus:outline-hidden cursor-pointer"
             >
               <option value={10}>10</option>
               <option value={25}>25</option>
@@ -465,15 +465,15 @@ export default function SourcesPage() {
       </div>
 
       {/* THE MAIN REFERRING SITES TABLE (Matches user screenshot) */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[760px]">
             <thead>
-              <tr className="bg-[#e9edf3] text-slate-800 text-xs font-bold border-b border-slate-300 select-none">
+              <tr className="bg-slate-50 text-slate-800 text-xs font-bold border-b border-slate-200/90 select-none">
                 {/* Rank */}
                 <th
                   onClick={() => handleSort("rank")}
-                  className="py-2.5 px-3 text-center w-16 cursor-pointer hover:bg-slate-200 transition-colors"
+                  className="py-2.5 px-3 text-center w-16 cursor-pointer hover:bg-slate-200/60 transition-colors"
                 >
                   <div className="flex items-center justify-center gap-1">
                     <span>Rank</span>
@@ -500,9 +500,9 @@ export default function SourcesPage() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search..."
-                        className="w-32 sm:w-40 bg-white border border-slate-300 rounded px-2 py-0.5 text-[11px] font-normal text-slate-800 focus:outline-hidden focus:border-[#1d5b9f] focus:ring-1 focus:ring-[#1d5b9f] placeholder:text-slate-400"
+                        className="w-32 sm:w-40 bg-white border border-slate-300 rounded-lg px-2.5 py-0.5 text-[11px] font-normal text-slate-800 focus:outline-hidden focus:border-[#1455bb] focus:ring-1 focus:ring-[#1455bb] placeholder:text-slate-400"
                       />
-                      <Search className="w-3 h-3 text-slate-400 absolute right-1.5 pointer-events-none" />
+                      <Search className="w-3 h-3 text-slate-400 absolute right-2 pointer-events-none" />
                     </div>
                   </div>
                 </th>
@@ -637,7 +637,7 @@ export default function SourcesPage() {
                       key={ref.referrerUrl + idx}
                       className={`${
                         isEven ? "bg-white" : "bg-[#fbfcff]"
-                      } hover:bg-[#eef5fc] transition-colors`}
+                      } hover:bg-blue-50/40 transition-colors`}
                     >
                       {/* Rank with Up/Down Trend Arrow */}
                       <td className="py-2.5 px-3 text-center font-bold tabular-nums">
@@ -659,7 +659,7 @@ export default function SourcesPage() {
                             href={ref.fullUrl || `https://${ref.referrerUrl}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-slate-400 hover:text-[#1d5b9f] transition-colors shrink-0"
+                            className="text-slate-400 hover:text-[#1455bb] transition-colors shrink-0"
                             title={`Open ${ref.referrerUrl} in new tab`}
                           >
                             <ExternalLink className="w-3.5 h-3.5" />
@@ -673,7 +673,7 @@ export default function SourcesPage() {
                             href={ref.fullUrl || `https://${ref.referrerUrl}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="font-semibold text-slate-900 hover:text-[#1d5b9f] hover:underline truncate"
+                            className="font-semibold text-slate-900 hover:text-[#1455bb] hover:underline truncate"
                             title={ref.referrerUrl}
                           >
                             {ref.referrerUrl}
@@ -763,10 +763,10 @@ export default function SourcesPage() {
       {/* SECONDARY SECTION: TRAFFIC CHANNELS & UTM CAMPAIGNS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
         {/* Main Channels Breakdown */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Share2 className="w-4 h-4 text-[#1d5b9f]" />
+              <Share2 className="w-4 h-4 text-[#1455bb]" />
               <h3 className="font-bold text-sm text-slate-900">Traffic Medium / Channels</h3>
             </div>
             <span className="text-[11px] font-semibold text-slate-500">
@@ -787,13 +787,13 @@ export default function SourcesPage() {
                 return (
                   <div
                     key={idx}
-                    className="p-3 rounded-lg bg-slate-50 border border-slate-200/90 flex flex-col justify-between"
+                    className="p-3 rounded-xl bg-slate-50 border border-slate-200/90 flex flex-col justify-between"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-bold text-slate-800 text-xs capitalize truncate">
                         {s.source}
                       </span>
-                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-100 text-[#1d5b9f]">
+                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-100 text-[#1455bb]">
                         {s.medium}
                       </span>
                     </div>
@@ -809,7 +809,7 @@ export default function SourcesPage() {
 
                     <div className="w-full bg-slate-200 rounded-full h-1 overflow-hidden">
                       <div
-                        className="bg-gradient-to-r from-[#1d5b9f] to-blue-500 h-full rounded-full"
+                        className="bg-gradient-to-r from-[#1455bb] to-[#1a62d4] h-full rounded-full"
                         style={{ width: `${Math.min(100, Math.max(5, pct))}%` }}
                       />
                     </div>
@@ -821,7 +821,7 @@ export default function SourcesPage() {
         </div>
 
         {/* UTM Campaigns */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Target className="w-4 h-4 text-emerald-600" />
@@ -835,7 +835,7 @@ export default function SourcesPage() {
           {!data?.campaigns || data.campaigns.length === 0 ? (
             <div className="py-8 text-center text-xs text-slate-400">
               No active UTM marketing campaigns in this range. Add{" "}
-              <code className="px-1 text-[#1d5b9f] font-mono bg-blue-50 rounded">
+              <code className="px-1 text-[#1455bb] font-mono bg-blue-50 rounded">
                 ?utm_campaign=...
               </code>{" "}
               to your links.

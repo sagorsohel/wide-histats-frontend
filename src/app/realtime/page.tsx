@@ -721,16 +721,16 @@ export default function RealtimeHistatsPage() {
   }, [displayHits, searchQuery]);
 
   return (
-    <div className="w-full max-w-[1550px] mx-auto text-[12px] font-sans antialiased bg-[#f3f6fa] border border-[#c8d4e2] shadow-sm rounded-sm overflow-hidden select-text">
-      {/* 1. Classic Histats Top Website Banner */}
-      <div className="bg-[#1b4e8c] text-white px-3 py-1.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-[#143b6a]">
+    <div className="w-full max-w-[1550px] mx-auto text-[12px] font-sans antialiased bg-[#f8fafc] border border-slate-200/90 shadow-sm rounded-2xl overflow-hidden select-text">
+      {/* 1. Top Website Banner */}
+      <div className="bg-gradient-to-r from-[#1455bb] via-[#124cb0] to-[#0f3f94] text-white px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-blue-400/20">
         <div className="flex items-center gap-2">
           <a
             href={mounted && baseWebsiteUrl ? baseWebsiteUrl : "#"}
             target="_blank"
             rel="noopener noreferrer"
             title={mounted ? baseWebsiteUrl : ""}
-            className="text-white hover:underline font-bold text-[13px] flex items-center gap-1.5 group cursor-pointer"
+            className="text-white hover:text-blue-100 font-bold text-[13px] flex items-center gap-2 group cursor-pointer transition-colors"
           >
             <WebsiteFavicon domain={selectedWebsite?.domain} size={16} />
             <span suppressHydrationWarning>
@@ -741,17 +741,17 @@ export default function RealtimeHistatsPage() {
                     : "")
                 : ""}
             </span>
-            <ExternalLink className="w-3.5 h-3.5 text-blue-200 group-hover:text-white" />
+            <ExternalLink className="w-3.5 h-3.5 text-blue-200 group-hover:text-white transition-colors" />
           </a>
         </div>
       </div>
 
       {/* 2. Main Blue Stats Banner (Users Online Right Now & Today Totals) */}
-      <div className="bg-gradient-to-r from-[#205493] via-[#2a66af] to-[#1e508e] text-white px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 border-b border-[#163f73] shadow-inner">
+      <div className="bg-gradient-to-r from-[#1455bb] via-[#165dce] to-[#124cb0] text-white px-4 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-blue-900/30 shadow-inner">
         {/* Left: Active Users Online Right Now with Live Pulsing Indicator */}
         <div className="flex items-center gap-3">
-          <div className="flex items-baseline gap-2.5">
-            <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
@@ -761,26 +761,27 @@ export default function RealtimeHistatsPage() {
               </span>
             </div>
             {loading && !data && onlineCount === 0 ? (
-              <div className="h-8 w-14 rounded bg-white/25 animate-pulse inline-block" />
+              <div className="h-8 w-14 rounded-lg bg-white/20 animate-pulse inline-block" />
             ) : (
-              <span className="text-3xl font-black text-white tracking-tight tabular-nums drop-shadow-xs">
+              <span className="text-3xl sm:text-4xl font-black text-white tracking-tight tabular-nums drop-shadow-xs">
                 {onlineCount}
               </span>
             )}
-            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-              LIVE
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-white text-[#1455bb] shadow-xs flex items-center gap-1 shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>LIVE</span>
             </span>
           </div>
         </div>
 
         {/* Right: Today's Total Visitors, Today's Pageviews, Browsing Pages, and Pause/Play */}
-        <div className="flex items-center gap-4 text-xs">
-          <div className="text-right border-r border-blue-400/30 pr-3 hidden sm:block">
-            <span className="text-blue-200 text-[10px] block font-medium">
+        <div className="flex items-center gap-2.5 text-xs flex-wrap">
+          <div className="px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/15 text-right hidden sm:block shadow-2xs">
+            <span className="text-blue-100/90 text-[10px] block font-medium">
               Total Users Today
             </span>
             {loading && !data && todayVisitorsCount === 0 ? (
-              <div className="h-4 w-12 bg-white/25 rounded animate-pulse mt-0.5 ml-auto" />
+              <div className="h-4 w-12 bg-white/20 rounded animate-pulse mt-0.5 ml-auto" />
             ) : (
               <span className="font-bold text-white text-sm tabular-nums">
                 {todayVisitorsCount.toLocaleString()}
@@ -788,12 +789,12 @@ export default function RealtimeHistatsPage() {
             )}
           </div>
 
-          <div className="text-right border-r border-blue-400/30 pr-3 hidden sm:block">
-            <span className="text-blue-200 text-[10px] block font-medium">
+          <div className="px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/15 text-right hidden sm:block shadow-2xs">
+            <span className="text-blue-100/90 text-[10px] block font-medium">
               Total Views Today
             </span>
             {loading && !data && todayPageviewsCount === 0 ? (
-              <div className="h-4 w-12 bg-white/25 rounded animate-pulse mt-0.5 ml-auto" />
+              <div className="h-4 w-12 bg-white/20 rounded animate-pulse mt-0.5 ml-auto" />
             ) : (
               <span className="font-bold text-white text-sm tabular-nums">
                 {todayPageviewsCount.toLocaleString()}
@@ -801,12 +802,12 @@ export default function RealtimeHistatsPage() {
             )}
           </div>
 
-          <div className="text-right">
-            <span className="text-blue-200 text-[10px] block font-medium">
+          <div className="px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-xs border border-white/15 text-right shadow-2xs">
+            <span className="text-blue-100/90 text-[10px] block font-medium">
               browsing:
             </span>
             {loading && !data ? (
-              <div className="h-4 w-14 bg-white/25 rounded animate-pulse mt-0.5 ml-auto" />
+              <div className="h-4 w-14 bg-white/20 rounded animate-pulse mt-0.5 ml-auto" />
             ) : (
               <span className="text-sm font-bold text-white tabular-nums">
                 {browsingPagesCount} pages
@@ -817,10 +818,10 @@ export default function RealtimeHistatsPage() {
           <button
             onClick={() => setIsPaused(!isPaused)}
             title={isPaused ? "Resume Live Tracking" : "Pause Live Tracking"}
-            className={`w-7 h-7 rounded flex items-center justify-center border transition-all ${
+            className={`w-8 h-8 rounded-xl flex items-center justify-center border transition-all cursor-pointer backdrop-blur-xs shadow-xs ${
               isPaused
                 ? "bg-amber-500 text-slate-950 border-amber-300"
-                : "bg-[#184277] text-white border-blue-400 hover:bg-[#133765]"
+                : "bg-white/15 hover:bg-white/25 text-white border-white/20"
             }`}
           >
             {isPaused ? (
@@ -833,7 +834,7 @@ export default function RealtimeHistatsPage() {
       </div>
 
       {/* 3. Sub-Navigation Tabs Bar */}
-      <div className="bg-[#245897] px-2 flex items-center gap-1 border-b border-[#184070] overflow-x-auto whitespace-nowrap scrollbar-none text-[11px] font-bold">
+      <div className="bg-[#0f3f94] px-3 py-1.5 flex items-center gap-1.5 border-b border-blue-900/40 overflow-x-auto whitespace-nowrap scrollbar-none text-[11px] font-bold">
         {[
           { id: "summary", label: "Summary" },
           { id: "recent", label: "Recent" },
@@ -847,10 +848,10 @@ export default function RealtimeHistatsPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as TabType)}
-              className={`px-3 py-1.5 transition-colors cursor-pointer rounded-t ${
+              className={`px-3.5 py-1.5 transition-all cursor-pointer rounded-lg ${
                 isActive
-                  ? "bg-white text-[#1b4e8c] shadow-xs"
-                  : "text-blue-100 hover:bg-[#1b487f] hover:text-white"
+                  ? "bg-white text-[#1455bb] font-extrabold shadow-sm"
+                  : "text-blue-100/80 hover:bg-white/10 hover:text-white"
               }`}
             >
               {tab.label}
@@ -859,13 +860,13 @@ export default function RealtimeHistatsPage() {
         })}
 
         {showSearch && (
-          <div className="ml-auto py-1 pr-2">
+          <div className="ml-auto py-0.5 pr-1">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search live events..."
-              className="px-2 py-0.5 rounded text-xs text-slate-900 bg-white border border-slate-300 outline-none w-44"
+              className="px-2.5 py-1 rounded-lg text-xs text-slate-900 bg-white border border-white/40 shadow-xs outline-none focus:ring-2 focus:ring-blue-300 w-44"
               autoFocus
             />
           </div>
@@ -873,25 +874,25 @@ export default function RealtimeHistatsPage() {
       </div>
 
       {/* 4. Tab Body Area */}
-      <div className="p-2.5 bg-[#eef2f7]">
+      <div className="p-3 sm:p-4 bg-[#f8fafc]">
         {activeTab === "summary" && (
-          <div className="space-y-2.5">
+          <div className="space-y-3.5">
             {/* Top Box: Recent Hits Stream */}
-            <div className="bg-white border border-[#b8c7d6] rounded-xs shadow-2xs overflow-hidden">
-              <div className="bg-gradient-to-b from-[#e4eaf2] via-[#d6e0ed] to-[#cbd7e6] px-3 py-1 border-b border-[#b0c0d2] flex items-center justify-between">
-                <span className="font-bold text-[#111827] text-[12px] tracking-tight">
+            <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden">
+              <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between">
+                <span className="font-bold text-slate-800 text-[12px] tracking-tight">
                   Recent
                 </span>
                 <button
                   onClick={() => setShowSearch(!showSearch)}
-                  className="text-slate-500 hover:text-slate-800"
+                  className="text-slate-500 hover:text-slate-800 p-1 rounded hover:bg-slate-200/60 transition-colors cursor-pointer"
                   title="Search / Filter Recent"
                 >
                   <Search className="w-3.5 h-3.5" />
                 </button>
               </div>
 
-              <div className="divide-y divide-[#edf2f7] overflow-x-auto overflow-y-auto h-[260px] scroll-smooth">
+              <div className="divide-y divide-slate-100 overflow-x-auto overflow-y-auto h-[260px] scroll-smooth">
                 {loading && displayHits.length === 0 ? (
                   [1, 2, 3, 4, 5, 6].map((i) => (
                     <div
@@ -917,10 +918,10 @@ export default function RealtimeHistatsPage() {
                   filteredHits.slice(0, 50).map((hit, idx) => (
                     <div
                       key={hit.id || idx}
-                      className="px-2.5 py-1 flex items-center justify-between hover:bg-[#f2f6fa] border-b border-[#edf2f7] transition-colors gap-2 text-[11px]"
+                      className="px-2.5 py-1.5 flex items-center justify-between hover:bg-blue-50/40 border-b border-slate-100 transition-colors gap-2 text-[11px]"
                     >
                       {/* Time Badge in classic Histats seconds quote format e.g. 1", 2", 3", 7", 11" */}
-                      <div className="w-[36px] text-right font-bold text-[#004f9e] text-[12px] shrink-0 font-sans pr-2">
+                      <div className="w-[36px] text-right font-bold text-[#1455bb] text-[12px] shrink-0 font-sans pr-2">
                         <span>{formatElapsedTime(hit.viewedAt)}</span>
                       </div>
 
@@ -954,7 +955,7 @@ export default function RealtimeHistatsPage() {
                             )
                           }
                           title={getFullUrl(hit.url, hit.path)}
-                          className="truncate text-[#222222] font-normal hover:text-[#004f9e] hover:underline cursor-pointer group flex-1 min-w-0"
+                          className="truncate text-slate-800 font-normal hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
                         >
                           <span className="truncate block font-normal text-[11px]">
                             {hit.title || hit.path}
@@ -963,7 +964,7 @@ export default function RealtimeHistatsPage() {
                       </div>
 
                       {/* Geolocation & Device Details: Pixel-perfect aligned tabular columns */}
-                      <div className="flex items-center gap-2.5 text-slate-700 shrink-0 justify-end text-[11px] pr-1">
+                      <div className="flex items-center gap-2.5 text-slate-600 shrink-0 justify-end text-[11px] pr-1">
                         {/* Flag & City Column: Fixed width so all flags align in a straight vertical line */}
                         <div className="flex items-center gap-1.5 w-[20px] md:w-[130px] lg:w-[150px] shrink-0 justify-start overflow-hidden">
                           <span
@@ -977,7 +978,7 @@ export default function RealtimeHistatsPage() {
                               hit.city ||
                               getCountryName(hit.countryCode, hit.country)
                             }
-                            className="hidden md:inline-block truncate flex-1 text-slate-700 cursor-default text-left"
+                            className="hidden md:inline-block truncate flex-1 text-slate-600 cursor-default text-left"
                           >
                             {hit.city && hit.city !== hit.countryCode
                               ? hit.city
@@ -1016,19 +1017,19 @@ export default function RealtimeHistatsPage() {
             </div>
 
             {/* Bottom 2-Column Grid Matching Screenshot */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
               {/* Left Column: Popular Pages & Popular Referrers */}
-              <div className="space-y-2.5">
+              <div className="space-y-3.5">
                 {/* Box 1: Popular Pages */}
-                <div className="bg-white border border-[#cbd6e2] rounded-xs shadow-2xs overflow-hidden">
-                  <div className="bg-[#f0f4f9] px-3 py-1.5 border-b border-[#d2dce6] flex items-center justify-between">
-                    <span className="font-bold text-slate-800 text-[12px]">
+                <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden">
+                  <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between">
+                    <span className="font-bold text-slate-800 text-[12px] tracking-tight">
                       Popular pages
                     </span>
-                    <Search className="w-3.5 h-3.5 text-slate-400 cursor-pointer" />
+                    <Search className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 cursor-pointer" />
                   </div>
 
-                  <div className="divide-y divide-[#edf2f7] overflow-y-auto max-h-[220px] scroll-smooth">
+                  <div className="divide-y divide-slate-100 overflow-y-auto max-h-[220px] scroll-smooth">
                     {loading && displayPages.length === 0 ? (
                       [1, 2, 3, 4, 5].map((i) => (
                         <div
@@ -1050,9 +1051,9 @@ export default function RealtimeHistatsPage() {
                         return (
                           <div
                             key={idx}
-                            className="px-3 py-1.5 flex items-center gap-2.5 hover:bg-[#f6f9fc] text-[11px]"
+                            className="px-3 py-1.5 flex items-center gap-2.5 hover:bg-blue-50/40 text-[11px] transition-colors"
                           >
-                            <span className="font-bold text-[#1b62b7] min-w-[24px] text-right">
+                            <span className="font-bold text-[#1455bb] min-w-[24px] text-right">
                               {page.count}
                             </span>
                             <div className="flex items-center gap-1.5 truncate flex-1 min-w-0">
@@ -1066,12 +1067,12 @@ export default function RealtimeHistatsPage() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 title={pageUrl}
-                                className="truncate font-medium text-slate-800 hover:text-[#1b62b7] hover:underline cursor-pointer group flex-1 min-w-0"
+                                className="truncate font-medium text-slate-800 hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
                               >
                                 <span className="group-hover:hidden truncate block">
                                   {page.title || page.path}
                                 </span>
-                                <span className="hidden group-hover:block truncate font-mono text-[#1b62b7] text-[10px]">
+                                <span className="hidden group-hover:block truncate font-mono text-[#1455bb] text-[10px]">
                                   {pageUrl}
                                 </span>
                               </a>
@@ -1084,15 +1085,15 @@ export default function RealtimeHistatsPage() {
                 </div>
 
                 {/* Box 2: Popular Referrers */}
-                <div className="bg-white border border-[#cbd6e2] rounded-xs shadow-2xs overflow-hidden">
-                  <div className="bg-[#f0f4f9] px-3 py-1.5 border-b border-[#d2dce6] flex items-center justify-between">
-                    <span className="font-bold text-slate-800 text-[12px]">
+                <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden">
+                  <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between">
+                    <span className="font-bold text-slate-800 text-[12px] tracking-tight">
                       Popular referrer
                     </span>
-                    <Search className="w-3.5 h-3.5 text-slate-400 cursor-pointer" />
+                    <Search className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 cursor-pointer" />
                   </div>
 
-                  <div className="divide-y divide-[#edf2f7] overflow-y-auto max-h-[220px] scroll-smooth">
+                  <div className="divide-y divide-slate-100 overflow-y-auto max-h-[220px] scroll-smooth">
                     {loading && displayReferrers.length === 0 ? (
                       [1, 2, 3, 4, 5].map((i) => (
                         <div
@@ -1117,9 +1118,9 @@ export default function RealtimeHistatsPage() {
                         return (
                           <div
                             key={idx}
-                            className="px-3 py-1 flex items-center gap-2.5 hover:bg-[#f6f9fc] text-[11px]"
+                            className="px-3 py-1 flex items-center gap-2.5 hover:bg-blue-50/40 text-[11px] transition-colors"
                           >
-                            <span className="font-bold text-[#1b62b7] min-w-[24px] text-right">
+                            <span className="font-bold text-[#1455bb] min-w-[24px] text-right">
                               {ref.count}
                             </span>
                             <div className="flex items-center gap-1.5 truncate flex-1 min-w-0">
@@ -1134,7 +1135,7 @@ export default function RealtimeHistatsPage() {
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   title={ref.referrer}
-                                  className="truncate text-slate-700 hover:text-[#1b62b7] hover:underline cursor-pointer"
+                                  className="truncate text-slate-700 hover:text-[#1455bb] hover:underline cursor-pointer"
                                 >
                                   {ref.referrer}
                                 </a>
@@ -1153,19 +1154,19 @@ export default function RealtimeHistatsPage() {
               </div>
 
               {/* Right Column: Geolocation Map & Most Active Visitors */}
-              <div className="space-y-2.5">
+              <div className="space-y-3.5">
                 {/* Box 3: Geolocation World Map (MapLibre GL Telemetry) */}
-                <div className="bg-white border border-[#cbd6e2] rounded-xs shadow-2xs overflow-hidden">
-                  <div className="bg-[#f0f4f9] px-3 py-1.5 border-b border-[#d2dce6] flex items-center justify-between">
+                <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden">
+                  <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-800 text-[12px]">
+                      <span className="font-bold text-slate-800 text-[12px] tracking-tight">
                         Geolocation
                       </span>
-                      <span className="text-[10px] text-cyan-700 bg-cyan-100 font-bold px-1.5 py-0.2 rounded font-mono">
+                      <span className="text-[10px] text-[#1455bb] bg-blue-50 border border-blue-200/60 font-bold px-2 py-0.5 rounded-full font-mono">
                         MapLibre GL
                       </span>
                     </div>
-                    <Search className="w-3.5 h-3.5 text-slate-400 cursor-pointer" />
+                    <Search className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 cursor-pointer" />
                   </div>
 
                   <RealtimeGeoMap
@@ -1187,15 +1188,15 @@ export default function RealtimeHistatsPage() {
                 </div>
 
                 {/* Box 4: Most Active Visitors */}
-                <div className="bg-white border border-[#cbd6e2] rounded-xs shadow-2xs overflow-hidden">
-                  <div className="bg-[#f0f4f9] px-3 py-1.5 border-b border-[#d2dce6] flex items-center justify-between">
-                    <span className="font-bold text-slate-800 text-[12px]">
+                <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden">
+                  <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between">
+                    <span className="font-bold text-slate-800 text-[12px] tracking-tight">
                       Most active visitors
                     </span>
-                    <Search className="w-3.5 h-3.5 text-slate-400 cursor-pointer" />
+                    <Search className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 cursor-pointer" />
                   </div>
 
-                  <div className="divide-y divide-[#edf2f7] overflow-y-auto max-h-[220px] scroll-smooth">
+                  <div className="divide-y divide-slate-100 overflow-y-auto max-h-[220px] scroll-smooth">
                     {loading && displayActiveVisitors.length === 0 ? (
                       [1, 2, 3, 4, 5].map((i) => (
                         <div
@@ -1227,11 +1228,11 @@ export default function RealtimeHistatsPage() {
                         .map((vis: any, idx: number) => (
                           <div
                             key={idx}
-                            className="px-3 py-1.5 hover:bg-[#f6f9fc] text-[11px] space-y-0.5"
+                            className="px-3 py-1.5 hover:bg-blue-50/40 text-[11px] space-y-0.5 transition-colors"
                           >
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2">
-                                <span className="font-bold text-[#1b62b7] min-w-[20px] text-right">
+                                <span className="font-bold text-[#1455bb] min-w-[20px] text-right">
                                   {vis.pageviewsCount ??
                                     vis.hitsCount ??
                                     vis.count ??
@@ -1269,12 +1270,12 @@ export default function RealtimeHistatsPage() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 title={getFullUrl(vis.pageUrl, vis.currentPath)}
-                                className="truncate text-slate-600 hover:text-[#1b62b7] hover:underline cursor-pointer group flex-1 min-w-0"
+                                className="truncate text-slate-600 hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
                               >
                                 <span className="group-hover:hidden truncate block">
                                   {vis.pageTitle || vis.currentPath}
                                 </span>
-                                <span className="hidden group-hover:block truncate font-mono text-[#1b62b7]">
+                                <span className="hidden group-hover:block truncate font-mono text-[#1455bb]">
                                   {getFullUrl(vis.pageUrl, vis.currentPath)}
                                 </span>
                               </a>
@@ -1291,8 +1292,8 @@ export default function RealtimeHistatsPage() {
 
         {/* Tab: Recent (Full view with Real IP stream matching screenshot) */}
         {activeTab === "recent" && (
-          <div className="bg-white border border-[#cbd6e2] rounded-xs shadow-2xs p-3 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-2">
+          <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs p-4 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 pb-2.5">
               <div>
                 <h3 className="font-bold text-slate-800 text-sm">
                   Full Recent Hits Stream (Real IP & Device Telemetry)
@@ -1307,17 +1308,17 @@ export default function RealtimeHistatsPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search IP, URL, title, country..."
-                className="px-2.5 py-1 text-xs border border-slate-300 rounded w-full sm:w-64 outline-none"
+                className="px-3 py-1.5 text-xs border border-slate-200 rounded-lg w-full sm:w-64 outline-none focus:ring-2 focus:ring-blue-200"
               />
             </div>
 
             {/* Histats Exact Screenshot Stream Layout with Real IP - Fixed Height with Vertical Scroll */}
-            <div className="divide-y divide-[#edf2f7] border border-[#cbd6e2] rounded-xs overflow-y-auto h-[500px] bg-white scroll-smooth shadow-2xs">
+            <div className="divide-y divide-slate-100 border border-slate-200/90 rounded-xl overflow-y-auto h-[500px] bg-white scroll-smooth shadow-2xs">
               {loading && filteredHits.length === 0 ? (
                 [1, 2, 3, 4, 5, 6].map((i) => (
                   <div
                     key={i}
-                    className="px-3 py-2 flex items-start gap-2.5 border-b border-[#eef2f7] text-xs animate-pulse"
+                    className="px-3 py-2 flex items-start gap-2.5 border-b border-slate-100 text-xs animate-pulse"
                   >
                     <div className="w-7 h-4 bg-slate-200 rounded pt-0.5 shrink-0" />
                     <div className="flex-1 space-y-2">
@@ -1346,7 +1347,7 @@ export default function RealtimeHistatsPage() {
                   return (
                     <div
                       key={hit.id || idx}
-                      className={`px-3 py-2 flex items-start gap-2.5 hover:bg-[#f6f9fc] transition-colors border-b border-[#eef2f7] text-xs ${
+                      className={`px-3 py-2 flex items-start gap-2.5 hover:bg-blue-50/40 transition-colors border-b border-slate-100 text-xs ${
                         isAnimating ? "animate-stream-drop-detailed" : ""
                       }`}
                     >
@@ -1443,7 +1444,7 @@ export default function RealtimeHistatsPage() {
                               )
                             }
                             title={getFullUrl(hit.url, hit.path)}
-                            className="text-[#1b62b7] hover:underline font-medium truncate flex-1 min-w-0 cursor-pointer"
+                            className="text-[#1455bb] hover:underline font-medium truncate flex-1 min-w-0 cursor-pointer"
                           >
                             {hit.title || hit.path}
                           </a>
@@ -1456,7 +1457,7 @@ export default function RealtimeHistatsPage() {
                             <span className="font-bold text-[#16a34a] text-[11px]">
                               ref:
                             </span>
-                            <ExternalLink className="w-3 h-3 text-[#1b62b7] shrink-0" />
+                            <ExternalLink className="w-3 h-3 text-[#1455bb] shrink-0" />
                             <a
                               href={hit.referrer!}
                               onClick={(e) =>
@@ -1467,7 +1468,7 @@ export default function RealtimeHistatsPage() {
                                 )
                               }
                               title={hit.referrer!}
-                              className="text-[#1b62b7] hover:underline font-mono text-[11px] truncate cursor-pointer"
+                              className="text-[#1455bb] hover:underline font-mono text-[11px] truncate cursor-pointer"
                             >
                               {hit.referrer}
                             </a>
@@ -1485,21 +1486,21 @@ export default function RealtimeHistatsPage() {
               <h4 className="font-bold text-slate-700 text-xs mb-2">
                 Tabular Hits View
               </h4>
-              <div className="overflow-x-auto max-h-[380px] overflow-y-auto border border-[#cbd6e2] rounded-xs shadow-2xs">
+              <div className="overflow-x-auto max-h-[380px] overflow-y-auto border border-slate-200/90 rounded-xl shadow-xs">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="sticky top-0 z-10 shadow-2xs">
-                    <tr className="bg-[#f0f4f9] text-slate-700 border-b border-[#cbd6e2]">
-                      <th className="py-2 px-3 font-bold">Time</th>
-                      <th className="py-2 px-3 font-bold">Page Title / URL</th>
-                      <th className="py-2 px-3 font-bold">Location</th>
-                      <th className="py-2 px-3 font-bold">Visitor Real IP</th>
-                      <th className="py-2 px-3 font-bold">Platform / Device</th>
-                      <th className="py-2 px-3 font-bold">Referrer</th>
+                    <tr className="bg-slate-50 text-slate-700 border-b border-slate-200/90">
+                      <th className="py-2.5 px-3 font-bold">Time</th>
+                      <th className="py-2.5 px-3 font-bold">Page Title / URL</th>
+                      <th className="py-2.5 px-3 font-bold">Location</th>
+                      <th className="py-2.5 px-3 font-bold">Visitor Real IP</th>
+                      <th className="py-2.5 px-3 font-bold">Platform / Device</th>
+                      <th className="py-2.5 px-3 font-bold">Referrer</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 bg-white">
                     {filteredHits.map((h, i) => (
-                      <tr key={i} className="hover:bg-slate-50">
+                      <tr key={i} className="hover:bg-blue-50/30 transition-colors">
                         <td className="py-2 px-3 font-bold text-[#e65100] font-mono">
                           {formatElapsedTime(h.viewedAt)}
                         </td>
@@ -1515,12 +1516,12 @@ export default function RealtimeHistatsPage() {
                               target="_blank"
                               rel="noopener noreferrer"
                               title={getFullUrl(h.url, h.path)}
-                              className="font-medium text-slate-800 hover:text-[#1b62b7] hover:underline truncate group flex-1"
+                              className="font-medium text-slate-800 hover:text-[#1455bb] hover:underline truncate group flex-1"
                             >
                               <span className="group-hover:hidden truncate block">
                                 {h.title || h.path}
                               </span>
-                              <span className="hidden group-hover:block truncate font-mono text-[#1b62b7] text-[10px]">
+                              <span className="hidden group-hover:block truncate font-mono text-[#1455bb] text-[10px]">
                                 {getFullUrl(h.url, h.path)}
                               </span>
                             </a>
@@ -1578,8 +1579,8 @@ export default function RealtimeHistatsPage() {
 
         {/* Tab: Most Active Visitors */}
         {activeTab === "visitors" && (
-          <div className="bg-white border border-[#cbd6e2] rounded-xs shadow-2xs p-3">
-            <h3 className="font-bold text-slate-800 text-sm mb-3 border-b border-slate-200 pb-2">
+          <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs p-4">
+            <h3 className="font-bold text-slate-800 text-sm mb-3 border-b border-slate-200/80 pb-2.5">
               Most Active Visitors (Online)
             </h3>
             <div className="space-y-2 max-h-[550px] overflow-y-auto pr-1">
@@ -1587,7 +1588,7 @@ export default function RealtimeHistatsPage() {
                 [1, 2, 3, 4, 5, 6].map((i) => (
                   <div
                     key={i}
-                    className="p-3 border border-slate-200 rounded bg-[#f8fafc] flex items-center justify-between text-xs animate-pulse"
+                    className="p-3 border border-slate-200/80 rounded-xl bg-slate-50/60 flex items-center justify-between text-xs animate-pulse"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-slate-200 shrink-0" />
@@ -1610,10 +1611,10 @@ export default function RealtimeHistatsPage() {
                 displayActiveVisitors.map((vis: any, idx: number) => (
                   <div
                     key={idx}
-                    className="p-3 border border-slate-200 rounded bg-[#f8fafc] flex items-center justify-between text-xs"
+                    className="p-3 border border-slate-200/80 rounded-xl bg-slate-50/60 hover:bg-blue-50/30 transition-colors flex items-center justify-between text-xs"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="w-8 h-8 rounded-full bg-blue-100 text-[#1b62b7] font-bold flex items-center justify-center">
+                      <span className="w-8 h-8 rounded-full bg-blue-100 text-[#1455bb] font-bold flex items-center justify-center">
                         #{idx + 1}
                       </span>
                       <div>
@@ -1660,12 +1661,12 @@ export default function RealtimeHistatsPage() {
                             target="_blank"
                             rel="noopener noreferrer"
                             title={getFullUrl(vis.pageUrl, vis.currentPath)}
-                            className="font-mono text-slate-700 hover:text-[#1b62b7] hover:underline cursor-pointer group"
+                            className="font-mono text-slate-700 hover:text-[#1455bb] hover:underline cursor-pointer group"
                           >
                             <span className="group-hover:hidden">
                               {vis.pageTitle || vis.currentPath}
                             </span>
-                            <span className="hidden group-hover:inline text-[#1b62b7]">
+                            <span className="hidden group-hover:inline text-[#1455bb]">
                               {getFullUrl(vis.pageUrl, vis.currentPath)}
                             </span>
                           </a>
@@ -1674,7 +1675,7 @@ export default function RealtimeHistatsPage() {
                     </div>
 
                     <div className="text-right">
-                      <div className="font-bold text-[#1b62b7] text-sm">
+                      <div className="font-bold text-[#1455bb] text-sm">
                         {vis.pageviewsCount ?? vis.hitsCount ?? vis.count ?? 1}{" "}
                         Pageviews
                       </div>
@@ -1696,8 +1697,8 @@ export default function RealtimeHistatsPage() {
 
         {/* Tab: Popular Pages */}
         {activeTab === "pages" && (
-          <div className="bg-white border border-[#cbd6e2] rounded-xs shadow-2xs p-3">
-            <h3 className="font-bold text-slate-800 text-sm mb-3 border-b border-slate-200 pb-2">
+          <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs p-4">
+            <h3 className="font-bold text-slate-800 text-sm mb-3 border-b border-slate-200/80 pb-2.5">
               Currently Popular Pages
             </h3>
             <div className="divide-y divide-slate-100">
@@ -1725,10 +1726,10 @@ export default function RealtimeHistatsPage() {
                   return (
                     <div
                       key={idx}
-                      className="py-2 flex items-center justify-between text-xs"
+                      className="py-2.5 flex items-center justify-between text-xs hover:bg-blue-50/30 transition-colors px-2 rounded-lg"
                     >
                       <div className="flex items-center gap-2 max-w-[800px] truncate flex-1 min-w-0">
-                        <span className="w-6 font-bold text-[#1b62b7] text-right">
+                        <span className="w-6 font-bold text-[#1455bb] text-right">
                           {page.count}
                         </span>
                         <WebsiteFavicon
@@ -1742,12 +1743,12 @@ export default function RealtimeHistatsPage() {
                             handleUrlClick(e, pageUrl, page.title || page.path)
                           }
                           title={pageUrl}
-                          className="font-medium text-slate-800 hover:text-[#1b62b7] hover:underline cursor-pointer truncate group flex-1 min-w-0"
+                          className="font-medium text-slate-800 hover:text-[#1455bb] hover:underline cursor-pointer truncate group flex-1 min-w-0"
                         >
                           <span className="group-hover:hidden truncate block">
                             {page.title || page.path}
                           </span>
-                          <span className="hidden group-hover:block truncate font-mono text-[#1b62b7] text-[11px]">
+                          <span className="hidden group-hover:block truncate font-mono text-[#1455bb] text-[11px]">
                             {pageUrl}
                           </span>
                         </a>
@@ -1762,8 +1763,8 @@ export default function RealtimeHistatsPage() {
 
         {/* Tab: Popular Referrers */}
         {activeTab === "referrers" && (
-          <div className="bg-white border border-[#cbd6e2] rounded-xs shadow-2xs p-3">
-            <h3 className="font-bold text-slate-800 text-sm mb-3 border-b border-slate-200 pb-2">
+          <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs p-4">
+            <h3 className="font-bold text-slate-800 text-sm mb-3 border-b border-slate-200/80 pb-2.5">
               Popular Referring Sources
             </h3>
             <div className="divide-y divide-slate-100">
@@ -1794,10 +1795,10 @@ export default function RealtimeHistatsPage() {
                   return (
                     <div
                       key={idx}
-                      className="py-2 flex items-center justify-between text-xs"
+                      className="py-2.5 flex items-center justify-between text-xs hover:bg-blue-50/30 transition-colors px-2 rounded-lg"
                     >
                       <div className="flex items-center gap-2 max-w-[800px] truncate">
-                        <span className="w-6 font-bold text-[#1b62b7] text-right">
+                        <span className="w-6 font-bold text-[#1455bb] text-right">
                           {ref.count}
                         </span>
                         <ReferrerBrandIcon referrer={ref.referrer} size={15} />
@@ -1808,7 +1809,7 @@ export default function RealtimeHistatsPage() {
                             target="_blank"
                             rel="noopener noreferrer"
                             title={ref.referrer}
-                            className="font-medium text-slate-800 hover:text-[#1b62b7] hover:underline cursor-pointer truncate"
+                            className="font-medium text-slate-800 hover:text-[#1455bb] hover:underline cursor-pointer truncate"
                           >
                             {ref.referrer}
                           </a>
@@ -1828,8 +1829,8 @@ export default function RealtimeHistatsPage() {
 
         {/* Tab: Geolocation */}
         {activeTab === "geo" && (
-          <div className="bg-white border border-[#cbd6e2] rounded-xs shadow-2xs p-3 space-y-4">
-            <h3 className="font-bold text-slate-800 text-sm border-b border-slate-200 pb-2">
+          <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs p-4 space-y-4">
+            <h3 className="font-bold text-slate-800 text-sm border-b border-slate-200/80 pb-2.5">
               Live Visitor Global Distribution
             </h3>
 
@@ -1852,13 +1853,13 @@ export default function RealtimeHistatsPage() {
             />
 
             {/* Country ranking list */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
               {loading &&
               (!data?.topCountries || data.topCountries.length === 0)
                 ? [1, 2, 3, 4, 5, 6].map((i) => (
                     <div
                       key={i}
-                      className="p-2 border border-slate-200 rounded bg-[#f8fafc] flex items-center justify-between text-xs animate-pulse"
+                      className="p-2.5 border border-slate-200/80 rounded-xl bg-slate-50/60 flex items-center justify-between text-xs animate-pulse"
                     >
                       <div className="flex items-center gap-2">
                         <div className="w-5 h-4 bg-slate-200 rounded" />
@@ -1892,7 +1893,7 @@ export default function RealtimeHistatsPage() {
                   ).map((c, i) => (
                     <div
                       key={i}
-                      className="p-2 border border-slate-200 rounded bg-[#f8fafc] flex items-center justify-between text-xs"
+                      className="p-2.5 border border-slate-200/80 rounded-xl bg-slate-50/60 hover:bg-blue-50/30 transition-colors flex items-center justify-between text-xs"
                     >
                       <div className="flex items-center gap-2 truncate">
                         <CountryFlag code={c.code} size="md" />
@@ -1901,7 +1902,7 @@ export default function RealtimeHistatsPage() {
                         </span>
                       </div>
                       <div className="text-right shrink-0">
-                        <span className="font-bold text-[#1b62b7]">
+                        <span className="font-bold text-[#1455bb]">
                           {c.visitors} online
                         </span>
                         <span className="text-[10px] text-slate-500 block">
@@ -1922,11 +1923,11 @@ export default function RealtimeHistatsPage() {
           onClick={() => setConfirmUrlModal(null)}
         >
           <div
-            className="bg-white rounded-lg shadow-2xl border border-slate-200 max-w-md w-full p-5 text-left transition-all"
+            className="bg-white rounded-2xl shadow-2xl border border-slate-200/90 max-w-md w-full p-5 text-left transition-all"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center shrink-0 text-[#004f9e]">
+              <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-200/80 flex items-center justify-center shrink-0 text-[#1455bb]">
                 <ExternalLink className="w-5 h-5" />
               </div>
               <div className="flex-1 min-w-0">
@@ -1940,7 +1941,7 @@ export default function RealtimeHistatsPage() {
               <button
                 type="button"
                 onClick={() => setConfirmUrlModal(null)}
-                className="text-slate-400 hover:text-slate-600 p-1 -mr-1 -mt-1 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 p-1 -mr-1 -mt-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1952,7 +1953,7 @@ export default function RealtimeHistatsPage() {
               </div>
             )}
 
-            <div className="mt-2 p-2.5 bg-slate-50 border border-slate-200 rounded text-[11px] font-mono text-[#004f9e] break-all select-all flex items-center gap-1.5">
+            <div className="mt-2 p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-[11px] font-mono text-[#1455bb] break-all select-all flex items-center gap-1.5">
               <span className="truncate flex-1">{confirmUrlModal.url}</span>
             </div>
 
@@ -1960,7 +1961,7 @@ export default function RealtimeHistatsPage() {
               <button
                 type="button"
                 onClick={() => setConfirmUrlModal(null)}
-                className="px-4 py-2 text-xs bg-red-600 font-semibold text-white  hover:bg-red-700 border border-slate-300 rounded shadow-2xs transition-colors cursor-pointer"
+                className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl transition-colors cursor-pointer"
               >
                 No, cancel it.
               </button>
@@ -1976,7 +1977,7 @@ export default function RealtimeHistatsPage() {
                   }
                   setConfirmUrlModal(null);
                 }}
-                className="px-4 py-2 text-xs font-semibold text-white bg-[#004f9e] hover:bg-[#003b77] rounded shadow-2xs transition-colors cursor-pointer flex items-center gap-1.5"
+                className="px-4 py-2 text-xs font-semibold text-white bg-gradient-to-r from-[#1455bb] to-[#1a62d4] hover:from-[#124cb0] hover:to-[#1757be] rounded-xl shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
               >
                 <span>Yes, please open it.</span>
                 <ExternalLink className="w-3.5 h-3.5" />

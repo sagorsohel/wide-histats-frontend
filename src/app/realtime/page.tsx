@@ -643,14 +643,21 @@ export default function RealtimeHistatsPage() {
     if (!data?.topReferrers || data.topReferrers.length === 0) return [];
 
     // 1. Normalize and aggregate duplicate referrers by domain
-    const aggregatedMap = new Map<string, { referrer: string; count: number }>();
+    const aggregatedMap = new Map<
+      string,
+      { referrer: string; count: number }
+    >();
 
     for (const r of data.topReferrers) {
       let rawRef = (r.referrer || "").trim();
       let cleanKey = "";
       let displayRef = rawRef;
 
-      if (!rawRef || rawRef.toLowerCase() === "direct" || rawRef.toLowerCase() === "none") {
+      if (
+        !rawRef ||
+        rawRef.toLowerCase() === "direct" ||
+        rawRef.toLowerCase() === "none"
+      ) {
         cleanKey = "direct";
         displayRef = "direct";
       } else {
@@ -1045,9 +1052,6 @@ export default function RealtimeHistatsPage() {
                   <span className="font-bold text-slate-800 text-[12px] tracking-tight">
                     Recent
                   </span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-[#1455bb] border border-slate-300/70 shadow-2xs">
-                    Total: {filteredHits.length}
-                  </span>
                 </div>
                 <button
                   onClick={() => setShowSearch(!showSearch)}
@@ -1362,9 +1366,6 @@ export default function RealtimeHistatsPage() {
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-[#1455bb] border border-slate-300/70 shadow-2xs">
                         Total: {totalCountriesCount}
                       </span>
-                      <span className="text-[10px] text-[#1455bb] bg-blue-50 border border-blue-200/60 font-bold px-2 py-0.5 rounded-full font-mono">
-                        MapLibre GL
-                      </span>
                     </div>
                     <Search className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 cursor-pointer" />
                   </div>
@@ -1383,7 +1384,7 @@ export default function RealtimeHistatsPage() {
                             ]
                           : []
                     }
-                    height="230px"
+                    height="260px"
                   />
                 </div>
 
@@ -1443,58 +1444,64 @@ export default function RealtimeHistatsPage() {
                               className="px-3 py-1.5 hover:brightness-95 text-[11px] space-y-0.5 transition-colors"
                             >
                               <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2">
-                                <span className="font-bold text-[#1455bb] min-w-[20px] text-right">
-                                  {vis.pageviewsCount ??
-                                    vis.hitsCount ??
-                                    vis.count ??
-                                    1}
-                                </span>
-                                <div className="flex items-center gap-1.5 font-mono text-slate-800 font-semibold">
-                                  <span className="text-emerald-600 font-bold">
-                                    👤
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-[#1455bb] min-w-[20px] text-right">
+                                    {vis.pageviewsCount ??
+                                      vis.hitsCount ??
+                                      vis.count ??
+                                      1}
                                   </span>
-                                  <span>{formatVisitorIp(vis)}</span>
+                                  <div className="flex items-center gap-1.5 font-mono text-slate-800 font-semibold">
+                                    <span className="text-emerald-600 font-bold">
+                                      👤
+                                    </span>
+                                    <span>{formatVisitorIp(vis)}</span>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 text-slate-500">
+                                  <CountryFlag code={vis.countryCode} />
+                                  <span
+                                    className="inline-flex items-center"
+                                    title={`Browser: ${vis.browser || "Browser"}`}
+                                  >
+                                    {getBrowserIcon(vis.browser, vis.os)}
+                                  </span>
+                                  {getDeviceIcon(vis.deviceType, vis.os)}
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-2 text-slate-500">
-                                <CountryFlag code={vis.countryCode} />
-                                <span
-                                  className="inline-flex items-center"
-                                  title={`Browser: ${vis.browser || "Browser"}`}
+                              {/* Second line: visited path */}
+                              <div className="flex items-center gap-1 text-[10px] text-slate-500 truncate pl-6">
+                                <WebsiteFavicon
+                                  url={vis.pageUrl}
+                                  domain={selectedWebsite?.domain}
+                                  size={12}
+                                />
+                                <a
+                                  href={getFullUrl(
+                                    vis.pageUrl,
+                                    vis.currentPath,
+                                  )}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title={getFullUrl(
+                                    vis.pageUrl,
+                                    vis.currentPath,
+                                  )}
+                                  className="truncate text-slate-600 hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
                                 >
-                                  {getBrowserIcon(vis.browser, vis.os)}
-                                </span>
-                                {getDeviceIcon(vis.deviceType, vis.os)}
+                                  <span className="group-hover:hidden truncate block">
+                                    {vis.pageTitle || vis.currentPath}
+                                  </span>
+                                  <span className="hidden group-hover:block truncate font-mono text-[#1455bb]">
+                                    {getFullUrl(vis.pageUrl, vis.currentPath)}
+                                  </span>
+                                </a>
                               </div>
                             </div>
-
-                            {/* Second line: visited path */}
-                            <div className="flex items-center gap-1 text-[10px] text-slate-500 truncate pl-6">
-                              <WebsiteFavicon
-                                url={vis.pageUrl}
-                                domain={selectedWebsite?.domain}
-                                size={12}
-                              />
-                              <a
-                                href={getFullUrl(vis.pageUrl, vis.currentPath)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                title={getFullUrl(vis.pageUrl, vis.currentPath)}
-                                className="truncate text-slate-600 hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
-                              >
-                                <span className="group-hover:hidden truncate block">
-                                  {vis.pageTitle || vis.currentPath}
-                                </span>
-                                <span className="hidden group-hover:block truncate font-mono text-[#1455bb]">
-                                  {getFullUrl(vis.pageUrl, vis.currentPath)}
-                                </span>
-                              </a>
-                            </div>
-                          </div>
-                        );
-                      })
+                          );
+                        })
                     )}
                   </div>
                 </div>
@@ -1505,7 +1512,7 @@ export default function RealtimeHistatsPage() {
 
         {/* Tab: Recent (Full view with Real IP stream matching screenshot) */}
         {activeTab === "recent" && (
-          <div className="bg-[#eaedf2] border border-slate-300/80 rounded-2xl shadow-xs p-4 sm:p-5 space-y-4">
+          <div className="bg-white border border-slate-300/80 rounded-2xl shadow-xs p-4 sm:p-5 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-300/80 pb-2.5">
               <div className="flex items-center gap-3">
                 <div>
@@ -1921,7 +1928,10 @@ export default function RealtimeHistatsPage() {
 
                       <div className="text-right">
                         <div className="font-bold text-[#1455bb] text-sm">
-                          {vis.pageviewsCount ?? vis.hitsCount ?? vis.count ?? 1}{" "}
+                          {vis.pageviewsCount ??
+                            vis.hitsCount ??
+                            vis.count ??
+                            1}{" "}
                           Pageviews
                         </div>
                         <div className="text-slate-500 text-[11px] flex items-center justify-end gap-1.5 mt-0.5">
@@ -2118,7 +2128,7 @@ export default function RealtimeHistatsPage() {
                       ]
                     : []
               }
-              height="420px"
+              height="440px"
             />
 
             {/* Country ranking list */}

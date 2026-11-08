@@ -3,7 +3,14 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { Plus, Minus, RotateCcw, Maximize2, Minimize2, MapPin } from "lucide-react";
+import {
+  Plus,
+  Minus,
+  RotateCcw,
+  Maximize2,
+  Minimize2,
+  MapPin,
+} from "lucide-react";
 
 // Point MapLibre directly to static public worker to eliminate 404 HTML mime type error
 if (typeof window !== "undefined") {
@@ -170,7 +177,6 @@ export const RealtimeGeoMap: React.FC<RealtimeGeoMapProps> = ({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
-  const [styleMode, setStyleMode] = useState<"dark" | "voyager" | "osm">("dark");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const totalCount = countryData.reduce((acc, c) => acc + (c.count || 0), 0);
 
@@ -182,10 +188,10 @@ export const RealtimeGeoMap: React.FC<RealtimeGeoMapProps> = ({
     try {
       const map = new maplibregl.Map({
         container: mapContainerRef.current,
-        style: MAP_STYLES[styleMode],
-        center: [15, 25],
-        zoom: 1.15,
-        minZoom: 0.8,
+        style: MAP_STYLES.osm,
+        center: [15, 15],
+        zoom: 0,
+        minZoom: 0,
         maxZoom: 14,
         attributionControl: false,
       });
@@ -194,7 +200,7 @@ export const RealtimeGeoMap: React.FC<RealtimeGeoMapProps> = ({
         new maplibregl.AttributionControl({
           compact: true,
         }),
-        "bottom-right"
+        "bottom-right",
       );
 
       mapRef.current = map;
@@ -216,16 +222,6 @@ export const RealtimeGeoMap: React.FC<RealtimeGeoMapProps> = ({
     }
   }, []);
 
-  // Update map style on mode toggle
-  useEffect(() => {
-    if (!mapRef.current) return;
-    try {
-      mapRef.current.setStyle(MAP_STYLES[styleMode]);
-    } catch (err) {
-      console.warn("Could not set style:", err);
-    }
-  }, [styleMode]);
-
   // Fallback coordinate generator for unknown countries
   const getCoordinates = useCallback((code: string): [number, number] => {
     const upper = (code || "").toUpperCase().trim();
@@ -238,8 +234,8 @@ export const RealtimeGeoMap: React.FC<RealtimeGeoMapProps> = ({
       hash = (hash << 5) - hash + upper.charCodeAt(i);
       hash |= 0;
     }
-    const lon = ((Math.abs(hash * 37) % 320) - 160);
-    const lat = ((Math.abs(hash * 73) % 110) - 45);
+    const lon = (Math.abs(hash * 37) % 320) - 160;
+    const lat = (Math.abs(hash * 73) % 110) - 45;
     return [lon, lat];
   }, []);
 
@@ -254,8 +250,11 @@ export const RealtimeGeoMap: React.FC<RealtimeGeoMapProps> = ({
 
     if (!countryData || countryData.length === 0) return;
 
+    const bounds = new maplibregl.LngLatBounds();
+
     countryData.forEach((item) => {
       const coords = getCoordinates(item.code);
+      bounds.extend(coords);
       const count = item.count || 0;
 
       // Color scheme based on traffic
@@ -264,29 +263,29 @@ export const RealtimeGeoMap: React.FC<RealtimeGeoMapProps> = ({
       const pulseColor = isHigh
         ? "bg-rose-500"
         : isMedium
-        ? "bg-amber-400"
-        : "bg-emerald-400";
+          ? "bg-amber-400"
+          : "bg-emerald-400";
       const badgeBg = isHigh
         ? "bg-rose-600 text-white border-rose-300"
         : isMedium
-        ? "bg-amber-500 text-slate-950 border-amber-300"
-        : "bg-emerald-600 text-white border-emerald-300";
+          ? "bg-amber-500 text-slate-950 border-amber-300"
+          : "bg-emerald-600 text-white border-emerald-300";
 
-      // Create Custom DOM Marker
+      // Create Custom Sleek DOM Marker
       const el = document.createElement("div");
       el.className = "group relative cursor-pointer select-none";
       el.innerHTML = `
         <div class="relative flex items-center justify-center">
-          <span class="absolute inline-flex h-7 w-7 rounded-full opacity-75 animate-ping ${pulseColor}"></span>
-          <span class="relative inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold font-mono shadow-md border ${badgeBg} transition-transform transform group-hover:scale-125">
-            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+          <span class="absolute inline-flex h-4 w-4 rounded-full opacity-60 animate-ping ${pulseColor}"></span>
+          <span class="relative inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[9px] font-bold font-mono shadow-sm border ${badgeBg} transition-transform transform group-hover:scale-125">
             ${count}
           </span>
         </div>
       `;
 
       // Popup
-      const percentage = totalCount > 0 ? ((count / totalCount) * 100).toFixed(1) : "0.0";
+      const percentage =
+        totalCount > 0 ? ((count / totalCount) * 100).toFixed(1) : "0.0";
       const popupHtml = `
         <div style="font-family: inherit; font-size: 11px; padding: 2px 4px; min-width: 140px; color: #0f172a;">
           <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin-bottom: 4px;">
@@ -305,7 +304,7 @@ export const RealtimeGeoMap: React.FC<RealtimeGeoMapProps> = ({
       `;
 
       const popup = new maplibregl.Popup({
-        offset: 14,
+        offset: 12,
         closeButton: false,
         className: "custom-maplibre-popup",
       }).setHTML(popupHtml);
@@ -321,6 +320,19 @@ export const RealtimeGeoMap: React.FC<RealtimeGeoMapProps> = ({
 
       markersRef.current.push(marker);
     });
+
+    // Fit bounds with small maxZoom so the entire globe with all user countries is visible in one glance
+    if (!bounds.isEmpty()) {
+      try {
+        map.fitBounds(bounds, {
+          padding: 24,
+          maxZoom: 0.75,
+          duration: 400,
+        });
+      } catch (e) {
+        map.setZoom(0);
+      }
+    }
   }, [countryData, getCoordinates, totalCount]);
 
   // Controls Handlers
@@ -333,12 +345,28 @@ export const RealtimeGeoMap: React.FC<RealtimeGeoMapProps> = ({
   };
 
   const handleReset = () => {
+    if (countryData && countryData.length > 0) {
+      try {
+        const bounds = new maplibregl.LngLatBounds();
+        countryData.forEach((item) => {
+          bounds.extend(getCoordinates(item.code));
+        });
+        if (!bounds.isEmpty()) {
+          mapRef.current?.fitBounds(bounds, {
+            padding: 24,
+            maxZoom: 0.75,
+            duration: 500,
+          });
+          return;
+        }
+      } catch {}
+    }
     mapRef.current?.flyTo({
-      center: [15, 25],
-      zoom: 1.15,
+      center: [15, 15],
+      zoom: 0,
       pitch: 0,
       bearing: 0,
-      duration: 600,
+      duration: 500,
     });
   };
 
@@ -353,8 +381,8 @@ export const RealtimeGeoMap: React.FC<RealtimeGeoMapProps> = ({
     <div
       className={`relative w-full overflow-hidden transition-all duration-300 ${
         isFullscreen
-          ? "fixed inset-0 z-50 rounded-none bg-slate-950 p-2"
-          : "rounded-xl border border-slate-700/30 bg-[#0d1726]"
+          ? "fixed inset-0 z-50 rounded-none bg-[#aad3df] p-2"
+          : "rounded-xl border border-slate-300/80 bg-[#aad3df]"
       } ${className}`}
       style={{ height: isFullscreen ? "100vh" : height }}
     >
@@ -362,57 +390,10 @@ export const RealtimeGeoMap: React.FC<RealtimeGeoMapProps> = ({
       <div ref={mapContainerRef} className="w-full h-full" />
 
       {/* Floating Header Info */}
-      <div className="absolute top-2.5 left-2.5 flex items-center gap-2 pointer-events-none z-10">
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950/80 backdrop-blur-md border border-slate-700/60 shadow-lg text-[11px] text-slate-200 font-medium">
-          <MapPin className="w-3.5 h-3.5 text-cyan-400" />
-          <span>Active Telemetry Map</span>
-          <span className="font-mono text-[10px] text-cyan-300 bg-cyan-950/80 px-1.5 py-0.2 rounded border border-cyan-800/60">
-            {countryData.length} {countryData.length === 1 ? "region" : "regions"}
-          </span>
-        </div>
-      </div>
 
       {/* Control Buttons Group (Top Right) */}
       <div className="absolute top-2.5 right-2.5 flex items-center gap-1 z-10">
-        {/* Style mode switcher */}
-        <div className="flex items-center bg-slate-950/80 backdrop-blur-md rounded-lg p-0.5 border border-slate-700/60 shadow-lg">
-          <button
-            type="button"
-            onClick={() => setStyleMode("dark")}
-            className={`px-2 py-1 text-[10px] font-bold rounded transition-colors ${
-              styleMode === "dark"
-                ? "bg-cyan-600 text-white shadow-xs"
-                : "text-slate-400 hover:text-white"
-            }`}
-            title="Dark Theme"
-          >
-            Dark
-          </button>
-          <button
-            type="button"
-            onClick={() => setStyleMode("voyager")}
-            className={`px-2 py-1 text-[10px] font-bold rounded transition-colors ${
-              styleMode === "voyager"
-                ? "bg-cyan-600 text-white shadow-xs"
-                : "text-slate-400 hover:text-white"
-            }`}
-            title="Street / Voyager Theme"
-          >
-            Street
-          </button>
-          <button
-            type="button"
-            onClick={() => setStyleMode("osm")}
-            className={`px-2 py-1 text-[10px] font-bold rounded transition-colors ${
-              styleMode === "osm"
-                ? "bg-cyan-600 text-white shadow-xs"
-                : "text-slate-400 hover:text-white"
-            }`}
-            title="OpenStreetMap Standard"
-          >
-            OSM
-          </button>
-        </div>
+        {/* OSM Badge */}
 
         {/* Zoom & Reset Buttons */}
         <div className="flex items-center bg-slate-950/80 backdrop-blur-md rounded-lg p-0.5 border border-slate-700/60 shadow-lg">
@@ -453,24 +434,6 @@ export const RealtimeGeoMap: React.FC<RealtimeGeoMapProps> = ({
             )}
           </button>
         </div>
-      </div>
-
-      {/* Bottom Telemetry Legend */}
-      <div className="absolute bottom-2 left-2.5 flex items-center gap-3 pointer-events-none z-10 text-[10px] font-mono text-slate-400 bg-slate-950/70 backdrop-blur-sm px-2.5 py-1 rounded-md border border-slate-800">
-        <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-rose-500 shadow-rose-500/50 shadow-xs"></span>
-          <span>&gt;20</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-amber-400 shadow-amber-400/50 shadow-xs"></span>
-          <span>5-20</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-emerald-400/50 shadow-xs"></span>
-          <span>1-5</span>
-        </div>
-        <span className="text-slate-600">|</span>
-        <span className="text-slate-300 font-semibold">{totalCount} active</span>
       </div>
     </div>
   );

@@ -896,25 +896,21 @@ export default function RealtimeHistatsPage() {
                         <span>{formatElapsedTime(hit.viewedAt)}</span>
                       </div>
 
-                      {/* Page Title & Link with Histats [↗] external link icon */}
+                      {/* Page Title & Link with Website Favicon */}
                       <div className="flex-1 flex items-center gap-1.5 truncate max-w-[650px] lg:max-w-[800px] min-w-0">
+                        <WebsiteFavicon
+                          url={hit.url}
+                          domain={selectedWebsite?.domain}
+                          size={14}
+                          fallbackIcon="link"
+                        />
                         <a
                           href={getFullUrl(hit.url, hit.path)}
                           target="_blank"
                           rel="noopener noreferrer"
                           title={getFullUrl(hit.url, hit.path)}
-                          className="truncate text-[#222222] font-normal hover:text-[#004f9e] hover:underline cursor-pointer group flex items-center gap-1.5 flex-1 min-w-0"
+                          className="truncate text-[#222222] font-normal hover:text-[#004f9e] hover:underline cursor-pointer group flex-1 min-w-0"
                         >
-                          {/* Histats square [↗] icon */}
-                          <span className="inline-flex items-center justify-center w-[12px] h-[12px] border border-[#8fa0b6] bg-white rounded-[1px] shrink-0 group-hover:border-[#004f9e]">
-                            <svg
-                              className="w-[7px] h-[7px] text-[#475569] group-hover:text-[#004f9e]"
-                              viewBox="0 0 8 8"
-                              fill="currentColor"
-                            >
-                              <path d="M2 1h5v5H6V2.41L1.71 6.71.29 5.29 4.59 1H2V1z" />
-                            </svg>
-                          </span>
                           <span className="truncate block font-normal text-[11px]">
                             {hit.title || hit.path}
                           </span>

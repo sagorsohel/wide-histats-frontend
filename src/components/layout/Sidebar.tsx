@@ -178,25 +178,36 @@ export const getCleanDomain = (domain: string): string => {
   }
 };
 
-// Website Favicon Component with High-Res CDN + Fallback Letter Avatar
+// Website Favicon Component with Multi-Tier CDN + Fallback Letter Avatar
 export const WebsiteFavicon: React.FC<{
   name: string;
   domain: string;
   className?: string;
 }> = ({ name, domain, className = "w-5 h-5" }) => {
-  const [imgError, setImgError] = useState(false);
+  const [sourceIndex, setSourceIndex] = useState(0);
   const clean = getCleanDomain(domain);
-  const faviconUrl = clean
-    ? `https://www.google.com/s2/favicons?domain=${clean}&sz=64`
-    : "";
   const initial = (name || clean || "W").charAt(0).toUpperCase();
 
-  if (faviconUrl && !imgError) {
+  const sources = React.useMemo(() => {
+    if (!clean) return [];
+    return [
+      `https://${clean}/favicon.ico`,
+      `https://icons.duckduckgo.com/ip3/${clean}.ico`,
+      `https://www.google.com/s2/favicons?domain=${encodeURIComponent(clean)}&sz=64`,
+    ];
+  }, [clean]);
+
+  React.useEffect(() => {
+    setSourceIndex(0);
+  }, [clean]);
+
+  if (sources.length > 0 && sourceIndex < sources.length) {
     return (
       <img
-        src={faviconUrl}
+        key={`${clean}-${sourceIndex}`}
+        src={sources[sourceIndex]}
         alt={name || domain}
-        onError={() => setImgError(true)}
+        onError={() => setSourceIndex((prev) => prev + 1)}
         className={`${className} object-contain rounded-xs shrink-0 select-none`}
         loading="lazy"
       />

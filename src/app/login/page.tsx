@@ -128,16 +128,6 @@ export default function LoginPage() {
           </form>
 
           {/* Quick Demo Login Option */}
-          <div className="mt-3">
-            <button
-              type="button"
-              onClick={handleDemoSignIn}
-              disabled={loading}
-              className="w-full py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs border border-slate-200 transition-colors cursor-pointer"
-            >
-              ⚡ Quick Demo Sign In
-            </button>
-          </div>
 
           {/* Link to Register page */}
           <div className="mt-6 text-center text-xs text-slate-500 border-t border-slate-100 pt-4">

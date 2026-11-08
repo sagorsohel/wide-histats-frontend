@@ -804,7 +804,7 @@ export const Sidebar: React.FC = () => {
           {/* Engine Status */}
           <div className="flex items-center justify-center gap-1.5 text-[9px] text-slate-400 font-medium pt-0.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Wide-Histat Engine v2.4</span>
+            <span>Analycos Engine v2.4</span>
           </div>
         </div>
       </div>

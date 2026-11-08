@@ -20,7 +20,7 @@ export const AnalycosAnimatedText: React.FC<{
 }) => {
   return (
     <span
-      className={`font-black tracking-tight relative select-none inline-flex items-center ${sizeClass} ${className}`}
+      className={`font-black tracking-tight relative select-none inline-flex items-center drop-shadow-[0_2px_10px_rgba(20,85,187,0.25)] group-hover:drop-shadow-[0_4px_14px_rgba(20,85,187,0.4)] transition-all ${sizeClass} ${className}`}
     >
       <span
         className="bg-gradient-to-r from-[#1455bb] via-[#2563eb] via-[#00bcd4] via-[#ff6d00] via-[#fbbc04] to-[#1455bb] bg-[length:300%_auto] bg-clip-text text-transparent group-hover:scale-[1.02] transition-transform duration-300"
@@ -64,7 +64,7 @@ export const AnalycosLogo: React.FC<AnalycosLogoProps> = ({
   return (
     <div className={`inline-flex items-center gap-2.5 ${className}`}>
       <div
-        className="relative shrink-0 flex items-center justify-center select-none"
+        className="relative shrink-0 flex items-center justify-center select-none drop-shadow-[0_4px_12px_rgba(26,115,232,0.3)] group-hover:drop-shadow-[0_6px_16px_rgba(26,115,232,0.45)] transition-all"
         style={{ width: size, height: size }}
       >
         <svg

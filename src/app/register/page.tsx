@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { AlertCircle, User, Mail, Lock } from "lucide-react";
 import Link from "next/link";
+import { AnalycosLogo } from "@/components/common/AnalycosLogo";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -54,9 +55,9 @@ export default function RegisterPage() {
         <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl">
           {/* Header */}
           <div className="text-center mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#1d5b9f] to-[#2563eb] mx-auto flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-500/20 mb-3">
-              W
-            </div>
+            <Link href="/" className="inline-flex justify-center mb-3 group">
+              <AnalycosLogo size={48} animated={true} speed="fast" />
+            </Link>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
               Create an Account
             </h1>

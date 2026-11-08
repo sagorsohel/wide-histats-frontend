@@ -372,7 +372,7 @@ export default function SummaryPage() {
           <Activity className="w-8 h-8" />
         </div>
         <h2 className="text-2xl font-extrabold text-slate-900 mb-2">
-          Welcome to Wide-Histat!
+          Welcome to Analycos!
         </h2>
         <p className="text-sm text-slate-500 mb-6 leading-relaxed">
           You don&apos;t have any websites registered yet. Register your first

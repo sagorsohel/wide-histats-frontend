@@ -8,6 +8,10 @@ import { useWebsite } from "@/context/WebsiteContext";
 import { NAV_GROUPS, WebsiteFavicon } from "@/components/layout/Sidebar";
 import { getSite7DigitId } from "@/lib/utils";
 import {
+  AnalycosLogo,
+  AnalycosAnimatedText,
+} from "@/components/common/AnalycosLogo";
+import {
   Globe,
   Code,
   LogOut,
@@ -72,17 +76,9 @@ export const Header: React.FC = () => {
               href={isAuthPage ? "/" : "/control-panel"}
               className="flex items-center gap-2.5 shrink-0 group"
             >
-              <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#1455bb] via-[#1a62d4] to-[#2563eb] flex items-center justify-center text-white font-black shadow-md shadow-blue-600/25 text-sm sm:text-base border border-white/20 group-hover:scale-105 transition-all">
-                W
-              </div>
-              <div>
-                <span className="font-black text-base sm:text-lg tracking-tight text-slate-900 group-hover:text-[#1455bb] transition-colors">
-                  Wide-Histat
-                </span>
-                <span className="hidden sm:inline-flex items-center gap-1 ml-2 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50/90 text-emerald-700 border border-emerald-300 shadow-2xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Live
-                </span>
+              <AnalycosLogo size={32} animated={true} speed="fast" />
+              <div className="flex items-center">
+                <AnalycosAnimatedText sizeClass="text-base sm:text-lg" />
               </div>
             </Link>
           </div>
@@ -285,12 +281,10 @@ export const Header: React.FC = () => {
             {/* Drawer Header */}
             <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#1455bb] to-blue-500 flex items-center justify-center text-white font-black text-sm shadow-xs">
-                  W
-                </div>
+                <AnalycosLogo size={28} animated={true} speed="fast" />
                 <div>
                   <span className="font-black text-base text-slate-900">
-                    Wide-Histat
+                    Analycos
                   </span>
                   <span className="ml-1.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue-100 text-[#1455bb]">
                     Menu

@@ -24,7 +24,7 @@ export const LandingMockup: React.FC = () => {
             {/* Logo */}
             <div className="flex items-center gap-2">
               <AnalycosLogo size={20} animated={true} speed="fast" />
-              <span className="font-extrabold text-sm text-slate-900 tracking-tight">Analycos</span>
+              <span className="font-extrabold text-sm text-slate-900 tracking-tight drop-shadow-[0_1px_4px_rgba(0,0,0,0.12)]">Analycos</span>
             </div>
 
             {/* Site selector dropdown pill */}

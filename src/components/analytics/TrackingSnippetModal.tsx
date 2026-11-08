@@ -24,14 +24,14 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
 
   const scriptUrl = `${publicTunnelUrl}/tracker.js`;
 
-  const snippet = `<!-- Wide-Histat Analytics Tracking Code -->
+  const snippet = `<!-- Analycos Analytics Tracking Code -->
 <script
   async
   defer
   src="${scriptUrl}"
   data-website-id="${website.trackingId}"
 ></script>
-<!-- End Wide-Histat Analytics -->`;
+<!-- End Analycos Analytics -->`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(snippet);

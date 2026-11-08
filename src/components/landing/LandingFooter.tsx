@@ -12,7 +12,7 @@ export const LandingFooter: React.FC = () => {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 font-bold text-slate-900">
             <AnalycosLogo size={18} animated={true} speed="fast" />
-            <span>Analycos</span>
+            <span className="drop-shadow-[0_1px_4px_rgba(0,0,0,0.12)]">Analycos</span>
           </div>
           <span>&copy; {new Date().getFullYear()} Analycos. All rights reserved.</span>
         </div>

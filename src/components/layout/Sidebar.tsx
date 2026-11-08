@@ -479,6 +479,7 @@ export const Sidebar: React.FC = () => {
       if (
         pathname !== "/" &&
         pathname !== "/login" &&
+        pathname !== "/register" &&
         pathname !== "/control-panel" &&
         pathname !== "/websites"
       ) {
@@ -498,6 +499,7 @@ export const Sidebar: React.FC = () => {
   if (
     pathname === "/" ||
     pathname === "/login" ||
+    pathname === "/register" ||
     pathname === "/control-panel" ||
     pathname === "/websites"
   ) {
@@ -619,23 +621,6 @@ export const Sidebar: React.FC = () => {
             />
           </Link>
         </div>
-
-        {/* Bottom Rail Tracker Code Trigger */}
-        {selectedWebsite && (
-          <button
-            type="button"
-            onClick={() => openTrackingModal(selectedWebsite, "code")}
-            title="Get Tracker Code"
-            className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-blue-100 flex items-center justify-center transition-all cursor-pointer mt-auto group"
-          >
-            <UseAnimations
-              animation={code}
-              size={18}
-              strokeColor="#dbeafe"
-              interaction="hover"
-            />
-          </button>
-        )}
       </div>
 
       {/* ============================================================ */}

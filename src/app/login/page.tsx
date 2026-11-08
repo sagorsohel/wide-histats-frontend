@@ -1,21 +1,26 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { AlertCircle, ArrowRight } from "lucide-react";
+import { AlertCircle, Lock, Mail } from "lucide-react";
 import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, register } = useAuth();
+  const { user, loading: authLoading, login, quickDemoLogin } = useAuth();
 
-  const [isRegister, setIsRegister] = useState(false);
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // If already logged in, redirect straight to /control-panel
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace("/control-panel");
+    }
+  }, [user, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,29 +28,31 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      let success = false;
-      if (isRegister) {
-        if (!name.trim()) {
-          setError("Name is required");
-          setLoading(false);
-          return;
-        }
-        success = await register(name, email, password);
-      } else {
-        success = await login(email, password);
-      }
-
+      const success = await login(email, password);
       if (success) {
         router.push("/control-panel");
       } else {
-        setError(
-          isRegister
-            ? "Failed to register. Please check your credentials."
-            : "Invalid email or password."
-        );
+        setError("Invalid email or password. Please verify credentials.");
       }
     } catch (err: any) {
       setError(err.message || "An error occurred during authentication.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDemoSignIn = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const success = await quickDemoLogin();
+      if (success) {
+        router.push("/control-panel");
+      } else {
+        setError("Failed to sign in with demo credentials.");
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to sign in with demo credentials.");
     } finally {
       setLoading(false);
     }
@@ -61,12 +68,10 @@ export default function LoginPage() {
               W
             </div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-              {isRegister ? "Create an Account" : "Welcome Back"}
+              Welcome Back
             </h1>
             <p className="text-xs text-slate-500 mt-1">
-              {isRegister
-                ? "Sign up to start tracking website traffic in real-time"
-                : "Enter your email and password to access your dashboard"}
+              Enter your email and password to access your dashboard
             </p>
           </div>
 
@@ -78,48 +83,38 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-            {isRegister && (
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1.5">
-                  Your Name
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="John Doe"
-                  required
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:border-[#1d5b9f] focus:outline-none text-slate-900 text-xs"
-                />
-              </div>
-            )}
-
             <div>
               <label className="block font-semibold text-slate-700 mb-1.5">
                 Email Address
               </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com"
-                required
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:border-[#1d5b9f] focus:outline-none text-slate-900 text-xs"
-              />
+              <div className="relative">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  required
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:border-[#1d5b9f] focus:bg-white focus:outline-none text-slate-900 text-xs transition-all"
+                />
+                <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
             </div>
 
             <div>
               <label className="block font-semibold text-slate-700 mb-1.5">
                 Password
               </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:border-[#1d5b9f] focus:outline-none text-slate-900 text-xs"
-              />
+              <div className="relative">
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:border-[#1d5b9f] focus:bg-white focus:outline-none text-slate-900 text-xs transition-all"
+                />
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
             </div>
 
             <button
@@ -127,43 +122,31 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full py-2.5 px-4 rounded-xl bg-[#1d5b9f] hover:bg-[#174880] text-white font-bold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 mt-2 cursor-pointer"
             >
-              {loading
-                ? "Processing..."
-                : isRegister
-                ? "Create Account"
-                : "Sign In"}
+              {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
 
-          {/* Toggle Login / Register */}
-          <div className="mt-5 text-center text-xs text-slate-500">
-            {isRegister ? (
-              <>
-                Already have an account?{" "}
-                <button
-                  onClick={() => {
-                    setIsRegister(false);
-                    setError(null);
-                  }}
-                  className="text-[#1d5b9f] hover:underline font-bold ml-1 cursor-pointer"
-                >
-                  Sign In
-                </button>
-              </>
-            ) : (
-              <>
-                Don&apos;t have an account yet?{" "}
-                <button
-                  onClick={() => {
-                    setIsRegister(true);
-                    setError(null);
-                  }}
-                  className="text-[#1d5b9f] hover:underline font-bold ml-1 cursor-pointer"
-                >
-                  Register Now
-                </button>
-              </>
-            )}
+          {/* Quick Demo Login Option */}
+          <div className="mt-3">
+            <button
+              type="button"
+              onClick={handleDemoSignIn}
+              disabled={loading}
+              className="w-full py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs border border-slate-200 transition-colors cursor-pointer"
+            >
+              ⚡ Quick Demo Sign In
+            </button>
+          </div>
+
+          {/* Link to Register page */}
+          <div className="mt-6 text-center text-xs text-slate-500 border-t border-slate-100 pt-4">
+            Don&apos;t have an account yet?{" "}
+            <Link
+              href="/register"
+              className="text-[#1d5b9f] hover:underline font-bold ml-1"
+            >
+              Register Now
+            </Link>
           </div>
         </div>
       </div>

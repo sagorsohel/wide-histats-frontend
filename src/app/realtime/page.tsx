@@ -498,10 +498,8 @@ export default function RealtimeHistatsPage() {
     return data?.activeCount ?? 0;
   }, [data?.activeCount, selectedWebsite?.usersOnline]);
 
-  // 100% Real-time popular pages - strictly isolated to current domain & deduplicated/aggregated so identical links never show separately
+  // 100% Real-time popular pages - strictly isolated to current domain & deduplicated/aggregated by link so identical links group together and distinct links show separately
   const displayPages = useMemo(() => {
-    if (!data?.topPages || data.topPages.length === 0) return [];
-
     const siteDomain = selectedWebsite?.domain
       ? selectedWebsite.domain
           .toLowerCase()
@@ -510,8 +508,30 @@ export default function RealtimeHistatsPage() {
           .trim()
       : "";
 
-    // 1. Resolve domain & clean URL for each incoming page
-    const rawPages = data.topPages.map((page) => {
+    // 1. Collect all candidate pages from data.topPages AND recent hits stream
+    const allInputPages: Array<{
+      path: string;
+      title?: string;
+      url?: string;
+      count?: number;
+    }> = [...(data?.topPages || [])];
+
+    if (rawRecentHits && rawRecentHits.length > 0) {
+      for (const h of rawRecentHits) {
+        if (!h) continue;
+        allInputPages.push({
+          path: h.path || "/",
+          title: h.title,
+          url: h.url,
+          count: 1,
+        });
+      }
+    }
+
+    if (allInputPages.length === 0) return [];
+
+    // 2. Resolve domain & clean URL for each incoming page
+    const rawPages = allInputPages.map((page) => {
       let resolvedUrl = page.url;
       if (resolvedUrl) {
         if (siteDomain) {
@@ -534,12 +554,11 @@ export default function RealtimeHistatsPage() {
       };
     });
 
-    // 2. Aggregate identical links / pages into a single row with summed counts
+    // 3. Aggregate strictly by unique link / URL (identical links group together into one row, different links show separately)
     const aggregatedMap = new Map<
       string,
       { path: string; title: string; url: string; count: number }
     >();
-    const titleToKeyMap = new Map<string, string>();
 
     for (const p of rawPages) {
       let linkKey = "";
@@ -566,24 +585,9 @@ export default function RealtimeHistatsPage() {
         linkKey = rawTarget.toLowerCase();
       }
 
-      const cleanTitle = (p.title || "").trim().toLowerCase();
-      const isSpecificTitle =
-        cleanTitle.length > 5 &&
-        !cleanTitle.includes("home page") &&
-        cleanTitle !== "home";
-
-      let targetKey = linkKey;
-      if (
-        !aggregatedMap.has(targetKey) &&
-        isSpecificTitle &&
-        titleToKeyMap.has(cleanTitle)
-      ) {
-        targetKey = titleToKeyMap.get(cleanTitle)!;
-      }
-
-      const existing = aggregatedMap.get(targetKey);
+      const existing = aggregatedMap.get(linkKey);
       if (existing) {
-        existing.count = (existing.count || 0) + (p.count || 0);
+        existing.count = (existing.count || 0) + (p.count || 1);
         if (
           p.title &&
           (!existing.title ||
@@ -596,26 +600,23 @@ export default function RealtimeHistatsPage() {
           existing.url = p.url;
         }
       } else {
-        aggregatedMap.set(targetKey, {
+        aggregatedMap.set(linkKey, {
           path: p.path || "/",
-          title: p.title || p.path || "Page",
+          title: p.title || p.url || p.path || "Page",
           url: p.url || "",
           count: p.count || 1,
         });
-        if (isSpecificTitle) {
-          titleToKeyMap.set(cleanTitle, targetKey);
-        }
       }
     }
 
-    // 3. Sort descending by aggregated total count
+    // 4. Sort descending by aggregated total count
     let pages = Array.from(aggregatedMap.values()).sort(
       (a, b) => (b.count || 0) - (a.count || 0),
     );
 
-    // 4. Guarantee displayed popular pages sum perfectly matches Users Online LIVE count
+    // 5. Guarantee displayed popular pages sum perfectly matches Users Online LIVE count
     if (onlineCount > 0 && pages.length > 0) {
-      const displaySlice = pages.slice(0, 25);
+      const displaySlice = pages.slice(0, 35);
       const sliceSum = displaySlice.reduce((sum, p) => sum + (p.count || 0), 0);
       if (sliceSum > 0 && sliceSum !== onlineCount) {
         let remaining = onlineCount;
@@ -636,7 +637,7 @@ export default function RealtimeHistatsPage() {
     }
 
     return pages;
-  }, [data?.topPages, selectedWebsite?.domain, onlineCount]);
+  }, [data?.topPages, rawRecentHits, selectedWebsite?.domain, onlineCount]);
 
   // 100% Real-time popular referrers - strictly aligned with Users Online LIVE count & aggregated by clean domain
   const displayReferrers = useMemo(() => {
@@ -1260,7 +1261,13 @@ export default function RealtimeHistatsPage() {
                                 className="truncate font-medium text-slate-800 hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
                               >
                                 <span className="group-hover:hidden truncate block">
-                                  {page.title || page.path}
+                                  {page.title &&
+                                  !page.title.startsWith("http") &&
+                                  page.title !== page.path
+                                    ? pageUrl.includes("?")
+                                      ? `${page.title}`
+                                      : page.title
+                                    : pageUrl}
                                 </span>
                                 <span className="hidden group-hover:block truncate font-mono text-[#1455bb] text-[10px]">
                                   {pageUrl}
@@ -2010,8 +2017,14 @@ export default function RealtimeHistatsPage() {
                           title={pageUrl}
                           className="font-medium text-slate-900 hover:text-[#1455bb] hover:underline cursor-pointer truncate group flex-1 min-w-0 text-[12px]"
                         >
-                          <span className="group-hover:hidden truncate block">
-                            {page.title || page.path}
+                          <span className="group-hover:hidden truncate block font-mono text-[11px] sm:text-[12px]">
+                            {page.title &&
+                            !page.title.startsWith("http") &&
+                            page.title !== page.path
+                              ? pageUrl.includes("?")
+                                ? `${page.title} `
+                                : page.title
+                              : pageUrl}
                           </span>
                           <span className="hidden group-hover:block truncate font-mono text-[#1455bb] text-[11px]">
                             {pageUrl}

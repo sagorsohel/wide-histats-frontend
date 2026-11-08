@@ -35,7 +35,8 @@ export const Header: React.FC = () => {
     setMobileMenuOpen(false);
   }, [pathname]);
 
-  const isAuthPage = pathname === "/" || pathname === "/login";
+  const isAuthPage =
+    pathname === "/" || pathname === "/login" || pathname === "/register";
   const isControlPanel =
     pathname === "/control-panel" || pathname === "/websites";
 
@@ -187,7 +188,7 @@ export const Header: React.FC = () => {
                           onClick={async () => {
                             await logout();
                             setUserDropdownOpen(false);
-                            router.push("/");
+                            router.push("/login");
                           }}
                           className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-rose-600 hover:bg-rose-50 transition-colors font-bold cursor-pointer"
                         >
@@ -201,7 +202,7 @@ export const Header: React.FC = () => {
               </div>
             ) : (
               <Link
-                href="/"
+                href="/login"
                 className="px-4 py-1.5 rounded-2xl bg-[#1455bb] hover:bg-[#1047a0] text-white font-extrabold text-xs shadow-md shadow-blue-500/25 transition-all"
               >
                 Sign In
@@ -454,7 +455,7 @@ export const Header: React.FC = () => {
                   onClick={async () => {
                     await logout();
                     setMobileMenuOpen(false);
-                    router.push("/");
+                    router.push("/login");
                   }}
                   className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors border border-rose-200 cursor-pointer"
                 >

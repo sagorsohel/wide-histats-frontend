@@ -4,8 +4,7 @@ import "./globals.css";
 import { StoreProvider } from "@/store/StoreProvider";
 import { AuthProvider } from "@/context/AuthContext";
 import { WebsiteProvider } from "@/context/WebsiteContext";
-import { Header } from "@/components/layout/Header";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { AppShell } from "@/components/layout/AppShell";
 import { TrackingModalWrapper } from "@/components/analytics/TrackingModalWrapper";
 import { UrlWebsiteSync } from "@/components/common/UrlWebsiteSync";
 
@@ -21,24 +20,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full">
-      <body className="h-full min-h-screen md:h-screen md:overflow-hidden bg-[#eef2f7] text-slate-800 antialiased selection:bg-[#1d5b9f]/20 selection:text-[#1d5b9f]">
+    <html lang="en" className="h-full scroll-smooth">
+      <body className="min-h-screen bg-[#f8fafc] text-slate-800 antialiased selection:bg-[#1d5b9f]/20 selection:text-[#1d5b9f]">
         <StoreProvider>
           <AuthProvider>
             <WebsiteProvider>
               <Suspense fallback={null}>
                 <UrlWebsiteSync />
               </Suspense>
-              {/* Boxed 1260px System Container - Centered with empty background on both sides */}
-              <div className="w-full max-w-[1260px] mx-auto h-full min-h-screen md:h-screen flex flex-col md:overflow-hidden bg-white shadow-[0_0_50px_rgba(0,0,0,0.06)] border-x border-slate-200/90 relative">
-                <Header />
-                <div className="flex-1 flex overflow-hidden h-[calc(100vh-4rem)]">
-                  <Sidebar />
-                  <main className="flex-1 min-w-0 h-full overflow-y-auto p-2 sm:p-4 lg:p-6 bg-[#F1F5F9]">
-                    <div className="w-full">{children}</div>
-                  </main>
-                </div>
-              </div>
+              <AppShell>{children}</AppShell>
               <TrackingModalWrapper />
             </WebsiteProvider>
           </AuthProvider>

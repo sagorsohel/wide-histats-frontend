@@ -35,6 +35,11 @@ export interface NavItem {
   animation: any;
   badge?: string;
   isLive?: boolean;
+  theme?: {
+    stroke: string;
+    inactive3D: string;
+    active3D: string;
+  };
 }
 
 export interface NavGroup {
@@ -79,6 +84,151 @@ export const createAnimatedIcon = (
   return Component;
 };
 
+// Authentic Histats "Users online" Broadcast Antenna & Live Animated Icon matching the classic Histats icon
+export const HistatsLiveBroadcastIcon: React.FC<{
+  className?: string;
+  size?: number;
+  strokeColor?: string;
+}> = ({ className = "", size = 20, strokeColor }) => {
+  const isWhite = strokeColor === "#ffffff" || strokeColor === "white";
+  const mainColor = isWhite ? "#ffffff" : "#e11d48";
+  const waveColor = isWhite ? "#ffffff" : "#f43f5e";
+  const baseColor = isWhite ? "#ffffff" : "#9f1239";
+  const textColor = isWhite ? "#ffffff" : "#be123c";
+
+  return (
+    <div
+      className={`inline-flex items-center justify-center shrink-0 select-none ${className}`}
+      style={{ width: size, height: size }}
+    >
+      <svg
+        viewBox="0 0 24 24"
+        width={size}
+        height={size}
+        className="overflow-visible"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <style>
+          {`
+            @keyframes radioWaveLeft {
+              0%, 100% { opacity: 0.35; transform: scaleX(0.92) translateX(0); }
+              50% { opacity: 1; transform: scaleX(1.1) translateX(-0.8px); }
+            }
+            @keyframes radioWaveRight {
+              0%, 100% { opacity: 0.35; transform: scaleX(0.92) translateX(0); }
+              50% { opacity: 1; transform: scaleX(1.1) translateX(0.8px); }
+            }
+            @keyframes beaconPulse {
+              0%, 100% { transform: scale(0.9); opacity: 0.85; }
+              50% { transform: scale(1.18); opacity: 1; filter: drop-shadow(0 0 2px ${isWhite ? "rgba(255,255,255,0.8)" : "rgba(225,29,72,0.8)"}); }
+            }
+            @keyframes liveTextGlow {
+              0%, 100% { opacity: 0.8; }
+              50% { opacity: 1; }
+            }
+            .histats-wave-left-outer {
+              animation: radioWaveLeft 1.2s ease-in-out infinite;
+              transform-origin: 12px 7px;
+            }
+            .histats-wave-right-outer {
+              animation: radioWaveRight 1.2s ease-in-out infinite;
+              transform-origin: 12px 7px;
+            }
+            .histats-beacon-dot {
+              animation: beaconPulse 1.2s ease-in-out infinite;
+              transform-origin: 12px 7.2px;
+            }
+            .histats-live-text {
+              animation: liveTextGlow 1.2s ease-in-out infinite;
+            }
+          `}
+        </style>
+
+        {/* Outer Left Radio Wave Arc */}
+        <path
+          d="M 6.2 3.2 C 4.2 5.6 4.2 8.8 6.2 11.2"
+          stroke={mainColor}
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          className="histats-wave-left-outer"
+        />
+
+        {/* Inner Left Radio Wave Arc */}
+        <path
+          d="M 8.8 5 C 7.8 6.3 7.8 8.1 8.8 9.4"
+          stroke={waveColor}
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          opacity="0.9"
+        />
+
+        {/* Central Transmitter Beacon Bulb */}
+        <circle
+          cx="12"
+          cy="7.2"
+          r="2.5"
+          fill={mainColor}
+          className="histats-beacon-dot"
+        />
+        <circle
+          cx="12"
+          cy="7.2"
+          r="1"
+          fill={isWhite ? "#1455bb" : "#ffffff"}
+        />
+
+        {/* Inner Right Radio Wave Arc */}
+        <path
+          d="M 15.2 5 C 16.2 6.3 16.2 8.1 15.2 9.4"
+          stroke={waveColor}
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          opacity="0.9"
+        />
+
+        {/* Outer Right Radio Wave Arc */}
+        <path
+          d="M 17.8 3.2 C 19.8 5.6 19.8 8.8 17.8 11.2"
+          stroke={mainColor}
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          className="histats-wave-right-outer"
+        />
+
+        {/* Antenna Base Pole */}
+        <path
+          d="M 12 9.6 L 12 13"
+          stroke={baseColor}
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M 10 13.2 L 14 13.2"
+          stroke={baseColor}
+          strokeWidth="1.2"
+          strokeLinecap="round"
+        />
+
+        {/* "LIVE" text underneath matching Histats screenshot */}
+        <text
+          x="12"
+          y="20.8"
+          textAnchor="middle"
+          fontSize="7.5"
+          fontWeight="900"
+          fontFamily="system-ui, -apple-system, sans-serif"
+          fill={textColor}
+          letterSpacing="0.8px"
+          className="histats-live-text font-black"
+        >
+          LIVE
+        </text>
+      </svg>
+    </div>
+  );
+};
+
 export const NAV_GROUPS: NavGroup[] = [
   {
     title: "Traffic & Analytics",
@@ -89,6 +239,13 @@ export const NAV_GROUPS: NavGroup[] = [
         subtitle: "Key performance metrics",
         animation: grid,
         icon: createAnimatedIcon(grid, 18),
+        theme: {
+          stroke: "#2563eb",
+          inactive3D:
+            "bg-gradient-to-b from-blue-50 to-blue-100 text-blue-600 border border-blue-200/90 shadow-[0_2px_4px_rgba(37,99,235,0.15),inset_0_1px_0_rgba(255,255,255,0.9)] group-hover:border-blue-400 group-hover:shadow-[0_4px_8px_rgba(37,99,235,0.25)]",
+          active3D:
+            "bg-gradient-to-b from-blue-400 via-blue-500 to-indigo-600 text-white border-t border-white/50 border-b border-indigo-800 shadow-[0_3px_8px_rgba(30,58,138,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)]",
+        },
       },
       {
         href: "/traffic-stats",
@@ -96,15 +253,29 @@ export const NAV_GROUPS: NavGroup[] = [
         subtitle: "Visitors, sessions & hits",
         animation: trendingUp,
         icon: createAnimatedIcon(trendingUp, 18),
+        theme: {
+          stroke: "#059669",
+          inactive3D:
+            "bg-gradient-to-b from-emerald-50 to-emerald-100 text-emerald-600 border border-emerald-200/90 shadow-[0_2px_4px_rgba(16,185,129,0.15),inset_0_1px_0_rgba(255,255,255,0.9)] group-hover:border-emerald-400 group-hover:shadow-[0_4px_8px_rgba(16,185,129,0.25)]",
+          active3D:
+            "bg-gradient-to-b from-emerald-400 via-emerald-500 to-teal-600 text-white border-t border-white/50 border-b border-teal-800 shadow-[0_3px_8px_rgba(6,78,59,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)]",
+        },
       },
       {
         href: "/realtime",
         label: "Users Online",
         subtitle: "Real-time presence",
         animation: activity,
-        icon: createAnimatedIcon(activity, 18, true),
+        icon: HistatsLiveBroadcastIcon,
         badge: "Live",
         isLive: true,
+        theme: {
+          stroke: "#e11d48",
+          inactive3D:
+            "bg-gradient-to-b from-rose-50 to-rose-100 text-rose-600 border border-rose-200/90 shadow-[0_2px_4px_rgba(244,63,94,0.18),inset_0_1px_0_rgba(255,255,255,0.9)] group-hover:border-rose-400 group-hover:shadow-[0_4px_8px_rgba(244,63,94,0.3)]",
+          active3D:
+            "bg-gradient-to-b from-rose-400 via-rose-500 to-red-600 text-white border-t border-white/50 border-b border-red-800 shadow-[0_3px_8px_rgba(159,18,57,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)]",
+        },
       },
     ],
   },
@@ -117,6 +288,13 @@ export const NAV_GROUPS: NavGroup[] = [
         subtitle: "Search, direct & social",
         animation: explore,
         icon: createAnimatedIcon(explore, 18),
+        theme: {
+          stroke: "#d97706",
+          inactive3D:
+            "bg-gradient-to-b from-amber-50 to-amber-100 text-amber-600 border border-amber-200/90 shadow-[0_2px_4px_rgba(245,158,11,0.18),inset_0_1px_0_rgba(255,255,255,0.9)] group-hover:border-amber-400 group-hover:shadow-[0_4px_8px_rgba(245,158,11,0.3)]",
+          active3D:
+            "bg-gradient-to-b from-amber-400 via-amber-500 to-orange-600 text-white border-t border-white/50 border-b border-orange-800 shadow-[0_3px_8px_rgba(146,64,14,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)]",
+        },
       },
     ],
   },
@@ -129,6 +307,13 @@ export const NAV_GROUPS: NavGroup[] = [
         subtitle: "Platforms & screen sizes",
         animation: smartphone,
         icon: createAnimatedIcon(smartphone, 18),
+        theme: {
+          stroke: "#7c3aed",
+          inactive3D:
+            "bg-gradient-to-b from-purple-50 to-purple-100 text-purple-600 border border-purple-200/90 shadow-[0_2px_4px_rgba(139,92,246,0.18),inset_0_1px_0_rgba(255,255,255,0.9)] group-hover:border-purple-400 group-hover:shadow-[0_4px_8px_rgba(139,92,246,0.3)]",
+          active3D:
+            "bg-gradient-to-b from-purple-400 via-purple-500 to-violet-600 text-white border-t border-white/50 border-b border-violet-800 shadow-[0_3px_8px_rgba(91,33,182,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)]",
+        },
       },
       {
         href: "/geography",
@@ -136,6 +321,13 @@ export const NAV_GROUPS: NavGroup[] = [
         subtitle: "Countries & world map",
         animation: globe,
         icon: createAnimatedIcon(globe, 18),
+        theme: {
+          stroke: "#0284c7",
+          inactive3D:
+            "bg-gradient-to-b from-sky-50 to-cyan-100 text-sky-600 border border-sky-200/90 shadow-[0_2px_4px_rgba(2,132,199,0.18),inset_0_1px_0_rgba(255,255,255,0.9)] group-hover:border-sky-400 group-hover:shadow-[0_4px_8px_rgba(2,132,199,0.3)]",
+          active3D:
+            "bg-gradient-to-b from-sky-400 via-cyan-500 to-blue-600 text-white border-t border-white/50 border-b border-blue-800 shadow-[0_3px_8px_rgba(7,89,133,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)]",
+        },
       },
     ],
   },
@@ -148,6 +340,13 @@ export const NAV_GROUPS: NavGroup[] = [
         subtitle: "Top visited paths",
         animation: fileText,
         icon: createAnimatedIcon(fileText, 18),
+        theme: {
+          stroke: "#db2777",
+          inactive3D:
+            "bg-gradient-to-b from-pink-50 to-pink-100 text-pink-600 border border-pink-200/90 shadow-[0_2px_4px_rgba(236,72,153,0.18),inset_0_1px_0_rgba(255,255,255,0.9)] group-hover:border-pink-400 group-hover:shadow-[0_4px_8px_rgba(236,72,153,0.3)]",
+          active3D:
+            "bg-gradient-to-b from-pink-400 via-pink-500 to-rose-600 text-white border-t border-white/50 border-b border-rose-800 shadow-[0_3px_8px_rgba(157,23,77,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)]",
+        },
       },
     ],
   },
@@ -160,6 +359,13 @@ export const NAV_GROUPS: NavGroup[] = [
         subtitle: "Preferences & tracking",
         animation: settings,
         icon: createAnimatedIcon(settings, 18),
+        theme: {
+          stroke: "#475569",
+          inactive3D:
+            "bg-gradient-to-b from-slate-100 to-slate-200 text-slate-700 border border-slate-300/90 shadow-[0_2px_4px_rgba(100,116,139,0.18),inset_0_1px_0_rgba(255,255,255,0.9)] group-hover:border-slate-400 group-hover:shadow-[0_4px_8px_rgba(100,116,139,0.3)]",
+          active3D:
+            "bg-gradient-to-b from-slate-500 via-slate-600 to-slate-700 text-white border-t border-white/50 border-b border-slate-900 shadow-[0_3px_8px_rgba(30,41,59,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)]",
+        },
       },
     ],
   },
@@ -458,8 +664,17 @@ export const Sidebar: React.FC = () => {
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-7 h-7 rounded-lg bg-white/20 text-white flex items-center justify-center shrink-0 shadow-2xs">
-                              <item.icon className="w-4 h-4 text-white" strokeColor="#ffffff" />
+                            {/* 3D Animated Icon Box (Active) */}
+                            <div
+                              className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 group-hover:scale-110 group-hover:-translate-y-0.5 ${
+                                item.theme?.active3D ||
+                                "bg-white/20 text-white shadow-2xs"
+                              }`}
+                            >
+                              <item.icon
+                                className="w-4 h-4 text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]"
+                                strokeColor="#ffffff"
+                              />
                             </div>
                             <div className="min-w-0">
                               <div className="font-extrabold text-xs text-white truncate leading-tight">
@@ -503,8 +718,17 @@ export const Sidebar: React.FC = () => {
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-7 h-7 rounded-lg bg-slate-100 text-[#1455bb] group-hover:bg-blue-50 flex items-center justify-center shrink-0 transition-colors">
-                            <item.icon className="w-4 h-4 text-[#1455bb]" strokeColor="#1455bb" />
+                          {/* 3D Animated Icon Box (Inactive - Distinct theme color per item) */}
+                          <div
+                            className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 group-hover:scale-110 group-hover:-translate-y-0.5 ${
+                              item.theme?.inactive3D ||
+                              "bg-slate-100 text-[#1455bb]"
+                            }`}
+                          >
+                            <item.icon
+                              className="w-4 h-4 drop-shadow-[0_1px_1px_rgba(0,0,0,0.08)]"
+                              strokeColor={item.theme?.stroke || "#1455bb"}
+                            />
                           </div>
                           <div className="min-w-0">
                             <div className="font-bold text-xs text-slate-800 group-hover:text-blue-600 truncate leading-tight transition-colors">

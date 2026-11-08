@@ -20,7 +20,7 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
 
   const publicTunnelUrl =
     process.env.NEXT_PUBLIC_TRACKER_URL ||
-    "https://apistats.fifaonscreen.online";
+    "https://api.analycos.com";
 
   const scriptUrl = `${publicTunnelUrl}/tracker.js`;
 

@@ -57,14 +57,11 @@ export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [dispatch, selectedWebsite]);
 
   useEffect(() => {
-    if (user) {
-      dispatch(fetchWebsites());
-    }
-  }, [user, dispatch]);
+    dispatch(fetchWebsites());
+  }, [dispatch]);
 
   // 15-second silent full system auto-sync in background (zero visual disturbance)
   useEffect(() => {
-    if (!user) return;
     const timer = setInterval(async () => {
       try {
         const res = await api.get<Website[]>("/api/v1/websites", { skipCache: true });
@@ -77,16 +74,14 @@ export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ child
       } catch {}
     }, 15000);
     return () => clearInterval(timer);
-  }, [user, dispatch]);
+  }, [dispatch]);
 
   useTabFocus(() => {
-    if (user) {
-      if (websites.length === 0) {
-        dispatch(fetchWebsites());
-      }
-      if (selectedWebsite?.id) {
-        subscribeToWebsite(selectedWebsite.id);
-      }
+    if (websites.length === 0) {
+      dispatch(fetchWebsites());
+    }
+    if (selectedWebsite?.id) {
+      subscribeToWebsite(selectedWebsite.id);
     }
   });
 

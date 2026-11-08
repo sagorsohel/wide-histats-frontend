@@ -83,6 +83,8 @@ export default function RealtimeHistatsPage() {
   const currentSiteRealtime = useAppSelector(
     (state) => state.realtime.byWebsite[selectedWebsite?.id || ""],
   );
+  const currentSiteRealtimeRef = React.useRef(currentSiteRealtime);
+  currentSiteRealtimeRef.current = currentSiteRealtime;
   const data = currentSiteRealtime?.data || null;
   const rawRecentHits = currentSiteRealtime?.recentHits || [];
 
@@ -113,27 +115,6 @@ export default function RealtimeHistatsPage() {
     return () => clearInterval(timer);
   }, []);
 
-  // Format elapsed time in authentic Histats format (e.g. 1", 14", 58", 1'05", 2'18")
-  const formatElapsedTime = useCallback(
-    (isoOrDateStr?: string) => {
-      if (!isoOrDateStr) return '1"';
-      const hitTime = new Date(isoOrDateStr).getTime();
-      if (isNaN(hitTime)) return '1"';
-      const diffSec = Math.max(1, Math.floor((currentTime - hitTime) / 1000));
-      if (diffSec < 60) {
-        return `${diffSec}"`;
-      }
-      const mins = Math.floor(diffSec / 60);
-      const remSec = diffSec % 60;
-      if (mins < 60) {
-        return `${mins}'${remSec > 0 ? (remSec < 10 ? `0${remSec}"` : `${remSec}"`) : ""}`;
-      }
-      const hrs = Math.floor(mins / 60);
-      return `${hrs}h`;
-    },
-    [currentTime],
-  );
-
   const loadRealtime = useCallback(
     async (isSilent = false, overrideSiteId?: string) => {
       const siteId = overrideSiteId || activeSiteIdRef.current;
@@ -143,7 +124,7 @@ export default function RealtimeHistatsPage() {
       }
       if (isPaused) return;
 
-      const hasData = !!currentSiteRealtime?.data;
+      const hasData = !!currentSiteRealtimeRef.current?.data;
       if (!isSilent && !hasData) {
         setLoading(true);
       }
@@ -170,7 +151,7 @@ export default function RealtimeHistatsPage() {
         }
       }
     },
-    [isPaused, currentSiteRealtime?.data, dispatch],
+    [isPaused, dispatch],
   );
 
   // Instantly handle website switcher change: reset previous site's state & load new site immediately!
@@ -255,22 +236,32 @@ export default function RealtimeHistatsPage() {
     };
   }, [selectedWebsite, loadRealtime]);
 
-  // 2-Second Silent background auto-reload interval (runs continuously without user noticing)
+  // 1-Second Silent background auto-reload interval (runs continuously and forcefully every 1s)
   useEffect(() => {
-    loadRealtime(!currentSiteRealtime?.data);
+    const targetId = activeSiteIdRef.current || selectedWebsite?.id;
+    if (targetId) {
+      loadRealtime(!currentSiteRealtime?.data, targetId);
+    }
+
     const interval = setInterval(() => {
-      if (selectedWebsite && !isPaused) {
-        // Self-healing: if socket disconnected in background (e.g. after long tab sleep), reconnect
+      const currentTarget = activeSiteIdRef.current || selectedWebsite?.id;
+      if (currentTarget) {
+        // Self-healing: if socket disconnected in background, reconnect immediately
         const s = getSocket();
         if (s && !s.connected) {
           s.connect();
-          subscribeToWebsite(selectedWebsite.id);
+          subscribeToWebsite(currentTarget);
+          if (selectedWebsite?.trackingId) {
+            subscribeToWebsite(selectedWebsite.trackingId);
+          }
         }
-        loadRealtime(true, selectedWebsite.id);
+        // Forceful 1-second refresh always in background
+        loadRealtime(true, currentTarget);
       }
-    }, 2000);
+    }, 1000);
+
     return () => clearInterval(interval);
-  }, [loadRealtime, selectedWebsite, isPaused, currentSiteRealtime?.data]);
+  }, [loadRealtime, selectedWebsite?.id, selectedWebsite?.trackingId]);
 
   // Socket.IO real-time listener (Instant "Sathe Sathe" updates with 100% website isolation)
   useEffect(() => {
@@ -278,22 +269,31 @@ export default function RealtimeHistatsPage() {
     const socket = getSocket();
     if (!socket) return;
 
-    // Ensure we join the website's room immediately
+    // Ensure we join the website's room immediately (both UUID and numeric trackingId)
     subscribeToWebsite(selectedWebsite.id);
+    if (selectedWebsite.trackingId) {
+      subscribeToWebsite(selectedWebsite.trackingId);
+    }
 
     const handleRealtimeUpdate = (payload: any) => {
       const activeId = activeSiteIdRef.current;
-      if (payload.websiteId === activeId) {
+      const trackingId = selectedWebsite?.trackingId;
+      if (payload.websiteId === activeId || payload.websiteId === trackingId) {
         dispatch(updateLiveCounts(payload));
       }
     };
 
     const handlePageView = (event: any) => {
       const activeId = activeSiteIdRef.current;
+      const trackingId = selectedWebsite?.trackingId;
       if (!activeId) return;
 
-      // 1. Strict websiteId check: must have websiteId AND it must match activeId!
-      if (!event.websiteId || event.websiteId !== activeId) {
+      // Match either website UUID or 7-digit trackingId
+      if (
+        event.websiteId &&
+        event.websiteId !== activeId &&
+        event.websiteId !== trackingId
+      ) {
         return;
       }
 
@@ -429,6 +429,45 @@ export default function RealtimeHistatsPage() {
     selectedWebsite?.id,
     selectedWebsite?.domain,
   ]);
+
+  // Auto-calibrate clock drift so top active hits always start cleanly at 1" without artificial lag
+  const topHitTime = useMemo(() => {
+    if (displayHits.length === 0) return currentTime - 1000;
+    const t = new Date(displayHits[0].viewedAt).getTime();
+    return isNaN(t) ? currentTime - 1000 : t;
+  }, [displayHits, currentTime]);
+
+  const clockDriftOffset = useMemo(() => {
+    const rawDiff = Math.floor((currentTime - topHitTime) / 1000);
+    // If top hit has an artificial offset (e.g. server clock is behind client or first load lag),
+    // normalize so the newest hit starts cleanly at 1"
+    if (rawDiff > 1) {
+      return (rawDiff - 1) * 1000;
+    }
+    return 0;
+  }, [currentTime, topHitTime]);
+
+  // Format elapsed time in authentic Histats format (e.g. 1", 14", 58", 1'05", 2'18")
+  const formatElapsedTime = useCallback(
+    (isoOrDateStr?: string) => {
+      if (!isoOrDateStr) return '1"';
+      const rawHitTime = new Date(isoOrDateStr).getTime();
+      if (isNaN(rawHitTime)) return '1"';
+      const calibratedHitTime = rawHitTime + clockDriftOffset;
+      const diffSec = Math.max(1, Math.floor((currentTime - calibratedHitTime) / 1000));
+      if (diffSec < 60) {
+        return `${diffSec}"`;
+      }
+      const mins = Math.floor(diffSec / 60);
+      const remSec = diffSec % 60;
+      if (mins < 60) {
+        return `${mins}'${remSec > 0 ? (remSec < 10 ? `0${remSec}"` : `${remSec}"`) : ""}`;
+      }
+      const hrs = Math.floor(mins / 60);
+      return `${hrs}h`;
+    },
+    [currentTime, clockDriftOffset],
+  );
 
 
   // Active Count & Pages Count - Exact Real-Time Count Right Now with Website Context Fallback

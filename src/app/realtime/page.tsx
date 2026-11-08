@@ -151,7 +151,7 @@ export default function RealtimeHistatsPage() {
       try {
         const res = await api.get<RealtimeData>(
           `/api/v1/analytics/realtime?websiteId=${siteId}`,
-          { skipCache: isSilent },
+          { skipCache: true, ttlMs: 0 },
         );
 
         // Strict race condition guard: If user switched website while this request was in flight, discard!
@@ -255,7 +255,7 @@ export default function RealtimeHistatsPage() {
     };
   }, [selectedWebsite, loadRealtime]);
 
-  // 15-Second Silent background auto-reload interval (runs continuously without user noticing)
+  // 2-Second Silent background auto-reload interval (runs continuously without user noticing)
   useEffect(() => {
     loadRealtime(!currentSiteRealtime?.data);
     const interval = setInterval(() => {
@@ -268,7 +268,7 @@ export default function RealtimeHistatsPage() {
         }
         loadRealtime(true, selectedWebsite.id);
       }
-    }, 15000);
+    }, 2000);
     return () => clearInterval(interval);
   }, [loadRealtime, selectedWebsite, isPaused, currentSiteRealtime?.data]);
 
@@ -297,60 +297,24 @@ export default function RealtimeHistatsPage() {
         return;
       }
 
-      // 2. Strict Domain & Title Isolation Guard
-      if (selectedWebsite?.domain) {
-        const siteDomain = selectedWebsite.domain
-          .replace(/^https?:\/\//, "")
-          .split("/")[0]
-          .toLowerCase()
-          .trim();
-
-        if (event.url) {
-          try {
-            const parsed = event.url.startsWith("http")
-              ? new URL(event.url)
-              : new URL(`https://${event.url}`);
-            const hitHost = parsed.hostname.toLowerCase();
-            if (
-              !hitHost.includes(siteDomain) &&
-              !siteDomain.includes(hitHost)
-            ) {
-              return; // Discard hit belonging to another website!
-            }
-          } catch {
-            if (
-              event.url.includes("://") &&
-              !event.url.toLowerCase().includes(siteDomain)
-            ) {
-              return;
-            }
-          }
-        }
-
-        // Title check: If hit title specifically contains another site's brand name, reject it!
-        if (event.title) {
-          const lowerTitle = event.title.toLowerCase();
-          if (
-            !siteDomain.includes("streamespn") &&
-            lowerTitle.includes("streamespn")
-          ) {
-            return;
-          }
-        }
-      }
+      const domain = selectedWebsite?.domain || "";
+      const cleanUrl =
+        event.url ||
+        (domain ? `https://${domain}${event.path || "/"}` : event.path || "/");
 
       const newHit: RealtimeRecentHit = {
         id:
-          "hit-" +
-          Date.now() +
-          "-" +
-          Math.random().toString(36).substring(2, 7),
+          event.id ||
+          ("hit-" +
+            Date.now() +
+            "-" +
+            Math.random().toString(36).substring(2, 7)),
         websiteId: activeId,
         path: event.path || "/",
         title: event.title || event.path || "Home Page",
-        url: event.url,
+        url: cleanUrl,
         referrer: event.referrer || null,
-        viewedAt: event.timestamp || new Date().toISOString(),
+        viewedAt: event.timestamp || event.viewedAt || new Date().toISOString(),
         country: event.country || "United States",
         countryCode: event.countryCode || "US",
         city: event.city || "",

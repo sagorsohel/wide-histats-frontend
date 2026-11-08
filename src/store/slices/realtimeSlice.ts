@@ -44,9 +44,24 @@ export const realtimeSlice = createSlice({
             .slice(0, 50)
         : [];
 
+      // Smart non-destructive merge: retain newest live socket hits that arrived in real-time
+      const existing = state.byWebsite[websiteId]?.recentHits || [];
+      const mergedMap = new Map<string, RealtimeRecentHit>();
+      for (const h of incomingHits) {
+        mergedMap.set(h.id, h);
+      }
+      for (const h of existing) {
+        if (!mergedMap.has(h.id)) {
+          mergedMap.set(h.id, h);
+        }
+      }
+      const mergedHits = Array.from(mergedMap.values())
+        .sort((a, b) => new Date(b.viewedAt).getTime() - new Date(a.viewedAt).getTime())
+        .slice(0, 50);
+
       state.byWebsite[websiteId] = {
         data,
-        recentHits: incomingHits,
+        recentHits: mergedHits,
         lastUpdated: Date.now(),
       };
     },

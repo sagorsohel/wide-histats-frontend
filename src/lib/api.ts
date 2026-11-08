@@ -208,10 +208,12 @@ class ApiClient {
     endpoint: string,
     options?: { skipCache?: boolean; ttlMs?: number }
   ): Promise<ApiResponse<T>> {
-    // High-performance client-side SWR cache (30s default) ensures instantaneous 0ms page transitions
-    const ttl = options?.ttlMs ?? 30000;
+    // Realtime requests must NEVER be served from stale client cache
+    const isRealtime = endpoint.includes("/analytics/realtime") || endpoint.includes("/realtime");
+    const ttl = isRealtime ? 0 : (options?.ttlMs ?? 30000);
+    const shouldSkipCache = options?.skipCache || isRealtime || ttl <= 0;
 
-    if (!options?.skipCache && ttl > 0) {
+    if (!shouldSkipCache) {
       const cached = this.getCached<T>(endpoint);
       if (cached) {
         return cached;
@@ -220,7 +222,7 @@ class ApiClient {
 
     const res = await this.request<T>(endpoint, { method: "GET" });
 
-    if (res.success && ttl > 0) {
+    if (res.success && ttl > 0 && !isRealtime) {
       this.cache.set(endpoint, {
         data: res,
         timestamp: Date.now(),

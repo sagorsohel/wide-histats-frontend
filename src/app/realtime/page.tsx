@@ -1042,7 +1042,7 @@ export default function RealtimeHistatsPage() {
       </div>
 
       {/* 4. Tab Body Area */}
-      <div className="p-3 sm:p-4 bg-[#F1F5F9] border-none">
+      <div className="p-3 sm:py-4 sm:px-0 bg-[#F1F5F9] border-none">
         {activeTab === "summary" && (
           <div className="space-y-3.5">
             {/* Top Box: Recent Hits Stream */}

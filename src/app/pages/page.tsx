@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import { useWebsite } from "@/context/WebsiteContext";
 import { api } from "@/lib/api";
 import { PageStat } from "@/types/analytics";
@@ -32,7 +38,9 @@ export default function PagesReportPage() {
   const { selectedWebsite } = useWebsite();
 
   const [range, setRange] = useState<RangeOption>("today");
-  const [customWindow, setCustomWindow] = useState<CustomDateWindow | null>(null);
+  const [customWindow, setCustomWindow] = useState<CustomDateWindow | null>(
+    null,
+  );
   const [pages, setPages] = useState<PageStat[]>([]);
   const [landingPages, setLandingPages] = useState<
     { path: string; sessions: number }[]
@@ -82,7 +90,9 @@ export default function PagesReportPage() {
       const q = `websiteId=${siteId}&from=${from}&to=${to}&limit=50`;
 
       if (!isSilent && !hasDataRef.current) {
-        const cached = api.getCached<PageStat[]>(`/api/v1/analytics/pages?${q}`);
+        const cached = api.getCached<PageStat[]>(
+          `/api/v1/analytics/pages?${q}`,
+        );
         if (cached?.data) {
           setPages(cached.data);
           setLoading(false);
@@ -139,7 +149,10 @@ export default function PagesReportPage() {
   const prevWebsiteIdRef = useRef<string | null>(selectedWebsite?.id || null);
 
   useEffect(() => {
-    if (selectedWebsite?.id && selectedWebsite.id !== prevWebsiteIdRef.current) {
+    if (
+      selectedWebsite?.id &&
+      selectedWebsite.id !== prevWebsiteIdRef.current
+    ) {
       prevWebsiteIdRef.current = selectedWebsite.id;
       activeSiteIdRef.current = selectedWebsite.id;
       setPages([]);
@@ -169,7 +182,10 @@ export default function PagesReportPage() {
     };
     window.addEventListener("histat:website_changed", handleWebsiteChanged);
     return () =>
-      window.removeEventListener("histat:website_changed", handleWebsiteChanged);
+      window.removeEventListener(
+        "histat:website_changed",
+        handleWebsiteChanged,
+      );
   }, [loadPageData]);
 
   // Auto-refresh when user returns to this tab
@@ -216,11 +232,11 @@ export default function PagesReportPage() {
         rawTitle && rawTitle !== p.path
           ? rawTitle
           : p.path === "/"
-          ? `${selectedWebsite?.name || "Home"} — Official Home`
-          : p.path
-              .replace(/^\//, "")
-              .replace(/[-_]/g, " ")
-              .replace(/\b\w/g, (c) => c.toUpperCase());
+            ? `${selectedWebsite?.name || "Home"} — Official Home`
+            : p.path
+                .replace(/^\//, "")
+                .replace(/[-_]/g, " ")
+                .replace(/\b\w/g, (c) => c.toUpperCase());
       const existing = map.get(title);
       if (existing) {
         existing.pageviews += p.pageviews;
@@ -237,14 +253,17 @@ export default function PagesReportPage() {
     return Array.from(map.values()).sort((a, b) => b.pageviews - a.pageviews);
   }, [pages, selectedWebsite?.name]);
 
-  const maxViews = pages.length > 0 ? Math.max(...pages.map((p) => p.pageviews)) : 1;
+  const maxViews =
+    pages.length > 0 ? Math.max(...pages.map((p) => p.pageviews)) : 1;
   const maxTitleViews =
     byTitleList.length > 0
       ? Math.max(...byTitleList.map((t) => t.pageviews))
       : 1;
 
   const maxLanding =
-    landingPages.length > 0 ? Math.max(...landingPages.map((l) => l.sessions)) : 1;
+    landingPages.length > 0
+      ? Math.max(...landingPages.map((l) => l.sessions))
+      : 1;
   const maxExit =
     exitPages.length > 0 ? Math.max(...exitPages.map((e) => e.sessions)) : 1;
 
@@ -269,7 +288,8 @@ export default function PagesReportPage() {
               </span>
             </div>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Analyze visitor engagement, content headlines, landing entry points &amp; drop-off exits
+              Analyze visitor engagement, content headlines, landing entry
+              points &amp; drop-off exits
             </p>
           </div>
         </div>
@@ -277,16 +297,18 @@ export default function PagesReportPage() {
         {/* Current Active Range indicator Pill */}
         <div className="flex items-center gap-2">
           <div className="px-3.5 py-1.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center gap-2">
-            <span className="text-[11px] font-bold text-slate-500">Active Window:</span>
+            <span className="text-[11px] font-bold text-slate-500">
+              Active Window:
+            </span>
             <span className="px-2.5 py-0.5 rounded-xl bg-blue-100/80 text-[#1455bb] border border-blue-200/90 text-xs font-black">
               {customWindow?.label ||
                 (range === "today"
                   ? "Today"
                   : range === "yesterday"
-                  ? "Yesterday"
-                  : range === "7d"
-                  ? "Last 7 Days"
-                  : "Last 30 Days")}
+                    ? "Yesterday"
+                    : range === "7d"
+                      ? "Last 7 Days"
+                      : "Last 30 Days")}
             </span>
           </div>
         </div>
@@ -298,29 +320,27 @@ export default function PagesReportPage() {
         {/* LEFT / MAIN CONTENT COLUMN                                   */}
         {/* ============================================================ */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-
           {/* ============================================================ */}
           {/* SIDE-BY-SIDE: TRAFFIC BY URL & TRAFFIC BY TITLE              */}
           {/* ============================================================ */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-            
             {/* 1. TRAFFIC BY URL CARD */}
             <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-xs space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <div className="flex items-center gap-2.5">
+              <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2.5 min-w-0">
                   <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#1455bb] border border-blue-200/60 flex items-center justify-center shrink-0 shadow-2xs">
                     <Link2 className="w-4 h-4" />
                   </div>
-                  <div>
-                    <h3 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight">
+                  <div className="min-w-0">
+                    <h3 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight truncate">
                       Traffic by URL
                     </h3>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-slate-400 truncate">
                       Most visited paths &amp; exact resource links
                     </p>
                   </div>
                 </div>
-                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-blue-50 text-[#1455bb] border border-blue-200">
+                <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-blue-50 text-[#1455bb] border border-blue-200/80 shadow-2xs whitespace-nowrap shrink-0">
                   {pages.length} URLs
                 </span>
               </div>
@@ -347,7 +367,9 @@ export default function PagesReportPage() {
               ) : (
                 <div className="space-y-2.5 max-h-[620px] overflow-y-auto pr-1 custom-scrollbar">
                   {pages.map((page, index) => {
-                    const percentage = Math.round((page.pageviews / maxViews) * 100);
+                    const percentage = Math.round(
+                      (page.pageviews / maxViews) * 100,
+                    );
                     const fullLink =
                       page.url ||
                       `${cleanDomain}${page.path.startsWith("/") ? page.path : `/${page.path}`}`;
@@ -422,21 +444,21 @@ export default function PagesReportPage() {
 
             {/* 2. TRAFFIC BY TITLE CARD */}
             <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-xs space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <div className="flex items-center gap-2.5">
+              <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2.5 min-w-0">
                   <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-200/60 flex items-center justify-center shrink-0 shadow-2xs">
                     <FileText className="w-4 h-4" />
                   </div>
-                  <div>
-                    <h3 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight">
+                  <div className="min-w-0">
+                    <h3 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight truncate">
                       Traffic by Title
                     </h3>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-slate-400 truncate">
                       Page headlines &amp; content document titles
                     </p>
                   </div>
                 </div>
-                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/80 shadow-2xs whitespace-nowrap shrink-0">
                   {byTitleList.length} Titles
                 </span>
               </div>
@@ -541,22 +563,25 @@ export default function PagesReportPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
             {/* 1. Landing Pages (Entry Points) */}
             <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-xs space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <div className="flex items-center gap-2.5">
+              <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2.5 min-w-0">
                   <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200/60 flex items-center justify-center shrink-0 shadow-2xs">
                     <LogIn className="w-4 h-4" />
                   </div>
-                  <div>
-                    <h3 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight">
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-sm sm:text-base text-slate-900 tracking-tight truncate">
                       Top Landing Pages
                     </h3>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[10px] text-slate-400 truncate">
                       Where first-time &amp; returning visitors enter your site
                     </p>
                   </div>
                 </div>
-                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  {landingPages.length} Entry Points
+                <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80 shadow-2xs whitespace-wrap shrink-0">
+                  <span className="hidden sm:inline">
+                    {landingPages.length} Entry Points
+                  </span>
+                  <span className="sm:hidden">{landingPages.length}</span>
                 </span>
               </div>
 
@@ -618,22 +643,25 @@ export default function PagesReportPage() {
 
             {/* 2. Exit Pages (Drop-off Points) */}
             <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-xs space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <div className="flex items-center gap-2.5">
+              <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2.5 min-w-0">
                   <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 border border-rose-200/60 flex items-center justify-center shrink-0 shadow-2xs">
                     <LogOut className="w-4 h-4" />
                   </div>
-                  <div>
-                    <h3 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight">
+                  <div className="min-w-0">
+                    <h3 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight truncate">
                       Top Exit Pages
                     </h3>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-slate-400 truncate">
                       Final URLs visited before leaving your website
                     </p>
                   </div>
                 </div>
-                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
-                  {exitPages.length} Drop-off Points
+                <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200/80 shadow-2xs whitespace-nowrap shrink-0">
+                  <span className="hidden sm:inline">
+                    {exitPages.length} Drop-off Points
+                  </span>
+                  <span className="sm:hidden">{exitPages.length} Exits</span>
                 </span>
               </div>
 

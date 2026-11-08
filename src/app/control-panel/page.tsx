@@ -302,17 +302,50 @@ export default function ControlPanelPage() {
                   key={site.id}
                   className={`rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300 ${
                     isSelected
-                      ? "bg-white/92 backdrop-blur-xl border border-blue-300 shadow-[0_8px_30px_rgba(20,85,187,0.12),inset_0_1px_1px_rgba(255,255,255,1)] ring-2 ring-blue-500/20"
-                      : "bg-white/75 hover:bg-white/90 backdrop-blur-lg border border-white/90 hover:border-blue-200/80 shadow-[0_4px_20px_rgba(20,85,187,0.04),inset_0_1px_1px_rgba(255,255,255,0.85)] hover:shadow-[0_12px_32px_rgba(20,85,187,0.09)]"
+                      ? "bg-white/95 backdrop-blur-xl border border-blue-400 shadow-[0_8px_30px_rgba(20,85,187,0.12),inset_0_1px_1px_rgba(255,255,255,1)] ring-2 ring-blue-500/20"
+                      : "bg-white/80 hover:bg-white/95 backdrop-blur-lg border border-slate-200/90 hover:border-blue-300 shadow-[0_4px_20px_rgba(20,85,187,0.04)] hover:shadow-[0_8px_24px_rgba(20,85,187,0.08)]"
                   }`}
                 >
-                  {/* Left & Center: Numeric ID & Beautiful Telemetry Ribbon */}
-                  <div className="flex items-start gap-4 sm:gap-5 min-w-0 flex-1">
-                    {/* Blue Numeric Site ID (Glass Pill Badge) */}
+                  {/* MOBILE HEADER (< md): Site ID + Domain + Selected Badge */}
+                  <div className="flex md:hidden items-center justify-between gap-2.5 pb-2.5 border-b border-slate-100/90">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div
+                        onClick={() => handleSelectSite(site)}
+                        title={`Click to view ${site.name} analytics`}
+                        className="px-2.5 py-1 rounded-xl bg-gradient-to-r from-[#1455bb] to-[#1a62d4] text-white font-black text-xs tabular-nums cursor-pointer shrink-0 shadow-xs flex items-center gap-1 active:scale-95 transition-transform"
+                      >
+                        <span>{displayId}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <WebsiteFavicon
+                          name={site.name}
+                          domain={site.domain}
+                          className="w-4 h-4 shadow-2xs shrink-0"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleSelectSite(site)}
+                          className="font-black text-slate-900 text-sm hover:text-[#1455bb] transition-colors truncate text-left cursor-pointer"
+                        >
+                          {domainDisplay}
+                        </button>
+                      </div>
+                    </div>
+                    {isSelected && (
+                      <span className="text-[9px] uppercase font-black px-2 py-0.5 rounded-full bg-blue-100 text-[#1455bb] border border-blue-200/90 shadow-2xs shrink-0 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#1455bb]" />
+                        <span>Selected</span>
+                      </span>
+                    )}
+                  </div>
+
+                  {/* DESKTOP (md+) & TABLET MAIN CONTENT CONTAINER */}
+                  <div className="flex md:items-center gap-4 sm:gap-5 min-w-0 flex-1">
+                    {/* Desktop Numeric Site ID (Glass Squircle Box) */}
                     <div
                       onClick={() => handleSelectSite(site)}
                       title={`Click to view ${site.name} analytics`}
-                      className="w-24 sm:w-28 h-20 rounded-2xl bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-white/70 backdrop-blur-md border border-blue-400/30 flex flex-col items-center justify-center shrink-0 cursor-pointer hover:bg-blue-500/15 hover:border-blue-500/40 transition-all shadow-inner group"
+                      className="hidden md:flex w-24 sm:w-28 h-20 rounded-2xl bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-white/70 backdrop-blur-md border border-blue-400/30 flex-col items-center justify-center shrink-0 cursor-pointer hover:bg-blue-500/15 hover:border-blue-500/40 transition-all shadow-inner group active:scale-95"
                     >
                       <span className="text-[#1455bb] font-black text-base sm:text-lg tracking-tight tabular-nums group-hover:scale-105 transition-transform">
                         {displayId}
@@ -322,10 +355,10 @@ export default function ControlPanelPage() {
                       </span>
                     </div>
 
-                    {/* Middle: Domain Name, Telemetry Badges, Snapshot */}
-                    <div className="min-w-0 flex-1 space-y-2">
-                      {/* Domain Name + Favicon + Selected Badge */}
-                      <div className="flex items-center gap-2.5 flex-wrap">
+                    {/* Middle: Domain Name (desktop) + Telemetry Badges */}
+                    <div className="min-w-0 flex-1 space-y-2.5">
+                      {/* Desktop Domain Name + Favicon + Selected Badge */}
+                      <div className="hidden md:flex items-center gap-2.5 flex-wrap">
                         <WebsiteFavicon
                           name={site.name}
                           domain={site.domain}
@@ -351,12 +384,12 @@ export default function ControlPanelPage() {
                       {/* ============================================================ */}
                       {/* BEAUTIFULLY STYLED TELEMETRY METRIC CHIPS                    */}
                       {/* ============================================================ */}
-                      <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-wrap items-center gap-2 pt-0.5">
                         {/* 1. Users Online Chip (Glowing Pulse) */}
                         <div
                           onClick={() => handleSelectSite(site, "/realtime")}
                           title={`View live real-time users for ${site.name}`}
-                          className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border shadow-2xs transition-all cursor-pointer hover:scale-105 active:scale-95 ${
+                          className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border shadow-2xs transition-all cursor-pointer hover:scale-105 active:scale-95 whitespace-nowrap ${
                             usersOnline > 0
                               ? "bg-rose-50/90 hover:bg-rose-100/90 border-rose-200/90 text-rose-800"
                               : "bg-slate-50/80 hover:bg-slate-100/80 border-slate-200/80 text-slate-600"
@@ -373,7 +406,7 @@ export default function ControlPanelPage() {
                             />
                           </span>
                           <span className="text-[11px] font-semibold text-slate-500">
-                            Users online :
+                            Online :
                           </span>
                           <span
                             className={`font-black text-xs tabular-nums ${
@@ -390,11 +423,11 @@ export default function ControlPanelPage() {
                         <div
                           onClick={() => handleSelectSite(site, "/traffic-stats")}
                           title={`View traffic stats for ${site.name}`}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50/90 hover:bg-emerald-100/90 border border-emerald-200/90 text-emerald-900 shadow-2xs cursor-pointer hover:scale-105 active:scale-95 transition-all"
+                          className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-emerald-50/90 hover:bg-emerald-100/90 border border-emerald-200/90 text-emerald-900 shadow-2xs cursor-pointer hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
                         >
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                           <span className="text-[11px] font-semibold text-emerald-700/80">
-                            visitors today :
+                            Visitors today :
                           </span>
                           <span className="font-black text-xs text-emerald-700 tabular-nums">
                             {visitorsToday.toLocaleString()}
@@ -405,11 +438,11 @@ export default function ControlPanelPage() {
                         <div
                           onClick={() => handleSelectSite(site, "/traffic-stats")}
                           title={`View traffic stats for ${site.name}`}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50/90 hover:bg-blue-100/90 border border-blue-200/90 text-blue-900 shadow-2xs cursor-pointer hover:scale-105 active:scale-95 transition-all"
+                          className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-blue-50/90 hover:bg-blue-100/90 border border-blue-200/90 text-blue-900 shadow-2xs cursor-pointer hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
                         >
                           <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
                           <span className="text-[11px] font-semibold text-blue-700/80">
-                            Page views today :
+                            Views today :
                           </span>
                           <span className="font-black text-xs text-blue-700 tabular-nums">
                             {pageviewsToday.toLocaleString()}
@@ -420,7 +453,7 @@ export default function ControlPanelPage() {
                         <div
                           onClick={() => handleSelectSite(site, "/summary")}
                           title={`View summary for ${site.name}`}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/80 hover:bg-slate-200/80 border border-slate-200/90 text-slate-800 shadow-2xs cursor-pointer hover:scale-105 active:scale-95 transition-all"
+                          className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100/80 hover:bg-slate-200/80 border border-slate-200/90 text-slate-800 shadow-2xs cursor-pointer hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
                         >
                           <span className="text-[11px] font-semibold text-slate-500">
                             Total visitors :
@@ -434,23 +467,21 @@ export default function ControlPanelPage() {
                         <div
                           onClick={() => handleSelectSite(site, "/summary")}
                           title={`View summary for ${site.name}`}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50/80 hover:bg-indigo-100/80 border border-indigo-200/80 text-indigo-950 shadow-2xs cursor-pointer hover:scale-105 active:scale-95 transition-all"
+                          className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-indigo-50/80 hover:bg-indigo-100/80 border border-indigo-200/80 text-indigo-950 shadow-2xs cursor-pointer hover:scale-105 active:scale-95 transition-all whitespace-nowrap col-span-2 sm:col-span-1"
                         >
                           <span className="text-[11px] font-semibold text-indigo-600/90">
-                            Total page views :
+                            Total views :
                           </span>
                           <span className="font-black text-xs text-indigo-900 tabular-nums">
                             {totalPageviews.toLocaleString()}
                           </span>
                         </div>
                       </div>
-
-                      {/* Animated Clock & Snapshot Timestamp */}
                     </div>
                   </div>
 
-                  {/* Right: 5 Animated Squircle Action Buttons from useAnimations */}
-                  <div className="flex items-center gap-2 shrink-0 self-end md:self-center pt-2 md:pt-0">
+                  {/* Right (desktop) / Bottom Toolbar (mobile): 5 Animated Squircle Action Buttons */}
+                  <div className="flex items-center justify-between md:justify-end gap-2 shrink-0 pt-3 md:pt-0 border-t border-slate-100/90 md:border-t-0 w-full md:w-auto">
                     {/* 1. Open Website in New Window (Animated externalLink) */}
                     <a
                       href={domainUrl}

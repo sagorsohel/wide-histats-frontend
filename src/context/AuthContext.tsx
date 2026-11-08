@@ -11,6 +11,7 @@ import {
 } from "@/store/slices/authSlice";
 import { fetchWebsites, setWebsites, setSelectedWebsite } from "@/store/slices/websiteSlice";
 import { reconnectSocketWithToken } from "@/lib/socket";
+import { api } from "@/lib/api";
 
 interface AuthContextType {
   user: User | null;
@@ -38,6 +39,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [dispatch]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
+    api.clearCache();
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("histat_selected_website");
+    }
     const result = await dispatch(loginUser({ email, password }));
     if (loginUser.fulfilled.match(result)) {
       reconnectSocketWithToken();
@@ -48,6 +53,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (name: string, email: string, password: string): Promise<boolean> => {
+    api.clearCache();
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("histat_selected_website");
+    }
     const result = await dispatch(registerUser({ name, email, password }));
     if (registerUser.fulfilled.match(result)) {
       reconnectSocketWithToken();
@@ -61,6 +70,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await dispatch(logoutUser(false));
     dispatch(setWebsites([]));
     dispatch(setSelectedWebsite(null));
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("histat_selected_website");
+    }
+    api.clearCache();
     reconnectSocketWithToken();
   };
 

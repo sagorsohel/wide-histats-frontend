@@ -37,7 +37,7 @@ export default function ControlPanelPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [name, setName] = useState("");
   const [domain, setDomain] = useState("");
-  const [isPublic, setIsPublic] = useState(true);
+  const [isPublic, setIsPublic] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);

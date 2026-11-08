@@ -94,6 +94,7 @@ class ApiClient {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("histat_user");
+    localStorage.removeItem("histat_selected_website");
   }
 
   private async refreshAccessToken(): Promise<string | null> {

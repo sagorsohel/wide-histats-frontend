@@ -135,6 +135,25 @@ export default function SummaryPage() {
       }
       const q = `websiteId=${siteId}&from=${from}&to=${to}`;
 
+      // Strict future check: future date has zero traffic
+      if (new Date(from).getTime() > Date.now()) {
+        setOverview({
+          activeVisitors: 0,
+          totalPageviews: 0,
+          uniqueVisitors: 0,
+          totalSessions: 0,
+          pagesPerSession: 0,
+          bounceRate: 0,
+          avgDuration: 0,
+          from,
+          to,
+        });
+        setTimeseries([]);
+        setLoading(false);
+        hasDataRef.current = true;
+        return;
+      }
+
       if (!isSilent && !hasDataRef.current) {
         const cached = api.getCached<OverviewStats>(
           `/api/v1/analytics/overview?${q}`,

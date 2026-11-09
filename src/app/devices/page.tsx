@@ -66,6 +66,16 @@ export default function DevicesReportPage() {
       }
       const q = `websiteId=${siteId}&from=${from}&to=${to}`;
 
+      // Strict future check: future date has zero traffic
+      if (new Date(from).getTime() > Date.now()) {
+        setDevices([]);
+        setBrowsers([]);
+        setOsList([]);
+        setLoading(false);
+        hasDataRef.current = true;
+        return;
+      }
+
       if (!isSilent && !hasDataRef.current) {
         const cached = api.getCached<DeviceStat[]>(
           `/api/v1/analytics/devices?${q}`,

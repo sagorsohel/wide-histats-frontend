@@ -89,6 +89,16 @@ export default function PagesReportPage() {
       }
       const q = `websiteId=${siteId}&from=${from}&to=${to}&limit=50`;
 
+      // Strict future check: future date has zero traffic
+      if (new Date(from).getTime() > Date.now()) {
+        setPages([]);
+        setLandingPages([]);
+        setExitPages([]);
+        setLoading(false);
+        hasDataRef.current = true;
+        return;
+      }
+
       if (!isSilent && !hasDataRef.current) {
         const cached = api.getCached<PageStat[]>(
           `/api/v1/analytics/pages?${q}`,

@@ -52,6 +52,24 @@ export default function TrafficStatsPage() {
       const from = new Date(targetDate);
       from.setHours(0, 0, 0, 0);
 
+      // Strict future check: future date has zero traffic
+      if (from.getTime() > Date.now()) {
+        setTrafficData({
+          date: targetDate.toISOString(),
+          dateFormatted: targetDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+          dateFull: targetDate.toDateString(),
+          totalPageviews: 0,
+          totalVisitors: 0,
+          firstTimeVisitors: 0,
+          pagesPerVisit: 0,
+          newVisitorsRatio: 0,
+          avgBounceRate: 0,
+          hourly: [],
+        });
+        setLoading(false);
+        return;
+      }
+
       const to = new Date(targetDate);
       to.setHours(23, 59, 59, 999);
 

@@ -57,14 +57,15 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
   // Selection mode: normal vs range vs compare
   const [mode, setMode] = useState<CalendarSelectionMode>(initialSelectionMode);
 
-  // Reference date
+  // Reference date (strictly clamped to today or earlier, never future)
   const baseDate = useMemo(() => {
+    const today = new Date();
     if (currentWindow?.from) {
       const d = new Date(currentWindow.from);
-      if (!isNaN(d.getTime())) return d;
+      if (!isNaN(d.getTime())) return d > today ? today : d;
     }
-    if (selectedDate) return selectedDate;
-    return new Date();
+    if (selectedDate) return selectedDate > today ? today : selectedDate;
+    return today;
   }, [currentWindow, selectedDate]);
 
   const [viewYear, setViewYear] = useState<number>(() => baseDate.getFullYear());
@@ -154,8 +155,16 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
     );
   };
 
-  // Handle day click
+  const isFutureDate = (d: Date) => {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    return d.getTime() > today.getTime();
+  };
+
+  // Handle day click (strictly ignores future dates)
   const handleDayClick = (cellDate: Date) => {
+    if (isFutureDate(cellDate)) return;
+
     if (mode === "normal") {
       if (onSelectDate) onSelectDate(cellDate);
       if (onDateChange) {
@@ -208,6 +217,14 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
   };
 
   const handleMonthSelect = (monthIndex: number) => {
+    const now = new Date();
+    if (
+      viewYear > now.getFullYear() ||
+      (viewYear === now.getFullYear() && monthIndex > now.getMonth())
+    ) {
+      return;
+    }
+
     const from = new Date(viewYear, monthIndex, 1, 0, 0, 0, 0);
     const to = new Date(viewYear, monthIndex + 1, 0, 23, 59, 59, 999);
     const monthLabel = from.toLocaleDateString("en-US", { month: "short", year: "numeric" });
@@ -331,7 +348,8 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
               {/* 5 Rows x 7 Columns Day Tiles */}
               <div className="grid grid-cols-7 gap-[2px] flex-1">
                 {allGridDays.map((item, index) => {
-                  const isSelected = isSameDay(item.date, baseDate);
+                  const isFuture = isFutureDate(item.date);
+                  const isSelected = !isFuture && isSameDay(item.date, baseDate);
                   const isWeekend = index % 7 === 5 || index % 7 === 6; // Saturday (5) or Sunday (6)
 
                   // First row empty slot before trailing days
@@ -342,28 +360,34 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
                   }
 
                   let inRange = false;
-                  if (rangeStartInternal && rangeEndInternal) {
-                    inRange =
-                      item.date >= rangeStartInternal && item.date <= rangeEndInternal;
-                  } else if (rangeStartInternal && selectingStart) {
-                    const start = rangeStartInternal < selectingStart ? rangeStartInternal : selectingStart;
-                    const end = rangeStartInternal < selectingStart ? selectingStart : rangeStartInternal;
-                    inRange = item.date >= start && item.date <= end;
+                  if (!isFuture) {
+                    if (rangeStartInternal && rangeEndInternal) {
+                      inRange =
+                        item.date >= rangeStartInternal && item.date <= rangeEndInternal;
+                    } else if (rangeStartInternal && selectingStart) {
+                      const start = rangeStartInternal < selectingStart ? rangeStartInternal : selectingStart;
+                      const end = rangeStartInternal < selectingStart ? selectingStart : rangeStartInternal;
+                      inRange = item.date >= start && item.date <= end;
+                    }
                   }
 
                   return (
                     <button
                       key={`${item.date.toISOString()}-${index}`}
                       type="button"
-                      onClick={() => handleDayClick(item.date)}
-                      className={`h-[18px] w-full flex items-center justify-center text-[11px] leading-none rounded-[1px] border cursor-pointer select-none transition-all ${
-                        isSelected
-                          ? "bg-[#d2d9e0] border-[#8f9ca8] text-[#0066cc] font-black shadow-inner"
+                      disabled={isFuture}
+                      onClick={() => !isFuture && handleDayClick(item.date)}
+                      title={isFuture ? "Future date - no data available" : undefined}
+                      className={`h-[18px] w-full flex items-center justify-center text-[11px] leading-none rounded-[1px] border select-none transition-all ${
+                        isFuture
+                          ? "border-[#eaedf1] bg-[#f8fafc] text-[#cbd5e1] cursor-not-allowed opacity-40 font-normal"
+                          : isSelected
+                          ? "bg-[#d2d9e0] border-[#8f9ca8] text-[#0066cc] font-black shadow-inner cursor-pointer"
                           : inRange
-                          ? "bg-[#e3f2fd] border-[#90caf9] text-[#0066cc] font-bold"
+                          ? "bg-[#e3f2fd] border-[#90caf9] text-[#0066cc] font-bold cursor-pointer"
                           : isWeekend
-                          ? "border-[#cfd6dc] bg-[#fbfcfd] text-[#cc0000] font-normal shadow-[inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#1565c0]"
-                          : "border-[#cfd6dc] bg-[#fbfcfd] text-[#222] font-normal shadow-[inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#1565c0]"
+                          ? "border-[#cfd6dc] bg-[#fbfcfd] text-[#cc0000] font-normal shadow-[inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#1565c0] cursor-pointer"
+                          : "border-[#cfd6dc] bg-[#fbfcfd] text-[#222] font-normal shadow-[inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#1565c0] cursor-pointer"
                       }`}
                     >
                       {item.day}

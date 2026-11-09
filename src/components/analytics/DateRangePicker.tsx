@@ -180,6 +180,11 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
 
   // Handle Date Click inside Calendar
   const handleDateClick = (dayDate: Date) => {
+    // Strictly prevent clicking any future date
+    const now = new Date();
+    now.setHours(23, 59, 59, 999);
+    if (dayDate.getTime() > now.getTime()) return;
+
     // If clicked date belongs to another month, jump view
     if (dayDate.getMonth() !== viewMonth) {
       setViewMonth(dayDate.getMonth());
@@ -488,7 +493,12 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                 cellClass += "text-slate-700 hover:bg-blue-50 hover:text-[#1455bb] ";
               }
 
-              if (item.isToday && !isSingleSelected && !isRangeStart && !isRangeEnd) {
+              const isFuture = item.date.getTime() > today.getTime();
+              if (isFuture) {
+                cellClass = "h-7 sm:h-8 rounded-lg text-xs flex items-center justify-center transition-all text-slate-300 cursor-not-allowed opacity-40 ";
+              }
+
+              if (item.isToday && !isSingleSelected && !isRangeStart && !isRangeEnd && !isFuture) {
                 cellClass += "ring-1 ring-blue-400 font-bold ";
               }
 
@@ -496,9 +506,10 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                 <button
                   key={idx}
                   type="button"
-                  onClick={() => handleDateClick(item.date)}
+                  disabled={isFuture}
+                  onClick={() => !isFuture && handleDateClick(item.date)}
                   onMouseEnter={() => {
-                    if (calendarMode === "range" && rangeStart && !rangeEnd) {
+                    if (!isFuture && calendarMode === "range" && rangeStart && !rangeEnd) {
                       setHoverDate(item.date);
                     }
                   }}
@@ -798,7 +809,12 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                     cellClass += "text-slate-700 hover:bg-blue-50 hover:text-[#1d5b9f] ";
                   }
 
-                  if (item.isToday && !isSingleSelected && !isRangeStart && !isRangeEnd) {
+                  const isFuture = item.date.getTime() > today.getTime();
+                  if (isFuture) {
+                    cellClass = "h-7 sm:h-8 rounded-lg text-xs flex items-center justify-center transition-all text-slate-300 cursor-not-allowed opacity-40 ";
+                  }
+
+                  if (item.isToday && !isSingleSelected && !isRangeStart && !isRangeEnd && !isFuture) {
                     cellClass += "ring-1 ring-blue-400 font-bold ";
                   }
 
@@ -806,9 +822,10 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({
                     <button
                       key={idx}
                       type="button"
-                      onClick={() => handleDateClick(item.date)}
+                      disabled={isFuture}
+                      onClick={() => !isFuture && handleDateClick(item.date)}
                       onMouseEnter={() => {
-                        if (calendarMode === "range" && rangeStart && !rangeEnd) {
+                        if (!isFuture && calendarMode === "range" && rangeStart && !rangeEnd) {
                           setHoverDate(item.date);
                         }
                       }}

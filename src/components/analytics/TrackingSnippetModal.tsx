@@ -174,6 +174,15 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
   };
 
   // Generate Snippets
+  const hiddenSnippet = `<!-- Analycos Analytics Tracking Code -->
+<script
+  async
+  defer
+  src="${scriptUrl}"
+  data-website-id="${website.trackingId}"
+></script>
+<!-- End Analycos Analytics -->`;
+
   const asyncSnippet = `<!-- Analycos Analytics (div with counter) --><div id="analycos_counter"></div>
 <!-- Analycos Analytics START (async) -->
 <script type="text/javascript">var _Hasync= _Hasync|| [];
@@ -189,8 +198,9 @@ hs.src = ('${scriptUrl}');
 </noscript>
 <!-- Analycos Analytics END -->`;
 
-  const modernSnippet = `<!-- Analycos Analytics Tracking & Counter Code -->
-${!activeCounter.isHidden ? '<div id="analycos_counter"></div>\n' : ""}<script
+  const modernSnippet = `<!-- Analycos Analytics (div with counter) -->
+<div id="analycos_counter"></div>
+<script
   async
   defer
   src="${scriptUrl}"
@@ -199,7 +209,11 @@ ${!activeCounter.isHidden ? '<div id="analycos_counter"></div>\n' : ""}<script
 ></script>
 <!-- End Analycos Analytics -->`;
 
-  const activeSnippet = codeType === "async" ? asyncSnippet : modernSnippet;
+  const activeSnippet = activeCounter.isHidden
+    ? hiddenSnippet
+    : codeType === "async"
+      ? asyncSnippet
+      : modernSnippet;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(activeSnippet);
@@ -581,30 +595,32 @@ ${!activeCounter.isHidden ? '<div id="analycos_counter"></div>\n' : ""}<script
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>Back to counters list</span>
                 </button>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setCodeType("async")}
-                    className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      codeType === "async"
-                        ? "bg-[#1455bb] text-white shadow-xs"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                    }`}
-                  >
-                    Histats Async (Compatible)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCodeType("modern")}
-                    className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      codeType === "modern"
-                        ? "bg-[#1455bb] text-white shadow-xs"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                    }`}
-                  >
-                    Modern Single Tag
-                  </button>
-                </div>
+                {!activeCounter.isHidden && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setCodeType("async")}
+                      className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        codeType === "async"
+                          ? "bg-[#1455bb] text-white shadow-xs"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      }`}
+                    >
+                      Histats Async (Compatible)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCodeType("modern")}
+                      className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        codeType === "modern"
+                          ? "bg-[#1455bb] text-white shadow-xs"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      }`}
+                    >
+                      Modern Single Tag
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Counter details chip */}

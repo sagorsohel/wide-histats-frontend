@@ -89,6 +89,22 @@ export default function SourcesPage() {
 
       const q = `websiteId=${siteId}&from=${from}&to=${to}&limit=100`;
 
+      // Strict future check: future date has zero traffic
+      if (new Date(from).getTime() > Date.now()) {
+        setData({
+          summary: [],
+          categories: [],
+          campaigns: [],
+          directCount: 0,
+          referralCount: 0,
+          searchCount: 0,
+          socialCount: 0,
+        });
+        setLoading(false);
+        hasDataRef.current = true;
+        return;
+      }
+
       if (!isSilent && !hasDataRef.current) {
         const cached = api.getCached<any>(`/api/v1/analytics/sources?${q}`);
         if (cached?.data?.sources) {

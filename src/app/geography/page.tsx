@@ -82,6 +82,15 @@ export default function GeographyPage() {
       }
       const q = `websiteId=${siteId}&from=${from}&to=${to}&limit=50`;
 
+      // Strict future check: future date has zero traffic
+      if (new Date(from).getTime() > Date.now()) {
+        setCountries([]);
+        setCities([]);
+        setLoading(false);
+        hasDataRef.current = true;
+        return;
+      }
+
       if (!isSilent && !hasDataRef.current) {
         const cached = api.getCached<any>(`/api/v1/analytics/geography?${q}`);
         if (cached?.data?.countries) {

@@ -72,7 +72,27 @@ type TabType =
 
 export default function RealtimeHistatsPage() {
   const dispatch = useAppDispatch();
-  const { selectedWebsite, openTrackingModal } = useWebsite();
+  const { selectedWebsite, websites, setSelectedWebsite, openTrackingModal } =
+    useWebsite();
+
+  // Auto-switch website if ?id= or ?websiteId= is passed in URL
+  useEffect(() => {
+    if (typeof window === "undefined" || !websites || websites.length === 0) return;
+    const params = new URLSearchParams(window.location.search);
+    const idFromUrl = params.get("id") || params.get("websiteId");
+    if (!idFromUrl) return;
+
+    const match = websites.find(
+      (w) =>
+        w.id === idFromUrl ||
+        w.trackingId === idFromUrl ||
+        w.displayId === idFromUrl ||
+        w.domain.toLowerCase().includes(idFromUrl.toLowerCase()),
+    );
+    if (match && match.id !== selectedWebsite?.id) {
+      setSelectedWebsite(match);
+    }
+  }, [websites, selectedWebsite?.id, setSelectedWebsite]);
 
   // Active website ID ref to completely prevent race conditions
   const activeSiteIdRef = React.useRef<string | null>(
@@ -486,16 +506,10 @@ export default function RealtimeHistatsPage() {
     [currentTime, clockDriftOffset],
   );
 
-  // Active Count & Pages Count - Exact Real-Time Count Right Now with Website Context Fallback
+  // Active Count & Pages Count - Exact Real-Time Count Right Now (No sticky artificial counts)
   const onlineCount = useMemo(() => {
-    if (data?.activeCount !== undefined && data.activeCount > 0)
-      return data.activeCount;
-    if (
-      selectedWebsite?.usersOnline !== undefined &&
-      selectedWebsite.usersOnline > 0
-    )
-      return selectedWebsite.usersOnline;
-    return data?.activeCount ?? 0;
+    if (data?.activeCount !== undefined) return data.activeCount;
+    return selectedWebsite?.usersOnline ?? 0;
   }, [data?.activeCount, selectedWebsite?.usersOnline]);
 
   // 100% Real-time popular pages - strictly isolated to current domain & deduplicated/aggregated by link so identical links group together and distinct links show separately

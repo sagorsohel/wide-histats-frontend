@@ -1140,7 +1140,7 @@ export default function RealtimeHistatsPage() {
                         </div>
 
                         {/* Geolocation & Device Details: Pixel-perfect aligned tabular columns */}
-                        <div className="flex items-center gap-2.5 text-slate-600 shrink-0 justify-end text-[11px] pr-1">
+                        <div className="flex items-center gap-2.5 text-slate-600 shrink-0 justify-end text-[11px] m-2">
                           {/* Flag & City Column: Fixed width so all flags align in a straight vertical line */}
                           <div className="flex items-center gap-1.5 w-[20px] md:w-[130px] lg:w-[150px] shrink-0 justify-start overflow-hidden">
                             <span
@@ -1364,7 +1364,7 @@ export default function RealtimeHistatsPage() {
               {/* Right Column: Geolocation Map & Most Active Visitors */}
               <div className="space-y-3.5">
                 {/* Box 3: Geolocation World Map (MapLibre GL Telemetry) */}
-                <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden">
+                <div className="bg-white border border-slate-200/90 rounded-xl p-2 shadow-xs overflow-hidden">
                   <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-slate-800 text-[12px] tracking-tight">

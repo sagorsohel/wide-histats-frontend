@@ -232,3 +232,38 @@ export interface TrafficStatsData {
   hourly: TrafficHourlyPoint[];
 }
 
+export type CounterStyle =
+  | "hidden"
+  | "cloud"
+  | "capsule"
+  | "tube"
+  | "neon"
+  | "scroll"
+  | "metallic"
+  | "minimal"
+  | "glossy"
+  | "splash"
+  | "scanner"
+  | "graph";
+
+export interface CounterDisplayOptions {
+  visitorsToday: boolean;
+  totalVisitors: boolean;
+  pageviewsToday: boolean;
+  totalPageviews: boolean;
+  usersOnline: boolean;
+}
+
+export interface WebsiteCounter {
+  id: string;
+  websiteId: string;
+  counterId: string; // 7-digit numeric string
+  name: string;
+  style: CounterStyle;
+  isHidden: boolean;
+  isMain?: boolean;
+  displayOptions: CounterDisplayOptions;
+  createdAt: string;
+}
+
+

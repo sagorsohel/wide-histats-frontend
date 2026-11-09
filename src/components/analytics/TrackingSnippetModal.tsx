@@ -117,7 +117,7 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
   const [selectedCounter, setSelectedCounter] = useState<WebsiteCounter | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [codeType, setCodeType] = useState<"async" | "modern">("async");
+  const [codeType, setCodeType] = useState<"standard" | "async">("standard");
 
   // Counter creation state
   const [newStyle, setNewStyle] = useState<CounterStyle>("cloud");
@@ -183,22 +183,7 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
 ></script>
 <!-- End Analycos Analytics -->`;
 
-  const asyncSnippet = `<!-- Analycos Analytics (div with counter) --><div id="analycos_counter"></div>
-<!-- Analycos Analytics START (async) -->
-<script type="text/javascript">var _Hasync= _Hasync|| [];
-_Hasync.push(['Histats.start', '1,${activeCounter.counterId},4,4,130,70,00010000']);
-_Hasync.push(['Histats.fasi', '1']);
-_Hasync.push(['Histats.track_hits', '']);
-(function() {
-var hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async = true;
-hs.src = ('${scriptUrl}');
-(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(hs);
-})();</script>
-<noscript><a href="/" target="_blank"><img src="${publicTunnelUrl}/counter/${activeCounter.counterId}.gif" alt="html hit counter" border="0"></a>
-</noscript>
-<!-- Analycos Analytics END -->`;
-
-  const modernSnippet = `<!-- Analycos Analytics (div with counter) -->
+  const standardCounterSnippet = `<!-- Analycos Analytics Counter Code -->
 <div id="analycos_counter"></div>
 <script
   async
@@ -209,11 +194,25 @@ hs.src = ('${scriptUrl}');
 ></script>
 <!-- End Analycos Analytics -->`;
 
+  const asyncCounterSnippet = `<!-- Analycos Analytics Counter (async) -->
+<div id="analycos_counter"></div>
+<script type="text/javascript">
+var _Aasync= _Aasync|| [];
+_Aasync.push(['Analycos.start', '${website.trackingId}', '${activeCounter.counterId}']);
+_Aasync.push(['Analycos.track_hits']);
+(function() {
+  var as = document.createElement('script'); as.type = 'text/javascript'; as.async = true;
+  as.src = ('${scriptUrl}');
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(as);
+})();
+</script>
+<!-- End Analycos Analytics -->`;
+
   const activeSnippet = activeCounter.isHidden
     ? hiddenSnippet
-    : codeType === "async"
-      ? asyncSnippet
-      : modernSnippet;
+    : codeType === "standard"
+      ? standardCounterSnippet
+      : asyncCounterSnippet;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(activeSnippet);
@@ -599,6 +598,17 @@ hs.src = ('${scriptUrl}');
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
+                      onClick={() => setCodeType("standard")}
+                      className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        codeType === "standard"
+                          ? "bg-[#1455bb] text-white shadow-xs"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      }`}
+                    >
+                      Standard Code (Clean)
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => setCodeType("async")}
                       className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                         codeType === "async"
@@ -606,18 +616,7 @@ hs.src = ('${scriptUrl}');
                           : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                       }`}
                     >
-                      Histats Async (Compatible)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setCodeType("modern")}
-                      className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                        codeType === "modern"
-                          ? "bg-[#1455bb] text-white shadow-xs"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                      }`}
-                    >
-                      Modern Single Tag
+                      Async Code
                     </button>
                   </div>
                 )}

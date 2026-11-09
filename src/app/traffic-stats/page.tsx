@@ -166,7 +166,7 @@ export default function TrafficStatsPage() {
         <div className="bg-white border-x border-b border-[#c4d1db] shadow-xs p-3 sm:p-5">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
             {/* Left 8 Cols: Metric Statistics */}
-            <div className="lg:col-span-8 flex flex-col justify-between h-full space-y-6">
+            <div className="lg:col-span-8 flex flex-col justify-between h-full space-y-6 order-2 lg:order-1">
               {/* Row 1: 3 Primary Big Metrics */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-b border-slate-200 pb-5">
                 {/* 1. Total page views */}
@@ -235,7 +235,7 @@ export default function TrafficStatsPage() {
             </div>
 
             {/* Right 4 Cols: Histats Calendar */}
-            <div className="lg:col-span-4 flex justify-center lg:justify-end">
+            <div className="lg:col-span-4 flex justify-center lg:justify-end order-1 lg:order-2">
               <HistatsCalendar
                 selectedDate={selectedDate}
                 onSelectDate={handleDateSelect}

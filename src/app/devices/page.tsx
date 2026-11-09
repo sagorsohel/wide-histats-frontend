@@ -240,7 +240,7 @@ export default function DevicesReportPage() {
         {/* ============================================================ */}
         {/* LEFT / MAIN CONTENT COLUMN                                   */}
         {/* ============================================================ */}
-        <div className="flex-1 min-w-0 space-y-6 w-full">
+        <div className="flex-1 min-w-0 space-y-6 w-full order-2 xl:order-1">
           {/* Device Categories Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
@@ -327,7 +327,7 @@ export default function DevicesReportPage() {
         {/* ============================================================ */}
         {/* RIGHT COLUMN: ALWAYS SHOWN CALENDAR                          */}
         {/* ============================================================ */}
-        <div className="w-full xl:w-[291px] shrink-0 space-y-5 xl:sticky xl:top-6">
+        <div className="w-full xl:w-[291px] shrink-0 space-y-5 xl:sticky xl:top-6 order-1 xl:order-2">
           <div className="flex justify-center xl:justify-end">
             <HistatsCalendar
               selectedPreset={range}

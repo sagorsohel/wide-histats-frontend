@@ -460,7 +460,7 @@ export default function SummaryPage() {
         {/* ============================================================ */}
         {/* LEFT / MAIN ANALYTICS COLUMN                                 */}
         {/* ============================================================ */}
-        <div className="flex-1 min-w-0 space-y-6 w-full">
+        <div className="flex-1 min-w-0 space-y-6 w-full order-2 xl:order-1">
           {/* KPI Cards Grid - 4 Vibrant Gradient Cards Matching Reference Design */}
           <div className="grid sm:grid-cols-2   gap-4">
             <KpiCard
@@ -558,7 +558,7 @@ export default function SummaryPage() {
         {/* ============================================================ */}
         {/* RIGHT COLUMN: CALENDAR (ON TOP) + LIFETIME TOTALS (BELOW)    */}
         {/* ============================================================ */}
-        <div className="w-full xl:w-[291px] shrink-0 space-y-5 xl:sticky xl:top-6">
+        <div className="w-full xl:w-[291px] shrink-0 space-y-5 xl:sticky xl:top-6 order-1 xl:order-2">
           {/* Section 1: ALWAYS SHOWN CALENDAR (UPOR) */}
           <div className="flex justify-center xl:justify-end">
             <HistatsCalendar

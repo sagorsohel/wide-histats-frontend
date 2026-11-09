@@ -308,7 +308,7 @@ export default function SourcesPage() {
       {/* ============================================================ */}
       <div className="flex flex-col lg:flex-row gap-5 items-stretch relative z-10">
         {/* Left: Histats Summary Comparison Table */}
-        <div className="flex-1 min-w-0 flex flex-col">
+        <div className="flex-1 min-w-0 flex flex-col order-2 lg:order-1">
           <div className="w-full h-full bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden flex flex-col justify-between">
             <div className="w-full overflow-x-auto scrollbar-none flex-1 flex flex-col">
               <table className="w-full text-left border-collapse min-w-full flex-1">
@@ -406,7 +406,7 @@ export default function SourcesPage() {
         </div>
 
         {/* Right: Authentic Compact Histats Calendar (Exact image match) */}
-        <div className="shrink-0 flex items-center justify-center lg:justify-end">
+        <div className="shrink-0 flex items-center justify-center lg:justify-end order-1 lg:order-2">
           <HistatsCalendar
             selectedPreset={range}
             onPresetChange={handleRangeChange}

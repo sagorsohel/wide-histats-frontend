@@ -49,7 +49,7 @@ export const Header: React.FC = () => {
 
   return (
     <>
-      <header className="border-b border-slate-200/90 bg-white/85 backdrop-blur-xl sticky top-0 z-40 shadow-2xs shrink-0">
+      <header className="border-b border-slate-200/90 bg-white/85 backdrop-blur-xl sticky top-0 z-50 shadow-2xs shrink-0">
         <div className="h-16 px-3 sm:px-5 lg:px-7 flex items-center justify-between gap-3">
           {/* ============================================================ */}
           {/* LEFT: Mobile Hamburger + Clean Brand Logo                    */}
@@ -146,10 +146,10 @@ export const Header: React.FC = () => {
                 {userDropdownOpen && (
                   <>
                     <div
-                      className="fixed inset-0 z-40"
+                      className="fixed inset-0 z-[60]"
                       onClick={() => setUserDropdownOpen(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-56 rounded-3xl border border-slate-200/90 bg-white shadow-2xl p-2 z-50 animate-slide-down">
+                    <div className="absolute right-0 mt-2 w-56 rounded-3xl border border-slate-200/90 bg-white shadow-2xl p-2 z-[70] animate-slide-down">
                       <div className="px-3.5 py-2.5 border-b border-slate-100">
                         <div className="font-extrabold text-sm text-slate-900 truncate">
                           {user.name}

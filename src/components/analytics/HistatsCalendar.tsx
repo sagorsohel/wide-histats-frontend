@@ -25,6 +25,7 @@ export interface HistatsCalendarProps {
   onPresetChange?: (r: RangeOption) => void;
   onDateChange?: (win: CustomDateWindow | null) => void;
   currentWindow?: CustomDateWindow | null;
+  selectedLabel?: string;
   showNewAndLost?: boolean;
   onToggleNewAndLost?: (val: boolean) => void;
   className?: string;
@@ -47,6 +48,7 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
   onPresetChange,
   onDateChange,
   currentWindow,
+  selectedLabel,
   showNewAndLost = false,
   onToggleNewAndLost,
   className = "",
@@ -68,19 +70,31 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
     return today;
   }, [currentWindow, selectedDate]);
 
-  const [viewYear, setViewYear] = useState<number>(() => baseDate.getFullYear());
+  const [viewYear, setViewYear] = useState<number>(() =>
+    baseDate.getFullYear(),
+  );
   const [viewMonth, setViewMonth] = useState<number>(() => baseDate.getMonth()); // 0-indexed
 
   // Range selection internal state
-  const [rangeStartInternal, setRangeStartInternal] = useState<Date | null>(() => {
-    if (currentWindow?.from && currentWindow?.to && currentWindow.from !== currentWindow.to) {
-      return new Date(currentWindow.from);
-    }
-    return initialRangeStart || null;
-  });
+  const [rangeStartInternal, setRangeStartInternal] = useState<Date | null>(
+    () => {
+      if (
+        currentWindow?.from &&
+        currentWindow?.to &&
+        currentWindow.from !== currentWindow.to
+      ) {
+        return new Date(currentWindow.from);
+      }
+      return initialRangeStart || null;
+    },
+  );
 
   const [rangeEndInternal, setRangeEndInternal] = useState<Date | null>(() => {
-    if (currentWindow?.from && currentWindow?.to && currentWindow.from !== currentWindow.to) {
+    if (
+      currentWindow?.from &&
+      currentWindow?.to &&
+      currentWindow.from !== currentWindow.to
+    ) {
       return new Date(currentWindow.to);
     }
     return initialRangeEnd || null;
@@ -89,15 +103,19 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
   const [selectingStart, setSelectingStart] = useState<Date | null>(null);
 
   const prevMonthName = useMemo(() => {
-    return new Date(viewYear, viewMonth - 1, 1).toLocaleString("en-US", {
-      month: "short",
-    }).toLowerCase();
+    return new Date(viewYear, viewMonth - 1, 1)
+      .toLocaleString("en-US", {
+        month: "short",
+      })
+      .toLowerCase();
   }, [viewYear, viewMonth]);
 
   const currentMonthName = useMemo(() => {
-    return new Date(viewYear, viewMonth, 1).toLocaleString("en-US", {
-      month: "short",
-    }).toLowerCase();
+    return new Date(viewYear, viewMonth, 1)
+      .toLocaleString("en-US", {
+        month: "short",
+      })
+      .toLowerCase();
   }, [viewYear, viewMonth]);
 
   // Build grid starting on Monday (M T W T F S S)
@@ -121,7 +139,8 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
   }
 
   // Current month days
-  const currentDays: { day: number; date: Date; isCurrentMonth: boolean }[] = [];
+  const currentDays: { day: number; date: Date; isCurrentMonth: boolean }[] =
+    [];
   for (let d = 1; d <= daysInMonth; d++) {
     currentDays.push({
       day: d,
@@ -175,7 +194,10 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
         onDateChange({
           from: from.toISOString(),
           to: to.toISOString(),
-          label: cellDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          label: cellDate.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          }),
           mode: "daily",
         });
       }
@@ -203,8 +225,14 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
           from.setHours(0, 0, 0, 0);
           const to = new Date(end);
           to.setHours(23, 59, 59, 999);
-          const startLabel = start.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-          const endLabel = end.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+          const startLabel = start.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          });
+          const endLabel = end.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          });
           onDateChange({
             from: from.toISOString(),
             to: to.toISOString(),
@@ -227,7 +255,10 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
 
     const from = new Date(viewYear, monthIndex, 1, 0, 0, 0, 0);
     const to = new Date(viewYear, monthIndex + 1, 0, 23, 59, 59, 999);
-    const monthLabel = from.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+    const monthLabel = from.toLocaleDateString("en-US", {
+      month: "short",
+      year: "numeric",
+    });
 
     if (onDateChange) {
       onDateChange({
@@ -242,18 +273,72 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
   };
 
   const MONTHS_LIST = [
-    "Jan", "Feb", "Mar", "Apr",
-    "May", "Jun", "Jul", "Aug",
-    "Sep", "Oct", "Nov", "Dec",
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
   ];
 
+  // Derive the active label (e.g., "Today", "Yesterday", "Nov 9", "Oct 26 - Nov 9", "Last 7 Days")
+  const activeLabel = useMemo(() => {
+    if (selectedLabel) return selectedLabel;
+    if (currentWindow?.label) return currentWindow.label;
+    if (selectedPreset) {
+      if (selectedPreset === "today") return "Today";
+      if (selectedPreset === "yesterday") return "Yesterday";
+      if (selectedPreset === "7d") return "Last 7 Days";
+      if (selectedPreset === "30d") return "Last 30 Days";
+      return selectedPreset;
+    }
+    if (
+      rangeStartInternal &&
+      rangeEndInternal &&
+      !isSameDay(rangeStartInternal, rangeEndInternal)
+    ) {
+      const s = rangeStartInternal.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+      const e = rangeEndInternal.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+      return `${s} - ${e}`;
+    }
+    const d = selectedDate || baseDate;
+    if (d) {
+      const today = new Date();
+      if (isSameDay(d, today)) return "Today";
+      return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    }
+    return "Today";
+  }, [
+    selectedLabel,
+    currentWindow,
+    selectedPreset,
+    rangeStartInternal,
+    rangeEndInternal,
+    selectedDate,
+    baseDate,
+  ]);
+
   return (
-    <div className={`w-[291px] min-w-[291px] max-w-[291px] h-[177px] select-none font-sans shrink-0 flex flex-col justify-between ${className}`}>
+    <div
+      className={`w-[291px] min-w-[291px] max-w-[291px] h-[177px] select-none font-sans shrink-0 flex flex-col justify-between ${className}`}
+    >
       {/* ============================================================ */}
-      {/* 1. TOP TABS: [Hourly] [Daily] [Monthly] & Mini 17 Icon       */}
+      {/* 1. TOP TABS: [Hourly] [Daily] [Monthly] [Active Badge] & Mini 17 Icon */}
       {/* ============================================================ */}
       <div className="flex items-end justify-between px-0.5">
-        <div className="flex items-end">
+        <div className="flex items-end min-w-0">
           {/* Hourly Tab */}
           <button
             type="button"
@@ -301,10 +386,18 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
           >
             Monthly
           </button>
+
+          {/* Selected Date / Active Window Badge right next to Monthly */}
+          <span
+            title={`Selected: ${activeLabel}`}
+            className="ml-2 px-2.5 py-[4px] text-[11px] rounded-t-[3px] border-t border-x transition-colors cursor-pointer  bg-blue-100/90 border border-blue-200 text-[#1455bb] text-[10px] font-black tracking-tight truncate max-w-[105px] shadow-2xs select-none leading-none inline-block"
+          >
+            {activeLabel}
+          </span>
         </div>
 
         {/* Far Right: Mini 17 Calendar Icon */}
-        <div className="pb-[2px]">
+        <div className="pb-[2px] shrink-0 ml-1">
           <div
             className="w-[15px] h-[15px] border border-[#888] bg-white rounded-[1px] flex flex-col overflow-hidden shadow-2xs"
             title="Current date"
@@ -349,11 +442,13 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
               <div className="grid grid-cols-7 gap-[2px] flex-1">
                 {allGridDays.map((item, index) => {
                   const isFuture = isFutureDate(item.date);
-                  const isSelected = !isFuture && isSameDay(item.date, baseDate);
+                  const isSelected =
+                    !isFuture && isSameDay(item.date, baseDate);
                   const isWeekend = index % 7 === 5 || index % 7 === 6; // Saturday (5) or Sunday (6)
 
                   // First row empty slot before trailing days
-                  const isLeadingEmpty = index < (prevDays.length > 0 ? 0 : startDayOfWeek);
+                  const isLeadingEmpty =
+                    index < (prevDays.length > 0 ? 0 : startDayOfWeek);
 
                   if (isLeadingEmpty) {
                     return <div key={index} className="h-[18px] w-full" />;
@@ -363,10 +458,17 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
                   if (!isFuture) {
                     if (rangeStartInternal && rangeEndInternal) {
                       inRange =
-                        item.date >= rangeStartInternal && item.date <= rangeEndInternal;
+                        item.date >= rangeStartInternal &&
+                        item.date <= rangeEndInternal;
                     } else if (rangeStartInternal && selectingStart) {
-                      const start = rangeStartInternal < selectingStart ? rangeStartInternal : selectingStart;
-                      const end = rangeStartInternal < selectingStart ? selectingStart : rangeStartInternal;
+                      const start =
+                        rangeStartInternal < selectingStart
+                          ? rangeStartInternal
+                          : selectingStart;
+                      const end =
+                        rangeStartInternal < selectingStart
+                          ? selectingStart
+                          : rangeStartInternal;
                       inRange = item.date >= start && item.date <= end;
                     }
                   }
@@ -377,17 +479,19 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
                       type="button"
                       disabled={isFuture}
                       onClick={() => !isFuture && handleDayClick(item.date)}
-                      title={isFuture ? "Future date - no data available" : undefined}
+                      title={
+                        isFuture ? "Future date - no data available" : undefined
+                      }
                       className={`h-[18px] w-full flex items-center justify-center text-[11px] leading-none rounded-[1px] border select-none transition-all ${
                         isFuture
                           ? "border-[#eaedf1] bg-[#f8fafc] text-[#cbd5e1] cursor-not-allowed opacity-40 font-normal"
                           : isSelected
-                          ? "bg-[#d2d9e0] border-[#8f9ca8] text-[#0066cc] font-black shadow-inner cursor-pointer"
-                          : inRange
-                          ? "bg-[#e3f2fd] border-[#90caf9] text-[#0066cc] font-bold cursor-pointer"
-                          : isWeekend
-                          ? "border-[#cfd6dc] bg-[#fbfcfd] text-[#cc0000] font-normal shadow-[inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#1565c0] cursor-pointer"
-                          : "border-[#cfd6dc] bg-[#fbfcfd] text-[#222] font-normal shadow-[inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#1565c0] cursor-pointer"
+                            ? "bg-[#d2d9e0] border-[#8f9ca8] text-[#0066cc] font-black shadow-inner cursor-pointer"
+                            : inRange
+                              ? "bg-[#e3f2fd] border-[#90caf9] text-[#0066cc] font-bold cursor-pointer"
+                              : isWeekend
+                                ? "border-[#cfd6dc] bg-[#fbfcfd] text-[#cc0000] font-normal shadow-[inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#1565c0] cursor-pointer"
+                                : "border-[#cfd6dc] bg-[#fbfcfd] text-[#222] font-normal shadow-[inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#1565c0] cursor-pointer"
                       }`}
                     >
                       {item.day}

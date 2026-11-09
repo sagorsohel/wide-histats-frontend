@@ -327,25 +327,6 @@ export default function SourcesPage() {
             </p>
           </div>
         </div>
-
-        {/* Current Active Range indicator Pill */}
-        <div className="flex items-center gap-2">
-          <div className="px-3.5 py-1.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center gap-2">
-            <span className="text-[11px] font-bold text-slate-500">
-              Active Window:
-            </span>
-            <span className="px-2.5 py-0.5 rounded-xl bg-blue-100/80 text-[#1455bb] border border-blue-200/90 text-xs font-black">
-              {customWindow?.label ||
-                (range === "today"
-                  ? "Today"
-                  : range === "yesterday"
-                    ? "Yesterday"
-                    : range === "7d"
-                      ? "Last 7 Days"
-                      : "Last 30 Days")}
-            </span>
-          </div>
-        </div>
       </div>
 
       {/* ============================================================ */}

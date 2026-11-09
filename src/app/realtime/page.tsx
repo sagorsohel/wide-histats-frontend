@@ -1094,7 +1094,7 @@ export default function RealtimeHistatsPage() {
                         style={{
                           backgroundColor: isZebra ? "#00000017" : "#ffffff",
                         }}
-                        className="px-2.5 py-1.5 flex items-center justify-between border-b border-slate-200/50 transition-colors gap-2 text-[11px] hover:brightness-95"
+                        className="px-3 py-0 flex items-center gap-2 hover:brightness-95 text-[11px] transition-colors min-h-[30px] h-[30px]"
                       >
                         {/* Time Badge in classic Histats seconds quote format e.g. 1", 2", 3", 7", 11" */}
                         <div className="w-[36px] text-right font-bold text-[#1455bb] text-[12px] shrink-0 font-sans pr-2">
@@ -1242,35 +1242,48 @@ export default function RealtimeHistatsPage() {
                                 ? "#00000017"
                                 : "#ffffff",
                             }}
-                            className="px-3 py-1.5 flex items-center gap-2.5 hover:brightness-95 text-[11px] transition-colors"
+                            className="px-3 py-0 flex items-center gap-2 hover:brightness-95 text-[11px] transition-colors min-h-[30px] h-[30px]"
                           >
-                            <span className="font-bold text-[#1455bb] min-w-[24px] text-right">
-                              {page.count}
-                            </span>
-                            <div className="flex items-center gap-1.5 truncate flex-1 min-w-0">
-                              <WebsiteFavicon
-                                url={page.url}
-                                domain={selectedWebsite?.domain}
-                                size={14}
-                              />
+                            <div className="w-[36px] text-right font-bold text-[#1455bb] text-[12px] shrink-0 font-sans pr-2">
+                              <span>{page.count}</span>
+                            </div>
+                            <div className="flex-1 flex items-center gap-1.5 truncate min-w-0">
+                              <div
+                                className="shrink-0 cursor-pointer"
+                                onClick={(e) =>
+                                  handleUrlClick(
+                                    e,
+                                    pageUrl,
+                                    page.title || page.path,
+                                  )
+                                }
+                                title={pageUrl}
+                              >
+                                <WebsiteFavicon
+                                  url={page.url}
+                                  domain={selectedWebsite?.domain}
+                                  size={14}
+                                  fallbackIcon="link"
+                                />
+                              </div>
                               <a
                                 href={pageUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                                onClick={(e) =>
+                                  handleUrlClick(
+                                    e,
+                                    pageUrl,
+                                    page.title || page.path,
+                                  )
+                                }
                                 title={pageUrl}
-                                className="truncate font-medium text-slate-800 hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
+                                className="truncate text-slate-800 font-normal hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
                               >
-                                <span className="group-hover:hidden truncate block">
+                                <span className="truncate block font-normal text-[11px]">
                                   {page.title &&
                                   !page.title.startsWith("http") &&
                                   page.title !== page.path
-                                    ? pageUrl.includes("?")
-                                      ? `${page.title}`
-                                      : page.title
+                                    ? page.title
                                     : pageUrl}
-                                </span>
-                                <span className="hidden group-hover:block truncate font-mono text-[#1455bb] text-[10px]">
-                                  {pageUrl}
                                 </span>
                               </a>
                             </div>
@@ -1326,29 +1339,30 @@ export default function RealtimeHistatsPage() {
                                 ? "#00000017"
                                 : "#ffffff",
                             }}
-                            className="px-3 py-1 flex items-center gap-2.5 hover:brightness-95 text-[11px] transition-colors"
+                            className="px-3 py-0 flex items-center gap-2 hover:brightness-95 text-[11px] transition-colors min-h-[30px] h-[30px]"
                           >
-                            <span className="font-bold text-[#1455bb] min-w-[24px] text-right">
-                              {ref.count}
-                            </span>
-                            <div className="flex items-center gap-1.5 truncate flex-1 min-w-0">
+                            <div className="w-[36px] text-right font-bold text-[#1455bb] text-[12px] shrink-0 font-sans pr-2">
+                              <span>{ref.count}</span>
+                            </div>
+                            <div className="flex-1 flex items-center gap-1.5 truncate min-w-0">
                               <ReferrerBrandIcon
                                 referrer={ref.referrer}
                                 size={14}
                               />
-                              <ExternalLink className="w-3 h-3 text-slate-400 shrink-0" />
                               {isUrl ? (
                                 <a
                                   href={ref.referrer}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   title={ref.referrer}
-                                  className="truncate text-slate-700 hover:text-[#1455bb] hover:underline cursor-pointer"
+                                  className="truncate text-slate-800 font-normal hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
                                 >
-                                  {ref.referrer}
+                                  <span className="truncate block font-normal text-[11px]">
+                                    {ref.referrer}
+                                  </span>
                                 </a>
                               ) : (
-                                <span className="truncate text-slate-700">
+                                <span className="truncate text-slate-800 font-normal text-[11px]">
                                   {ref.referrer}
                                 </span>
                               )}

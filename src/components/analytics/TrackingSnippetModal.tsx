@@ -153,7 +153,7 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
   if (!website) return null;
 
   const publicTunnelUrl =
-    process.env.NEXT_PUBLIC_TRACKER_URL || "https://api.analycos.com";
+    process.env.NEXT_PUBLIC_TRACKER_URL || "https://analycos.com";
   const scriptUrl = `${publicTunnelUrl}/tracker.js`;
 
   const activeCounter = selectedCounter || counters[0] || {

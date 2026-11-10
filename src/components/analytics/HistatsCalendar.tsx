@@ -332,13 +332,13 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
 
   return (
     <div
-      className={`w-[291px] min-w-[291px] max-w-[291px] h-[177px] select-none font-sans shrink-0 flex flex-col justify-between ${className}`}
+      className={`w-full max-w-[291px] select-none font-sans shrink-0 bg-white border border-slate-200/90 rounded-2xl shadow-xs p-2.5 flex flex-col justify-between space-y-2 ${className}`}
     >
       {/* ============================================================ */}
-      {/* 1. TOP TABS: [Hourly] [Daily] [Monthly] [Active Badge] & Mini 17 Icon */}
+      {/* 1. TOP TABS: [Hourly] [Daily] [Monthly] & [Active Badge] & Mini Today Icon */}
       {/* ============================================================ */}
-      <div className="flex items-end justify-between px-0.5">
-        <div className="flex items-end min-w-0">
+      <div className="flex items-center justify-between gap-1 pb-1 border-b border-slate-100">
+        <div className="flex items-center p-0.5 bg-slate-100 rounded-lg border border-slate-200/60">
           {/* Hourly Tab */}
           <button
             type="button"
@@ -346,10 +346,10 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
               setActiveTab("hourly");
               if (onViewTabChange) onViewTabChange("hourly");
             }}
-            className={`px-2.5 py-[2px] text-[11px] rounded-t-[3px] border-t border-x transition-colors cursor-pointer ${
+            className={`px-2 py-0.5 text-[10.5px] font-bold rounded-md transition-all cursor-pointer ${
               activeTab === "hourly"
-                ? "bg-white border-[#9da8b2] text-[#1565c0] font-bold -mb-[1px] z-10"
-                : "bg-[#bcc6cf] border-[#9da8b2] text-[#222] font-normal hover:bg-[#aab6c0]"
+                ? "bg-white text-[#1455bb] shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             Hourly
@@ -362,10 +362,10 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
               setActiveTab("daily");
               if (onViewTabChange) onViewTabChange("daily");
             }}
-            className={`px-2.5 py-[2px] text-[11px] rounded-t-[3px] border-t border-x transition-colors cursor-pointer ml-[2px] ${
+            className={`px-2 py-0.5 text-[10.5px] font-bold rounded-md transition-all cursor-pointer ${
               activeTab === "daily"
-                ? "bg-white border-[#9da8b2] text-[#1565c0] font-bold -mb-[1px] z-10"
-                : "bg-[#bcc6cf] border-[#9da8b2] text-[#222] font-normal hover:bg-[#aab6c0]"
+                ? "bg-white text-[#1455bb] shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             Daily
@@ -378,80 +378,79 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
               setActiveTab("monthly");
               if (onViewTabChange) onViewTabChange("monthly");
             }}
-            className={`px-2.5 py-[2px] text-[11px] rounded-t-[3px] border-t border-x transition-colors cursor-pointer ml-[2px] ${
+            className={`px-2 py-0.5 text-[10.5px] font-bold rounded-md transition-all cursor-pointer ${
               activeTab === "monthly"
-                ? "bg-white border-[#9da8b2] text-[#1565c0] font-bold -mb-[1px] z-10"
-                : "bg-[#bcc6cf] border-[#9da8b2] text-[#222] font-normal hover:bg-[#aab6c0]"
+                ? "bg-white text-[#1455bb] shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             Monthly
           </button>
+        </div>
 
-          {/* Selected Date / Active Window Badge right next to Monthly */}
+        {/* Selected Date Badge & Today Icon */}
+        <div className="flex items-center gap-1.5 min-w-0">
           <span
             title={`Selected: ${activeLabel}`}
-            className="ml-2 px-2.5 py-[4px] text-[11px] rounded-t-[3px] border-t border-x transition-colors cursor-pointer  bg-blue-100/90 border border-blue-200 text-[#1455bb] text-[10px] font-black tracking-tight truncate max-w-[105px] shadow-2xs select-none leading-none inline-block"
+            className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-[#1455bb] border border-blue-200/80 shadow-2xs truncate max-w-[80px]"
           >
             {activeLabel}
           </span>
-        </div>
 
-        {/* Far Right: Mini 17 Calendar Icon */}
-        <div className="pb-[2px] shrink-0 ml-1">
+          {/* Mini Calendar Day Icon */}
           <div
-            className="w-[15px] h-[15px] border border-[#888] bg-white rounded-[1px] flex flex-col overflow-hidden shadow-2xs"
-            title="Current date"
+            className="w-5 h-5 rounded-md border border-slate-200 bg-white flex flex-col overflow-hidden shadow-2xs shrink-0"
+            title={`Today: ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
           >
-            <div className="bg-[#cc0000] h-[4px] w-full" />
-            <span className="text-[7.5px] font-black leading-none text-black text-center mt-[1px]">
-              17
+            <div className="bg-[#1455bb] h-[4px] w-full" />
+            <span className="text-[8px] font-black leading-tight text-slate-800 text-center my-auto">
+              {new Date().getDate()}
             </span>
           </div>
         </div>
       </div>
 
       {/* ============================================================ */}
-      {/* 2. MAIN CALENDAR FRAME (Exact 291x155 Frame)                 */}
+      {/* 2. MAIN CALENDAR FRAME                                       */}
       {/* ============================================================ */}
-      <div className="w-[291px] h-[155px] bg-white border border-[#9da8b2] rounded-tr-[3px] rounded-b-[3px] px-[6px] py-[4px] shadow-xs flex flex-col justify-between">
+      <div className="bg-slate-50/70 border border-slate-200/80 rounded-xl p-1.5 shadow-2xs flex flex-col justify-between">
         {activeTab !== "monthly" ? (
           <>
             {/* Days of week header: M T W T F S S */}
-            <div className="flex items-center text-center font-black text-[12px] text-black leading-none">
-              <span className="w-[28px] shrink-0" />
-              <div className="grid grid-cols-7 flex-1 gap-[2px] text-center font-black text-[12px] text-black">
-                <span>M</span>
-                <span>T</span>
-                <span>W</span>
-                <span>T</span>
-                <span>F</span>
-                <span>S</span>
-                <span>S</span>
+            <div className="flex items-center text-center font-bold text-[10px] text-slate-400 pb-1 mb-1 border-b border-slate-200/60 leading-none">
+              <span className="w-[24px] shrink-0" />
+              <div className="grid grid-cols-7 flex-1 gap-1 text-center font-bold text-[10px]">
+                <span className="text-slate-500">M</span>
+                <span className="text-slate-500">T</span>
+                <span className="text-slate-500">W</span>
+                <span className="text-slate-500">T</span>
+                <span className="text-slate-500">F</span>
+                <span className="text-rose-500 font-extrabold">S</span>
+                <span className="text-rose-500 font-extrabold">S</span>
               </div>
-              <span className="w-[28px] shrink-0" />
+              <span className="w-[24px] shrink-0" />
             </div>
 
-            {/* Calendar Rows with 'oct' on left and 'nov' on right */}
-            <div className="flex items-center flex-1 my-[1px]">
+            {/* Calendar Rows with left and right month indicators */}
+            <div className="flex items-center flex-1 my-0.5">
               {/* Left Month Label (e.g. 'oct') */}
-              <div className="w-[28px] shrink-0 text-[11px] text-[#555] font-normal pl-0.5 leading-none">
+              <div className="w-[24px] shrink-0 text-[10px] text-slate-400 font-bold uppercase tracking-wider pl-0.5 leading-none select-none">
                 {prevMonthName}
               </div>
 
               {/* 5 Rows x 7 Columns Day Tiles */}
-              <div className="grid grid-cols-7 gap-[2px] flex-1">
+              <div className="grid grid-cols-7 gap-1 flex-1">
                 {allGridDays.map((item, index) => {
                   const isFuture = isFutureDate(item.date);
                   const isSelected =
                     !isFuture && isSameDay(item.date, baseDate);
-                  const isWeekend = index % 7 === 5 || index % 7 === 6; // Saturday (5) or Sunday (6)
+                  const isWeekend = index % 7 === 5 || index % 7 === 6;
 
-                  // First row empty slot before trailing days
                   const isLeadingEmpty =
                     index < (prevDays.length > 0 ? 0 : startDayOfWeek);
 
                   if (isLeadingEmpty) {
-                    return <div key={index} className="h-[18px] w-full" />;
+                    return <div key={index} className="h-[20px] w-full" />;
                   }
 
                   let inRange = false;
@@ -480,18 +479,20 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
                       disabled={isFuture}
                       onClick={() => !isFuture && handleDayClick(item.date)}
                       title={
-                        isFuture ? "Future date - no data available" : undefined
-                      }
-                      className={`h-[18px] w-full flex items-center justify-center text-[11px] leading-none rounded-[1px] border select-none transition-all ${
                         isFuture
-                          ? "border-[#eaedf1] bg-[#f8fafc] text-[#cbd5e1] cursor-not-allowed opacity-40 font-normal"
+                          ? "Future date - no data available"
+                          : item.date.toDateString()
+                      }
+                      className={`h-[20px] w-full flex items-center justify-center text-[10.5px] leading-none rounded-md transition-all select-none ${
+                        isFuture
+                          ? "text-slate-300 opacity-35 cursor-not-allowed font-normal"
                           : isSelected
-                            ? "bg-[#d2d9e0] border-[#8f9ca8] text-[#0066cc] font-black shadow-inner cursor-pointer"
+                            ? "bg-gradient-to-r from-[#1455bb] to-blue-600 text-white font-black shadow-xs ring-2 ring-blue-300/40 cursor-pointer scale-[1.05]"
                             : inRange
-                              ? "bg-[#e3f2fd] border-[#90caf9] text-[#0066cc] font-bold cursor-pointer"
+                              ? "bg-blue-100 text-[#1455bb] font-bold cursor-pointer"
                               : isWeekend
-                                ? "border-[#cfd6dc] bg-[#fbfcfd] text-[#cc0000] font-normal shadow-[inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#1565c0] cursor-pointer"
-                                : "border-[#cfd6dc] bg-[#fbfcfd] text-[#222] font-normal shadow-[inset_0_1px_0_rgba(255,255,255,1)] hover:border-[#1565c0] cursor-pointer"
+                                ? "bg-white text-rose-500 font-semibold border border-slate-200/80 hover:bg-rose-50 hover:border-rose-300 shadow-2xs cursor-pointer"
+                                : "bg-white text-slate-700 font-medium border border-slate-200/80 hover:bg-blue-50/50 hover:text-[#1455bb] hover:border-blue-300 shadow-2xs cursor-pointer"
                       }`}
                     >
                       {item.day}
@@ -501,71 +502,18 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
               </div>
 
               {/* Right Month Label (e.g. 'nov') */}
-              <div className="w-[28px] shrink-0 text-[11px] text-[#555] font-normal text-right pr-0.5 self-end pb-0.5 leading-none">
+              <div className="w-[24px] shrink-0 text-[10px] text-slate-400 font-bold uppercase tracking-wider text-right pr-0.5 self-end pb-0.5 leading-none select-none">
                 {currentMonthName}
               </div>
-            </div>
-
-            {/* ============================================================ */}
-            {/* 3. BOTTOM MODE TRAY: [ normal ] [ range ] [ compare ]       */}
-            {/* ============================================================ */}
-            <div className="bg-[#bcc6cf] p-[2.5px] rounded-[2px] border border-[#9da8b2] flex gap-[3px]">
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("normal");
-                  if (onSelectionModeChange) onSelectionModeChange("normal");
-                  setSelectingStart(null);
-                }}
-                className={`flex-1 py-[1.5px] rounded-[1px] text-[11px] text-center cursor-pointer transition-all ${
-                  mode === "normal"
-                    ? "bg-gradient-to-b from-[#ffffff] to-[#e8ecef] border border-[#8f9ca8] text-[#008000] font-bold shadow-xs"
-                    : "bg-gradient-to-b from-[#dce2e6] to-[#cfd6dc] border border-[#a6b2bd] text-[#222] font-normal hover:bg-white/60"
-                }`}
-              >
-                normal
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("range");
-                  if (onSelectionModeChange) onSelectionModeChange("range");
-                  setSelectingStart(null);
-                }}
-                className={`flex-1 py-[1.5px] rounded-[1px] text-[11px] text-center cursor-pointer transition-all ${
-                  mode === "range"
-                    ? "bg-gradient-to-b from-[#ffffff] to-[#e8ecef] border border-[#8f9ca8] text-[#008000] font-bold shadow-xs"
-                    : "bg-gradient-to-b from-[#dce2e6] to-[#cfd6dc] border border-[#a6b2bd] text-[#222] font-normal hover:bg-white/60"
-                }`}
-              >
-                range
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setMode("compare");
-                  if (onSelectionModeChange) onSelectionModeChange("compare");
-                  setSelectingStart(null);
-                }}
-                className={`flex-1 py-[1.5px] rounded-[1px] text-[11px] text-center cursor-pointer transition-all ${
-                  mode === "compare"
-                    ? "bg-gradient-to-b from-[#ffffff] to-[#e8ecef] border border-[#8f9ca8] text-[#008000] font-bold shadow-xs"
-                    : "bg-gradient-to-b from-[#dce2e6] to-[#cfd6dc] border border-[#a6b2bd] text-[#222] font-normal hover:bg-white/60"
-                }`}
-              >
-                compare
-              </button>
             </div>
           </>
         ) : (
           /* Monthly Grid View */
-          <div className="space-y-1 h-full flex flex-col justify-between py-0.5">
-            <div className="text-center font-bold text-[11px] text-slate-800 pb-0.5 border-b border-slate-200">
+          <div className="space-y-1.5 h-full flex flex-col justify-between py-1">
+            <div className="text-center font-bold text-[11px] text-[#1455bb] pb-1 border-b border-slate-200/80 uppercase tracking-wider">
               Year {viewYear}
             </div>
-            <div className="grid grid-cols-4 gap-1 flex-1 py-1">
+            <div className="grid grid-cols-4 gap-1 flex-1 py-0.5">
               {MONTHS_LIST.map((mName, mIdx) => {
                 const isCurrentMonth = mIdx === viewMonth;
                 return (
@@ -573,10 +521,10 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
                     key={mName}
                     type="button"
                     onClick={() => handleMonthSelect(mIdx)}
-                    className={`py-1 text-[10px] font-bold rounded-[1px] border transition-all text-center cursor-pointer ${
+                    className={`py-1.5 text-[10.5px] font-bold rounded-md border transition-all text-center cursor-pointer ${
                       isCurrentMonth
-                        ? "bg-[#d2d9e0] border-[#8f9ca8] text-[#0066cc]"
-                        : "border-[#cfd6dc] bg-[#fbfcfd] text-[#222] hover:border-blue-400"
+                        ? "bg-gradient-to-r from-[#1455bb] to-blue-600 text-white border-[#1455bb] shadow-xs"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-blue-400 hover:text-[#1455bb] hover:bg-blue-50/40 shadow-2xs"
                     }`}
                   >
                     {mName}
@@ -588,9 +536,62 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
         )}
       </div>
 
+      {/* ============================================================ */}
+      {/* 3. BOTTOM MODE TRAY: [ normal ] [ range ] [ compare ]       */}
+      {/* ============================================================ */}
+      <div className="bg-slate-100 p-0.5 rounded-xl border border-slate-200/70 flex gap-1">
+        <button
+          type="button"
+          onClick={() => {
+            setMode("normal");
+            if (onSelectionModeChange) onSelectionModeChange("normal");
+            setSelectingStart(null);
+          }}
+          className={`flex-1 py-1 rounded-lg text-[11px] font-bold text-center transition-all cursor-pointer ${
+            mode === "normal"
+              ? "bg-white text-emerald-700 font-black shadow-xs border border-slate-200/80"
+              : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+          }`}
+        >
+          normal
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setMode("range");
+            if (onSelectionModeChange) onSelectionModeChange("range");
+            setSelectingStart(null);
+          }}
+          className={`flex-1 py-1 rounded-lg text-[11px] font-bold text-center transition-all cursor-pointer ${
+            mode === "range"
+              ? "bg-white text-[#1455bb] font-black shadow-xs border border-slate-200/80"
+              : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+          }`}
+        >
+          range
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setMode("compare");
+            if (onSelectionModeChange) onSelectionModeChange("compare");
+            setSelectingStart(null);
+          }}
+          className={`flex-1 py-1 rounded-lg text-[11px] font-bold text-center transition-all cursor-pointer ${
+            mode === "compare"
+              ? "bg-white text-purple-700 font-black shadow-xs border border-slate-200/80"
+              : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+          }`}
+        >
+          compare
+        </button>
+      </div>
+
       {/* Show new and lost referrers checkbox (if needed) */}
       {onToggleNewAndLost && (
-        <label className="flex items-center gap-1.5 pt-1 text-[10.5px] text-slate-700 font-medium cursor-pointer select-none">
+        <label className="flex items-center gap-1.5 pt-0.5 text-[10.5px] text-slate-700 font-medium cursor-pointer select-none">
           <input
             type="checkbox"
             checked={showNewAndLost}

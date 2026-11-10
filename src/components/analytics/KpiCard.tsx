@@ -96,22 +96,20 @@ export const KpiCard: React.FC<KpiCardProps> = ({
 
   return (
     <div
-      className={`rounded-[22px] ${config.bg} ${config.shadow} text-white relative overflow-hidden flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-xl group select-none ${className}`}
+      className={`rounded-2xl ${config.bg} ${config.shadow} text-white relative overflow-hidden flex flex-col justify-between transition-all duration-300 hover:scale-[1.01] hover:shadow-lg group select-none ${className}`}
     >
       {/* Upper Content Section */}
-      <div className="p-4 sm:p-5 pb-3">
-        {/* 1. Top Row: Avatars & Count Badge on left, Three Dots Menu on right */}
-
+      <div className="p-3 sm:p-3.5 pb-2">
         {/* 2. Middle: Title & Value */}
-        <div className="mt-3.5 space-y-0.5">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="font-extrabold text-sm sm:text-base text-white tracking-tight leading-tight">
+        <div className="space-y-0.5">
+          <div className="flex items-center justify-between gap-1.5">
+            <h3 className="font-extrabold text-xs sm:text-[13px] text-white tracking-tight leading-tight truncate">
               {title}
             </h3>
 
             {/* Percentage Pill Badge */}
             {!loading && badge && (
-              <span className="inline-flex items-center gap-0.5 text-[10px] font-black px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md border border-white/25 text-white shadow-2xs shrink-0">
+              <span className="inline-flex items-center gap-0.5 text-[9px] font-black px-1.5 py-0.2 rounded-full bg-white/20 backdrop-blur-md border border-white/25 text-white shadow-2xs shrink-0">
                 {badge.positive !== false ? "↗" : "↘"} {badge.text}
               </span>
             )}
@@ -120,9 +118,9 @@ export const KpiCard: React.FC<KpiCardProps> = ({
           {/* Main Stat Value */}
           <div className="pt-0.5">
             {loading ? (
-              <div className="h-7 w-20 bg-white/30 rounded-lg animate-pulse my-1" />
+              <div className="h-6 w-16 bg-white/30 rounded-lg animate-pulse my-0.5" />
             ) : (
-              <span className="text-2xl  font-black text-white tracking-tight tabular-nums block">
+              <span className="text-xl sm:text-2xl font-black text-white tracking-tight tabular-nums block leading-tight">
                 {value}
               </span>
             )}
@@ -130,7 +128,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
 
           {/* Subtitle */}
           {subtitle && (
-            <p className="text-[11px] text-white/80 font-medium truncate pt-0.5">
+            <p className="text-[10px] text-white/80 font-medium truncate pt-0.5 leading-tight">
               {subtitle}
             </p>
           )}
@@ -138,8 +136,8 @@ export const KpiCard: React.FC<KpiCardProps> = ({
       </div>
 
       {/* 3. Bottom Accent Band (Signature Style from Reference Design) */}
-      <div className="h-3 w-full bg-black/15 flex items-stretch mt-2">
-        <div className={`w-24 sm:w-28 ${config.darkBand} rounded-r-md`} />
+      <div className="h-2 w-full bg-black/15 flex items-stretch mt-1.5">
+        <div className={`w-20 sm:w-24 ${config.darkBand} rounded-r-md`} />
       </div>
     </div>
   );

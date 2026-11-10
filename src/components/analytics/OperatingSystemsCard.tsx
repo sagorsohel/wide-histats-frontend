@@ -45,50 +45,46 @@ export const OperatingSystemsCard: React.FC<OperatingSystemsCardProps> = ({
   };
 
   return (
-    <div className="bg-white/80 backdrop-blur-xl backdrop-saturate-150 rounded-3xl border border-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_10px_30px_-5px_rgba(0,0,0,0.04)] p-5 sm:p-6 flex flex-col justify-between transition-all duration-300 hover:shadow-[0_15px_35px_-5px_rgba(0,0,0,0.06)]">
+    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-3.5 sm:p-4 flex flex-col justify-between transition-all duration-200">
       {/* Header */}
       <div>
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100/80">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-sky-50/90 text-sky-600 border border-sky-100/80 flex items-center justify-center shrink-0 shadow-xs">
-              <Cpu className="w-5 h-5" />
+        <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-100 gap-2.5">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center shrink-0 shadow-2xs">
+              <Cpu className="w-4 h-4" />
             </div>
-            <div>
-              <h3 className="font-extrabold text-base text-slate-900 tracking-tight">
+            <div className="min-w-0">
+              <h3 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight truncate">
                 Operating Systems
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Client operating system platforms &amp; environments
+              <p className="text-[11px] text-slate-500 truncate">
+                Client operating system platforms
               </p>
             </div>
           </div>
 
           {/* Quick ratio badge */}
-          <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 bg-slate-50 border border-slate-200/60 px-2.5 py-1 rounded-full shrink-0">
-            <Monitor className="w-3.5 h-3.5 text-blue-600" />
+          <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-600 bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full shrink-0">
+            <Monitor className="w-3 h-3 text-blue-600" />
             <span>{desktopOsPct}%</span>
             <span className="text-slate-300">/</span>
-            <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
+            <Smartphone className="w-3 h-3 text-emerald-600" />
             <span>{mobileOsPct}%</span>
           </div>
         </div>
 
         {/* Content */}
         {loading ? (
-          <div className="space-y-3">
+          <div className="space-y-1.5">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="space-y-1.5 animate-pulse">
+              <div key={i} className="space-y-1 animate-pulse px-2.5 py-1.5 rounded-xl border border-slate-100 bg-white/50">
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 bg-slate-200 rounded-full shrink-0" />
-                    <div className="h-3.5 w-24 bg-slate-200 rounded" />
+                    <div className="w-4 h-4 bg-slate-200 rounded shrink-0" />
+                    <div className="h-3 w-24 bg-slate-200 rounded" />
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="h-3.5 w-10 bg-slate-200 rounded" />
-                    <div className="h-3.5 w-8 bg-slate-200 rounded" />
-                  </div>
+                  <div className="h-3 w-8 bg-slate-200 rounded" />
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-1" />
               </div>
             ))}
           </div>
@@ -97,30 +93,33 @@ export const OperatingSystemsCard: React.FC<OperatingSystemsCardProps> = ({
             No operating system telemetry recorded yet.
           </div>
         ) : (
-          <div className="space-y-3.5">
+          <div className="space-y-1.5">
             {operatingSystems.slice(0, 6).map((item, index) => {
               const percentage = Math.round((item.sessions / totalSessions) * 100);
               const barGradient = getBrandBarStyle(item.os);
 
               return (
-                <div key={index} className="space-y-1.5 group">
+                <div
+                  key={index}
+                  className="px-2.5 py-1.5 rounded-xl border border-slate-100/90 bg-white/70 hover:bg-white hover:border-slate-200/90 transition-all duration-150 space-y-1 group shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
+                >
                   <div className="flex items-center justify-between text-xs">
                     {/* Left: Official Brand Logo + OS Name */}
-                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                      <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                        <OsIcon os={item.os} size={17} />
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                        <OsIcon os={item.os} size={15} />
                       </div>
-                      <span className="font-bold text-slate-800 truncate block group-hover:text-sky-600 transition-colors">
+                      <span className="font-bold text-slate-800 text-xs truncate block group-hover:text-sky-600 transition-colors leading-tight">
                         {item.os}
                       </span>
                     </div>
 
                     {/* Right: Sessions Count + Percentage */}
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="font-extrabold text-slate-900 tabular-nums">
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      <span className="font-extrabold text-slate-900 text-xs tabular-nums leading-tight">
                         {formatNumber(item.sessions)}
                       </span>
-                      <span className="text-slate-400 font-semibold w-8 text-right tabular-nums">
+                      <span className="text-slate-400 font-semibold text-[11px] w-7 text-right tabular-nums leading-tight">
                         {percentage}%
                       </span>
                     </div>
@@ -129,7 +128,7 @@ export const OperatingSystemsCard: React.FC<OperatingSystemsCardProps> = ({
                   {/* Brand Styled Progress Bar */}
                   <div className="w-full bg-slate-100/90 rounded-full h-1 overflow-hidden">
                     <div
-                      className={`bg-gradient-to-r ${barGradient} h-full rounded-full transition-all duration-500 shadow-xs`}
+                      className={`bg-gradient-to-r ${barGradient} h-full rounded-full transition-all duration-500`}
                       style={{ width: `${Math.max(percentage, 2)}%` }}
                     />
                   </div>
@@ -141,7 +140,7 @@ export const OperatingSystemsCard: React.FC<OperatingSystemsCardProps> = ({
       </div>
 
       {/* Footer Info */}
-      <div className="mt-4 pt-3 border-t border-slate-100/80 flex items-center justify-between text-[11px] text-slate-400">
+      <div className="mt-2.5 pt-2 border-t border-slate-100/80 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400">
         <span>Desktop OS vs. Mobile OS Breakdown</span>
         <span className="font-semibold text-slate-500">
           {formatNumber(totalSessions)} total sessions

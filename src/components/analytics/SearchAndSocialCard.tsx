@@ -84,84 +84,84 @@ export const SearchAndSocialCard: React.FC<SearchAndSocialCardProps> = ({
   const currentTotal = activeTab === "search" ? totalSearchSessions : totalSocialSessions;
 
   return (
-    <div className="bg-white/80 backdrop-blur-xl backdrop-saturate-150 rounded-3xl border border-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_10px_30px_-5px_rgba(0,0,0,0.04)] p-5 sm:p-6 flex flex-col justify-between transition-all duration-300 hover:shadow-[0_15px_35px_-5px_rgba(0,0,0,0.06)]">
+    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-3.5 sm:p-4 flex flex-col justify-between transition-all duration-200">
       {/* Header with Segmented Switcher */}
       <div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100/80">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-2.5 mb-2.5 pb-2 border-b border-slate-100">
+          <div className="flex items-center gap-2.5 min-w-0">
             <div
-              className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-xs border transition-colors ${
+              className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-2xs border transition-colors ${
                 activeTab === "search"
-                  ? "bg-blue-50/90 text-blue-600 border-blue-100/80"
-                  : "bg-purple-50/90 text-purple-600 border-purple-100/80"
+                  ? "bg-blue-50 text-blue-600 border-blue-100"
+                  : "bg-purple-50 text-purple-600 border-purple-100"
               }`}
             >
               {activeTab === "search" ? (
-                <Search className="w-5 h-5" />
+                <Search className="w-4 h-4" />
               ) : (
-                <Share2 className="w-5 h-5" />
+                <Share2 className="w-4 h-4" />
               )}
             </div>
-            <div>
-              <h3 className="font-extrabold text-base text-slate-900 tracking-tight">
+            <div className="min-w-0">
+              <h3 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight truncate">
                 {activeTab === "search"
                   ? "Search Engine Attribution"
                   : "Social Media Channels"}
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-[11px] text-slate-500 truncate">
                 {activeTab === "search"
-                  ? "Organic search engine queries (Google, Bing, DuckDuckGo)"
-                  : "Social network shares (Twitter/X, Facebook, Reddit, YouTube)"}
+                  ? "Google, Bing, DuckDuckGo queries"
+                  : "Twitter/X, Facebook, Reddit shares"}
               </p>
             </div>
           </div>
 
           {/* Apple Segmented Switcher */}
-          <div className="inline-flex p-1 bg-slate-100/80 backdrop-blur-md rounded-2xl border border-slate-200/50 self-start sm:self-auto">
+          <div className="inline-flex p-0.5 bg-slate-100 rounded-lg border border-slate-200/50 shrink-0">
             <button
               onClick={() => setActiveTab("search")}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              className={`px-2 py-0.5 rounded-md text-[11px] font-bold transition-all flex items-center gap-1 ${
                 activeTab === "search"
-                  ? "bg-white text-blue-700 shadow-sm shadow-slate-200/70"
+                  ? "bg-white text-blue-700 shadow-2xs"
                   : "text-slate-500 hover:text-slate-800"
               }`}
             >
-              <Search className="w-3.5 h-3.5" />
+              <Search className="w-3 h-3" />
               <span>Search ({searchSharePct}%)</span>
             </button>
             <button
               onClick={() => setActiveTab("social")}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              className={`px-2 py-0.5 rounded-md text-[11px] font-bold transition-all flex items-center gap-1 ${
                 activeTab === "social"
-                  ? "bg-white text-purple-700 shadow-sm shadow-slate-200/70"
+                  ? "bg-white text-purple-700 shadow-2xs"
                   : "text-slate-500 hover:text-slate-800"
               }`}
             >
-              <Share2 className="w-3.5 h-3.5" />
+              <Share2 className="w-3 h-3" />
               <span>Social ({socialSharePct}%)</span>
             </button>
           </div>
         </div>
 
         {/* Top 2 KPI comparison cards */}
-        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 mb-5">
+        <div className="grid grid-cols-2 gap-2 sm:gap-2.5 mb-3">
           <div
             onClick={() => setActiveTab("search")}
-            className={`p-3 rounded-2xl border cursor-pointer transition-all ${
+            className={`p-2.5 rounded-xl border cursor-pointer transition-all ${
               activeTab === "search"
-                ? "bg-blue-50/80 border-blue-200 shadow-xs"
+                ? "bg-blue-50/80 border-blue-200 shadow-2xs"
                 : "bg-slate-50/50 border-slate-100 hover:bg-slate-50"
             }`}
           >
-            <div className="flex items-center gap-1.5 text-[11px] font-bold text-blue-700 mb-1">
-              <Search className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-1 text-[10px] font-bold text-blue-700 mb-0.5">
+              <Search className="w-3 h-3" />
               <span>Organic Search</span>
             </div>
             <div className="flex items-baseline justify-between">
-              <span className="text-lg sm:text-xl font-black text-slate-900 tabular-nums">
+              <span className="text-base sm:text-lg font-black text-slate-900 tabular-nums">
                 {formatNumber(totalSearchSessions)}
               </span>
-              <span className="text-xs font-bold text-blue-600 tabular-nums">
+              <span className="text-[11px] font-bold text-blue-600 tabular-nums">
                 {searchSharePct}%
               </span>
             </div>
@@ -169,21 +169,21 @@ export const SearchAndSocialCard: React.FC<SearchAndSocialCardProps> = ({
 
           <div
             onClick={() => setActiveTab("social")}
-            className={`p-3 rounded-2xl border cursor-pointer transition-all ${
+            className={`p-2.5 rounded-xl border cursor-pointer transition-all ${
               activeTab === "social"
-                ? "bg-purple-50/80 border-purple-200 shadow-xs"
+                ? "bg-purple-50/80 border-purple-200 shadow-2xs"
                 : "bg-slate-50/50 border-slate-100 hover:bg-slate-50"
             }`}
           >
-            <div className="flex items-center gap-1.5 text-[11px] font-bold text-purple-700 mb-1">
-              <Share2 className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-1 text-[10px] font-bold text-purple-700 mb-0.5">
+              <Share2 className="w-3 h-3" />
               <span>Social Networks</span>
             </div>
             <div className="flex items-baseline justify-between">
-              <span className="text-lg sm:text-xl font-black text-slate-900 tabular-nums">
+              <span className="text-base sm:text-lg font-black text-slate-900 tabular-nums">
                 {formatNumber(totalSocialSessions)}
               </span>
-              <span className="text-xs font-bold text-purple-600 tabular-nums">
+              <span className="text-[11px] font-bold text-purple-600 tabular-nums">
                 {socialSharePct}%
               </span>
             </div>
@@ -192,25 +192,21 @@ export const SearchAndSocialCard: React.FC<SearchAndSocialCardProps> = ({
 
         {/* Breakdown List */}
         {loading ? (
-          <div className="space-y-3">
+          <div className="space-y-1.5">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="space-y-1.5 animate-pulse">
+              <div key={i} className="space-y-1 animate-pulse px-2.5 py-1.5 rounded-xl border border-slate-100 bg-white/50">
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 bg-slate-200 rounded-full shrink-0" />
-                    <div className="h-3.5 w-28 bg-slate-200 rounded" />
+                    <div className="w-4 h-4 bg-slate-200 rounded shrink-0" />
+                    <div className="h-3 w-28 bg-slate-200 rounded" />
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="h-3.5 w-10 bg-slate-200 rounded" />
-                    <div className="h-3.5 w-8 bg-slate-200 rounded" />
-                  </div>
+                  <div className="h-3 w-8 bg-slate-200 rounded" />
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-1" />
               </div>
             ))}
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-1.5">
             {currentList.slice(0, 6).map((item, index) => {
               const percentage = Math.round((item.count / currentTotal) * 100);
               const barGradient =
@@ -219,24 +215,27 @@ export const SearchAndSocialCard: React.FC<SearchAndSocialCardProps> = ({
                   : "from-purple-600 to-pink-400";
 
               return (
-                <div key={index} className="space-y-1.5 group">
+                <div
+                  key={index}
+                  className="px-2.5 py-1.5 rounded-xl border border-slate-100/90 bg-white/70 hover:bg-white hover:border-slate-200/90 transition-all duration-150 space-y-1 group shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
+                >
                   <div className="flex items-center justify-between text-xs">
                     {/* Left: Brand Icon + Channel Name */}
-                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                      <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                        <ReferrerBrandIcon referrer={item.name} size={16} />
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                        <ReferrerBrandIcon referrer={item.name} size={14} />
                       </div>
-                      <span className="font-bold text-slate-800 truncate block group-hover:text-blue-600 transition-colors">
+                      <span className="font-bold text-slate-800 text-xs truncate block group-hover:text-blue-600 transition-colors leading-tight">
                         {item.name}
                       </span>
                     </div>
 
                     {/* Right: Visits Count + Percentage */}
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="font-extrabold text-slate-900 tabular-nums">
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      <span className="font-extrabold text-slate-900 text-xs tabular-nums leading-tight">
                         {formatNumber(item.count)}
                       </span>
-                      <span className="text-slate-400 font-semibold w-8 text-right tabular-nums">
+                      <span className="text-slate-400 font-semibold text-[11px] w-7 text-right tabular-nums leading-tight">
                         {percentage}%
                       </span>
                     </div>
@@ -245,7 +244,7 @@ export const SearchAndSocialCard: React.FC<SearchAndSocialCardProps> = ({
                   {/* Gradient Progress Bar */}
                   <div className="w-full bg-slate-100/90 rounded-full h-1 overflow-hidden">
                     <div
-                      className={`bg-gradient-to-r ${barGradient} h-full rounded-full transition-all duration-500 shadow-xs`}
+                      className={`bg-gradient-to-r ${barGradient} h-full rounded-full transition-all duration-500`}
                       style={{ width: `${Math.max(percentage, 2)}%` }}
                     />
                   </div>
@@ -257,11 +256,11 @@ export const SearchAndSocialCard: React.FC<SearchAndSocialCardProps> = ({
       </div>
 
       {/* Footer Info */}
-      <div className="mt-4 pt-3 border-t border-slate-100/80 flex items-center justify-between text-[11px] text-slate-400">
+      <div className="mt-2.5 pt-2 border-t border-slate-100/80 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400">
         <span className="flex items-center gap-1">
           <Compass className="w-3 h-3 text-slate-400" />
           <span>
-            {activeTab === "search" ? "Search Engine Distribution" : "Social Referral Distribution"}
+            {activeTab === "search" ? "Search Distribution" : "Social Distribution"}
           </span>
         </span>
         <span className="font-semibold text-slate-500">

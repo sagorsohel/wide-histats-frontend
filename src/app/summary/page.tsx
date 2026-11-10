@@ -410,22 +410,22 @@ export default function SummaryPage() {
   }
 
   return (
-    <div className="space-y-6 relative select-text antialiased">
+    <div className="space-y-4 relative select-text antialiased">
       {/* Top Banner & Website Identity */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 mb-2 relative z-10 border-b border-slate-200/80">
-        <div className="flex items-center gap-3.5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-1 relative z-10 border-b border-slate-200/80">
+        <div className="flex items-center gap-3">
           {/* Website Favicon */}
-          <div className="w-11 h-11 rounded-2xl bg-white/90 backdrop-blur-xl border border-slate-200/80 shadow-[0_2px_10px_rgba(20,85,187,0.06)] flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-white border border-slate-200/90 shadow-2xs flex items-center justify-center shrink-0">
             <WebsiteFavicon
               domain={selectedWebsite?.domain}
-              size={24}
+              size={20}
               className="rounded-xs shadow-2xs"
             />
           </div>
 
           <div>
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight flex items-center gap-1.5">
                 {selectedWebsite ? selectedWebsite.name : "streamespn"}
               </h1>
               {selectedWebsite && (
@@ -436,17 +436,16 @@ export default function SummaryPage() {
                   className="p-1 rounded-lg text-slate-400 hover:text-[#1455bb] hover:bg-slate-100 transition-colors inline-flex items-center"
                   title={`Open https://${selectedWebsite.domain}`}
                 >
-                  <ExternalLink className="w-4 h-4" />
+                  <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               )}
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-emerald-100/90 text-emerald-700 border border-emerald-200 shadow-2xs flex items-center gap-1.5">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100/90 text-emerald-700 border border-emerald-200 shadow-2xs flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 LIVE ENGINE
               </span>
             </div>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Real-time telemetry, visitor attribution, and historical trends
-              for{" "}
+            <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+              Real-time telemetry, visitor attribution, and historical trends for{" "}
               <span className="font-bold text-slate-700">
                 {selectedWebsite?.domain || "streamespn.org"}
               </span>
@@ -456,13 +455,13 @@ export default function SummaryPage() {
       </div>
 
       {/* 2-Column Responsive Layout: Left (Main Analytics), Right (Inline Calendar + Stats Cards) */}
-      <div className="flex flex-col xl:flex-row gap-6 items-start relative z-10">
+      <div className="flex flex-col xl:flex-row gap-4 sm:gap-5 items-start relative z-10">
         {/* ============================================================ */}
         {/* LEFT / MAIN ANALYTICS COLUMN                                 */}
         {/* ============================================================ */}
-        <div className="flex-1 min-w-0 space-y-6 w-full order-2 xl:order-1">
+        <div className="flex-1 min-w-0 space-y-4 w-full order-2 xl:order-1">
           {/* KPI Cards Grid - 4 Vibrant Gradient Cards Matching Reference Design */}
-          <div className="grid sm:grid-cols-2   gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
             <KpiCard
               title="Period Visitors"
               value={formatNumber(overview?.uniqueVisitors || 57900)}
@@ -515,7 +514,7 @@ export default function SummaryPage() {
           />
 
           {/* Feature 4: Top Pages & Landing vs Exit Pages - Full Width */}
-          <div className="space-y-6">
+          <div className="space-y-3.5">
             <TopPagesTable
               pages={pages}
               domain={selectedWebsite?.domain}
@@ -530,19 +529,19 @@ export default function SummaryPage() {
           </div>
 
           {/* Feature 5: Traffic Sources & Search Engines vs Social Channels - Full Width */}
-          <div className="space-y-6">
+          <div className="space-y-3.5">
             <SourcesChart sources={sources} loading={loading} />
             <SearchAndSocialCard referrers={referrers} loading={loading} />
           </div>
 
           {/* Feature 2: Geography - Top Cities & Visitors by Country Breakdown - Full Width */}
-          <div className="space-y-6">
+          <div className="space-y-3.5">
             <TopCitiesTable cities={cities} loading={loading} />
             <GeographyTable countries={countries} loading={loading} />
           </div>
 
           {/* Feature 3: Hardware & Platforms - Devices & Browsers + Operating Systems Breakdown - Full Width */}
-          <div className="space-y-6">
+          <div className="space-y-3.5">
             <DeviceBreakdown
               devices={devices}
               browsers={browsers}
@@ -558,7 +557,7 @@ export default function SummaryPage() {
         {/* ============================================================ */}
         {/* RIGHT COLUMN: CALENDAR (ON TOP) + LIFETIME TOTALS (BELOW)    */}
         {/* ============================================================ */}
-        <div className="w-full xl:w-[291px] shrink-0 space-y-5 xl:sticky xl:top-6 order-1 xl:order-2">
+        <div className="w-full xl:w-[291px] shrink-0 space-y-3.5 xl:sticky xl:top-4 order-1 xl:order-2">
           {/* Section 1: ALWAYS SHOWN CALENDAR (UPOR) */}
           <div className="flex justify-center xl:justify-end">
             <HistatsCalendar
@@ -570,11 +569,11 @@ export default function SummaryPage() {
           </div>
 
           {/* Section 2: ALL-TIME LIFETIME TOTALS STATS CARDS (PORE / NICHE) */}
-          <div className="rounded-3xl bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.04)] p-4 sm:p-5 space-y-4">
+          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 sm:p-4 space-y-2.5">
             {/* Header */}
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-4.5 rounded-full bg-gradient-to-b from-[#1455bb] to-blue-400 shadow-sm" />
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-3.5 rounded-full bg-gradient-to-b from-[#1455bb] to-blue-400 shadow-xs" />
                 <h3 className="text-xs font-black uppercase tracking-wider text-[#1455bb]">
                   Lifetime Totals
                 </h3>
@@ -585,22 +584,22 @@ export default function SummaryPage() {
             </div>
 
             {/* 3 Dedicated Stats Cards with rich card backgrounds */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               {/* Card 1: All-Time Users */}
-              <div className="rounded-2xl p-4 bg-gradient-to-br from-blue-50/90 via-white to-blue-50/40 border border-blue-200/70 shadow-xs hover:shadow-md transition-all group">
+              <div className="rounded-xl px-3 py-2 bg-gradient-to-br from-blue-50/80 via-white to-blue-50/30 border border-blue-200/70 shadow-2xs hover:shadow-xs transition-all group">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-900/80">
                     All-Time Total Users
                   </span>
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-[#1455bb] text-white flex items-center justify-center shadow-sm shadow-blue-600/30 group-hover:scale-105 transition-transform">
-                    <Users className="w-4 h-4" />
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-[#1455bb] text-white flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
+                    <Users className="w-3.5 h-3.5" />
                   </div>
                 </div>
-                <div className="mt-2 flex items-baseline justify-between">
+                <div className="mt-1 flex items-baseline justify-between">
                   {loading && !overview ? (
-                    <div className="h-8 w-20 bg-blue-200/50 rounded-lg animate-pulse" />
+                    <div className="h-6 w-16 bg-blue-200/50 rounded-lg animate-pulse" />
                   ) : (
-                    <span className="text-2xl sm:text-3xl font-black text-[#1455bb] tracking-tight tabular-nums">
+                    <span className="text-xl sm:text-2xl font-black text-[#1455bb] tracking-tight tabular-nums">
                       {formatNumber(
                         overview?.allTimeVisitors ||
                           overview?.uniqueVisitors ||
@@ -615,20 +614,20 @@ export default function SummaryPage() {
               </div>
 
               {/* Card 2: All-Time Views */}
-              <div className="rounded-2xl p-4 bg-gradient-to-br from-indigo-50/90 via-white to-indigo-50/40 border border-indigo-200/70 shadow-xs hover:shadow-md transition-all group">
+              <div className="rounded-xl px-3 py-2 bg-gradient-to-br from-indigo-50/80 via-white to-indigo-50/30 border border-indigo-200/70 shadow-2xs hover:shadow-xs transition-all group">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-900/80">
                     All-Time Views
                   </span>
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-[#6366f1] text-white flex items-center justify-center shadow-sm shadow-indigo-600/30 group-hover:scale-105 transition-transform">
-                    <Eye className="w-4 h-4" />
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-500 to-[#6366f1] text-white flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
+                    <Eye className="w-3.5 h-3.5" />
                   </div>
                 </div>
-                <div className="mt-2 flex items-baseline justify-between">
+                <div className="mt-1 flex items-baseline justify-between">
                   {loading && !overview ? (
-                    <div className="h-8 w-20 bg-indigo-200/50 rounded-lg animate-pulse" />
+                    <div className="h-6 w-16 bg-indigo-200/50 rounded-lg animate-pulse" />
                   ) : (
-                    <span className="text-2xl sm:text-3xl font-black text-indigo-700 tracking-tight tabular-nums">
+                    <span className="text-xl sm:text-2xl font-black text-indigo-700 tracking-tight tabular-nums">
                       {formatNumber(
                         overview?.allTimePageviews ||
                           overview?.totalPageviews ||
@@ -643,20 +642,20 @@ export default function SummaryPage() {
               </div>
 
               {/* Card 3: All-Time Visits */}
-              <div className="rounded-2xl p-4 bg-gradient-to-br from-sky-50/90 via-white to-sky-50/40 border border-sky-200/70 shadow-xs hover:shadow-md transition-all group">
+              <div className="rounded-xl px-3 py-2 bg-gradient-to-br from-sky-50/80 via-white to-sky-50/30 border border-sky-200/70 shadow-2xs hover:shadow-xs transition-all group">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-extrabold uppercase tracking-wider text-sky-900/80">
                     All-Time Visits
                   </span>
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500 to-[#0284c7] text-white flex items-center justify-center shadow-sm shadow-sky-600/30 group-hover:scale-105 transition-transform">
-                    <Activity className="w-4 h-4" />
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-sky-500 to-[#0284c7] text-white flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
+                    <Activity className="w-3.5 h-3.5" />
                   </div>
                 </div>
-                <div className="mt-2 flex items-baseline justify-between">
+                <div className="mt-1 flex items-baseline justify-between">
                   {loading && !overview ? (
-                    <div className="h-8 w-20 bg-sky-200/50 rounded-lg animate-pulse" />
+                    <div className="h-6 w-16 bg-sky-200/50 rounded-lg animate-pulse" />
                   ) : (
-                    <span className="text-2xl sm:text-3xl font-black text-sky-700 tracking-tight tabular-nums">
+                    <span className="text-xl sm:text-2xl font-black text-sky-700 tracking-tight tabular-nums">
                       {formatNumber(
                         overview?.allTimeSessions ||
                           overview?.totalSessions ||

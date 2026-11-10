@@ -105,23 +105,23 @@ export const VisitorChart: React.FC<VisitorChartProps> = ({
   const isHourly = formattedData.length > 0 && formattedData[0].date.includes(":");
 
   return (
-    <div className="bg-white/80 backdrop-blur-xl backdrop-saturate-150 rounded-3xl border border-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_10px_35px_-5px_rgba(0,0,0,0.04)] p-5 sm:p-6 transition-all duration-300 hover:shadow-[0_15px_40px_-5px_rgba(0,0,0,0.06)]">
+    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-3.5 sm:p-4 transition-all duration-200">
       {/* HEADER SECTION */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100/80">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 mb-3 pb-2 border-b border-slate-100">
         <div>
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <div className="w-9 h-9 rounded-2xl bg-blue-50/90 border border-blue-100/80 flex items-center justify-center shrink-0 shadow-xs">
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0 shadow-2xs">
               <BarChart2 className="w-4 h-4 text-blue-600" />
             </div>
-            <h3 className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight">
+            <h3 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight">
               Visitors &amp; Pageviews Over Time
             </h3>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50/80 text-blue-600 border border-blue-200/80 shadow-2xs">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50/80 text-blue-600 border border-blue-200/80 shadow-2xs">
               {isHourly ? "24-Hour Telemetry" : "Daily Trend"}
-              <ChevronDown className="w-3 h-3 text-blue-500" />
+              <ChevronDown className="w-2.5 h-2.5 text-blue-500" />
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1 pl-11">
+          <p className="text-[11px] text-slate-500 mt-0.5 pl-10">
             {isHourly
               ? "Hourly traffic volume & visitor telemetry curve across the day"
               : "Daily distribution of traffic volume and unique visitor trends"}
@@ -129,21 +129,21 @@ export const VisitorChart: React.FC<VisitorChartProps> = ({
         </div>
 
         {/* METRIC BADGES & SWITCHER */}
-        <div className="flex flex-wrap items-center gap-3 sm:gap-4 self-start lg:self-auto">
+        <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-auto">
           {/* Quick Stats Legend */}
           {formattedData.length > 0 && !loading && (
-            <div className="flex items-center gap-3 text-xs bg-white/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/80 shadow-2xs">
+            <div className="flex items-center gap-2.5 text-xs bg-slate-50 px-2.5 py-1 rounded-full border border-slate-200/60 shadow-2xs">
               <div className="flex items-center gap-1.5 font-bold">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#0284c7] shadow-xs" />
-                <span className="text-slate-500 font-medium">Views:</span>
-                <span className="text-slate-900 font-extrabold tabular-nums">
+                <span className="w-2 h-2 rounded-full bg-[#0284c7]" />
+                <span className="text-slate-500 text-[11px] font-medium">Views:</span>
+                <span className="text-slate-900 text-xs font-extrabold tabular-nums">
                   {totalPageviews.toLocaleString()}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 font-bold border-l border-slate-200/80 pl-3">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#10b981] shadow-xs" />
-                <span className="text-slate-500 font-medium">Visitors:</span>
-                <span className="text-slate-900 font-extrabold tabular-nums">
+              <div className="flex items-center gap-1.5 font-bold border-l border-slate-200 pl-2.5">
+                <span className="w-2 h-2 rounded-full bg-[#10b981]" />
+                <span className="text-slate-500 text-[11px] font-medium">Visitors:</span>
+                <span className="text-slate-900 text-xs font-extrabold tabular-nums">
                   {totalVisitors.toLocaleString()}
                 </span>
               </div>
@@ -151,13 +151,13 @@ export const VisitorChart: React.FC<VisitorChartProps> = ({
           )}
 
           {/* Metric toggle pill buttons (Apple Segmented Control) */}
-          <div className="inline-flex rounded-2xl bg-slate-100/70 backdrop-blur-md p-1 text-xs font-semibold border border-white/80 shadow-inner">
+          <div className="inline-flex rounded-lg bg-slate-100 p-0.5 text-xs font-semibold border border-slate-200/50">
             <button
               type="button"
               onClick={() => setMetric("both")}
-              className={`px-3.5 py-1 rounded-xl transition-all cursor-pointer ${
+              className={`px-2.5 py-0.5 rounded-md text-[11px] transition-all cursor-pointer ${
                 metric === "both"
-                  ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-600/25"
+                  ? "bg-blue-600 text-white font-bold shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -166,9 +166,9 @@ export const VisitorChart: React.FC<VisitorChartProps> = ({
             <button
               type="button"
               onClick={() => setMetric("pageviews")}
-              className={`px-3.5 py-1 rounded-xl transition-all cursor-pointer ${
+              className={`px-2.5 py-0.5 rounded-md text-[11px] transition-all cursor-pointer ${
                 metric === "pageviews"
-                  ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-600/25"
+                  ? "bg-blue-600 text-white font-bold shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -177,9 +177,9 @@ export const VisitorChart: React.FC<VisitorChartProps> = ({
             <button
               type="button"
               onClick={() => setMetric("visitors")}
-              className={`px-3.5 py-1 rounded-xl transition-all cursor-pointer ${
+              className={`px-2.5 py-0.5 rounded-md text-[11px] transition-all cursor-pointer ${
                 metric === "visitors"
-                  ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-600/25"
+                  ? "bg-blue-600 text-white font-bold shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -191,31 +191,31 @@ export const VisitorChart: React.FC<VisitorChartProps> = ({
 
       {/* CHART CANVAS */}
       {loading ? (
-        <div className="h-[320px] sm:h-[350px] w-full flex flex-col justify-end gap-3 p-4 bg-slate-50/50 rounded-2xl border border-slate-100 animate-pulse">
-          <div className="flex items-end justify-between gap-2 h-full pt-8 pb-4">
+        <div className="h-[260px] sm:h-[280px] w-full flex flex-col justify-end gap-2.5 p-3 bg-slate-50/50 rounded-xl border border-slate-100 animate-pulse">
+          <div className="flex items-end justify-between gap-2 h-full pt-6 pb-2">
             {[20, 35, 25, 45, 60, 50, 40, 70, 85, 95, 75, 45, 30, 50, 80, 95, 60, 30, 20].map(
               (h, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                <div key={i} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
                   <div
                     className="w-full bg-blue-100/60 rounded-t"
                     style={{ height: `${h}%` }}
                   />
-                  <div className="w-4 h-2 bg-slate-200 rounded" />
+                  <div className="w-3.5 h-1.5 bg-slate-200 rounded" />
                 </div>
               )
             )}
           </div>
         </div>
       ) : formattedData.length === 0 ? (
-        <div className="h-[320px] flex flex-col items-center justify-center text-slate-500 text-sm bg-slate-50/40 rounded-2xl border border-slate-100">
-          <Activity className="w-8 h-8 text-slate-300 mb-2 animate-bounce" />
-          <p className="font-bold text-slate-700">No activity recorded for this period</p>
-          <p className="text-xs mt-1 text-slate-400">
+        <div className="h-[260px] flex flex-col items-center justify-center text-slate-500 text-sm bg-slate-50/40 rounded-xl border border-slate-100">
+          <Activity className="w-6 h-6 text-slate-300 mb-1.5" />
+          <p className="font-bold text-slate-700 text-xs">No activity recorded for this period</p>
+          <p className="text-[11px] mt-0.5 text-slate-400">
             Install the tracking snippet on your site to see live analytics.
           </p>
         </div>
       ) : (
-        <div className="h-[320px] sm:h-[350px] w-full">
+        <div className="h-[260px] sm:h-[280px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={formattedData}

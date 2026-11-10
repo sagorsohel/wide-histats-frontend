@@ -26,60 +26,60 @@ export const LandingExitPagesCard: React.FC<LandingExitPagesCardProps> = ({
     currentList.reduce((sum, p) => sum + (p.sessions || p.pageviews || 0), 0) || 1;
 
   return (
-    <div className="bg-white/80 backdrop-blur-xl backdrop-saturate-150 rounded-3xl border border-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.95),0_10px_30px_-5px_rgba(0,0,0,0.04)] p-5 sm:p-6 flex flex-col justify-between transition-all duration-300 hover:shadow-[0_15px_35px_-5px_rgba(0,0,0,0.06)]">
+    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-3.5 sm:p-4 flex flex-col justify-between transition-all duration-200">
       {/* Header with Segmented Pill Controls */}
       <div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100/80">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-2.5 mb-2.5 pb-2 border-b border-slate-100">
+          <div className="flex items-center gap-2.5 min-w-0">
             <div
-              className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-xs border transition-colors ${
+              className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-2xs border transition-colors ${
                 activeTab === "landing"
-                  ? "bg-emerald-50/90 text-emerald-600 border-emerald-100/80"
-                  : "bg-rose-50/90 text-rose-600 border-rose-100/80"
+                  ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                  : "bg-rose-50 text-rose-600 border-rose-100"
               }`}
             >
               {activeTab === "landing" ? (
-                <LogIn className="w-5 h-5" />
+                <LogIn className="w-4 h-4" />
               ) : (
-                <LogOut className="w-5 h-5" />
+                <LogOut className="w-4 h-4" />
               )}
             </div>
-            <div>
-              <h3 className="font-extrabold text-base text-slate-900 tracking-tight">
+            <div className="min-w-0">
+              <h3 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight truncate">
                 {activeTab === "landing"
-                  ? "Top Landing Pages (Entry Points)"
-                  : "Top Exit Pages (Drop-off Points)"}
+                  ? "Top Landing Pages"
+                  : "Top Exit Pages"}
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-[11px] text-slate-500 truncate">
                 {activeTab === "landing"
-                  ? "Where first-time & returning visitors enter your site"
-                  : "Last visited pages before visitors leave or bounce"}
+                  ? "Where visitors enter your site"
+                  : "Last visited pages before bounce"}
               </p>
             </div>
           </div>
 
           {/* Apple Segmented Pill Switcher */}
-          <div className="inline-flex p-1 bg-slate-100/80 backdrop-blur-md rounded-2xl border border-slate-200/50 self-start sm:self-auto">
+          <div className="inline-flex p-0.5 bg-slate-100 rounded-lg border border-slate-200/50 shrink-0">
             <button
               onClick={() => setActiveTab("landing")}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              className={`px-2 py-0.5 rounded-md text-[11px] font-bold transition-all flex items-center gap-1 ${
                 activeTab === "landing"
-                  ? "bg-white text-emerald-700 shadow-sm shadow-slate-200/70"
+                  ? "bg-white text-emerald-700 shadow-2xs"
                   : "text-slate-500 hover:text-slate-800"
               }`}
             >
-              <LogIn className="w-3.5 h-3.5" />
+              <LogIn className="w-3 h-3" />
               <span>Landing</span>
             </button>
             <button
               onClick={() => setActiveTab("exit")}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              className={`px-2 py-0.5 rounded-md text-[11px] font-bold transition-all flex items-center gap-1 ${
                 activeTab === "exit"
-                  ? "bg-white text-rose-700 shadow-sm shadow-slate-200/70"
+                  ? "bg-white text-rose-700 shadow-2xs"
                   : "text-slate-500 hover:text-slate-800"
               }`}
             >
-              <LogOut className="w-3.5 h-3.5" />
+              <LogOut className="w-3 h-3" />
               <span>Exit</span>
             </button>
           </div>
@@ -87,20 +87,19 @@ export const LandingExitPagesCard: React.FC<LandingExitPagesCardProps> = ({
 
         {/* Content Table */}
         {loading ? (
-          <div className="space-y-3">
+          <div className="space-y-1.5">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="space-y-1.5 animate-pulse">
-                <div className="flex items-center justify-between text-xs">
+              <div key={i} className="space-y-1 animate-pulse">
+                <div className="flex items-center justify-between text-xs px-2.5 py-1.5 rounded-xl border border-slate-100 bg-white/50">
                   <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 bg-slate-200 rounded-md shrink-0" />
-                    <div className="h-3.5 w-32 bg-slate-200 rounded" />
+                    <div className="w-4 h-4 bg-slate-200 rounded shrink-0" />
+                    <div className="h-3 w-28 bg-slate-200 rounded" />
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="h-3.5 w-10 bg-slate-200 rounded" />
-                    <div className="h-3.5 w-8 bg-slate-200 rounded" />
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-8 bg-slate-200 rounded" />
+                    <div className="h-3 w-6 bg-slate-200 rounded" />
                   </div>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-1" />
               </div>
             ))}
           </div>
@@ -109,7 +108,7 @@ export const LandingExitPagesCard: React.FC<LandingExitPagesCardProps> = ({
             No {activeTab} page data recorded yet.
           </div>
         ) : (
-          <div className="space-y-3.5">
+          <div className="space-y-1.5">
             {currentList.slice(0, 6).map((item, index) => {
               const sessionsCount = item.sessions || item.pageviews || 0;
               const percentage = Math.round((sessionsCount / totalSessions) * 100);
@@ -120,19 +119,22 @@ export const LandingExitPagesCard: React.FC<LandingExitPagesCardProps> = ({
                   : "from-rose-500 to-amber-400";
 
               return (
-                <div key={index} className="space-y-1.5 group">
+                <div
+                  key={index}
+                  className="px-2.5 py-1.5 rounded-xl border border-slate-100/90 bg-white/70 hover:bg-white hover:border-slate-200/90 transition-all duration-150 space-y-1 group shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
+                >
                   <div className="flex items-center justify-between text-xs">
                     {/* Left: Favicon + Page Path */}
-                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                      <div className="w-5 h-5 rounded-md bg-white border border-slate-200/60 shadow-2xs flex items-center justify-center shrink-0 overflow-hidden">
-                        <WebsiteFavicon domain={domain} size={14} />
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <div className="w-4 h-4 rounded bg-white border border-slate-200/60 shadow-2xs flex items-center justify-center shrink-0 overflow-hidden">
+                        <WebsiteFavicon domain={domain} size={13} />
                       </div>
 
                       <a
                         href={domain ? `https://${domain}${item.path}` : item.path}
                         target="_blank"
                         rel="noreferrer"
-                        className="font-bold text-slate-800 truncate block group-hover:text-blue-600 transition-colors"
+                        className="font-bold text-slate-800 text-xs truncate block group-hover:text-blue-600 transition-colors leading-tight font-mono"
                       >
                         {item.path}
                       </a>
@@ -148,11 +150,11 @@ export const LandingExitPagesCard: React.FC<LandingExitPagesCardProps> = ({
                     </div>
 
                     {/* Right: Sessions Count + Percentage */}
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="font-extrabold text-slate-900 tabular-nums">
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      <span className="font-extrabold text-slate-900 text-xs tabular-nums leading-tight">
                         {formatNumber(sessionsCount)}
                       </span>
-                      <span className="text-slate-400 font-semibold w-8 text-right tabular-nums">
+                      <span className="text-slate-400 font-semibold text-[11px] w-7 text-right tabular-nums leading-tight">
                         {percentage}%
                       </span>
                     </div>
@@ -161,7 +163,7 @@ export const LandingExitPagesCard: React.FC<LandingExitPagesCardProps> = ({
                   {/* Gradient Progress Bar */}
                   <div className="w-full bg-slate-100/90 rounded-full h-1 overflow-hidden">
                     <div
-                      className={`bg-gradient-to-r ${gradientClass} h-full rounded-full transition-all duration-500 shadow-xs`}
+                      className={`bg-gradient-to-r ${gradientClass} h-full rounded-full transition-all duration-500`}
                       style={{ width: `${Math.max(percentage, 2)}%` }}
                     />
                   </div>
@@ -173,7 +175,7 @@ export const LandingExitPagesCard: React.FC<LandingExitPagesCardProps> = ({
       </div>
 
       {/* Footer Info */}
-      <div className="mt-4 pt-3 border-t border-slate-100/80 flex items-center justify-between text-[11px] text-slate-400">
+      <div className="mt-2.5 pt-2 border-t border-slate-100/80 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400">
         <span className="flex items-center gap-1">
           <Compass className="w-3 h-3 text-slate-400" />
           <span>

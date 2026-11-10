@@ -38,6 +38,8 @@ import {
   Smartphone,
   Tablet,
   Globe,
+  Globe2,
+  Building2,
   Compass,
   Plus,
   Minus,
@@ -819,6 +821,60 @@ export default function RealtimeHistatsPage() {
     }
     return onlineCount > 0 ? 1 : 0;
   }, [data?.topCountries, onlineCount]);
+
+  const liveCitiesData = useMemo(() => {
+    const cityMap = new Map<
+      string,
+      { city: string; country: string; code: string; count: number }
+    >();
+
+    if (data?.activeVisitors && Array.isArray(data.activeVisitors)) {
+      data.activeVisitors.forEach((v) => {
+        const cityName =
+          v.city && v.city !== "-" && v.city.trim() ? v.city.trim() : "";
+        if (!cityName) return;
+        const key = `${cityName.toLowerCase()}_${(v.countryCode || "").toLowerCase()}`;
+        const existing = cityMap.get(key);
+        if (existing) {
+          existing.count += 1;
+        } else {
+          cityMap.set(key, {
+            city: cityName,
+            country: v.country || "",
+            code: v.countryCode || "",
+            count: 1,
+          });
+        }
+      });
+    }
+
+    if (
+      data?.recentPageviews &&
+      Array.isArray(data.recentPageviews)
+    ) {
+      data.recentPageviews.forEach((p) => {
+        const cityName =
+          p.city && p.city !== "-" && p.city.trim() ? p.city.trim() : "";
+        if (!cityName) return;
+        const key = `${cityName.toLowerCase()}_${(p.countryCode || "").toLowerCase()}`;
+        const existing = cityMap.get(key);
+        if (existing) {
+          if (cityMap.size < 6) existing.count += 1;
+        } else {
+          cityMap.set(key, {
+            city: cityName,
+            country: p.country || "",
+            code: p.countryCode || "",
+            count: 1,
+          });
+        }
+      });
+    }
+
+    return Array.from(cityMap.values()).sort((a, b) => b.count - a.count);
+  }, [data?.activeVisitors, data?.recentPageviews]);
+
+  const liveCitiesCount = liveCitiesData.length;
 
   const getDeviceIcon = (device?: string, os?: string) => {
     return (
@@ -2136,84 +2192,223 @@ export default function RealtimeHistatsPage() {
 
         {/* Tab: Geolocation */}
         {activeTab === "geo" && (
-          <div className="bg-[#eaedf2] border border-slate-300/80 rounded-2xl shadow-xs p-4 sm:p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-300/80 pb-2.5">
-              <h3 className="font-bold text-slate-900 text-sm tracking-tight">
-                Live Visitor Global Distribution
-              </h3>
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-white text-[#1455bb] border border-slate-300/70 shadow-2xs">
-                Total Countries: {totalCountriesCount}
-              </span>
-            </div>
-
-            {/* Expanded World Map */}
-            <RealtimeGeoMap
-              countryData={
-                data?.topCountries && data.topCountries.length > 0
-                  ? data.topCountries
-                  : []
-              }
-              height="440px"
-            />
-
-            {/* Country ranking list */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
-              {loading &&
-              (!data?.topCountries || data.topCountries.length === 0)
-                ? [1, 2, 3, 4, 5, 6].map((i) => (
-                    <div
-                      key={i}
-                      className="p-2.5 rounded-lg bg-white/70 flex items-center justify-between text-xs animate-pulse"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="w-5 h-4 bg-slate-300 rounded" />
-                        <div className="h-4 w-24 bg-slate-300 rounded" />
-                      </div>
-                      <div className="h-4 w-14 bg-slate-300 rounded" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 items-stretch w-full">
+            {/* LEFT SIDE: ALL CITIES ONLINE */}
+            <div className="bg-[#eaedf2] border border-slate-300/80 rounded-2xl shadow-xs p-3.5 sm:p-4 space-y-3 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between border-b border-slate-300/80 pb-2 mb-2.5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-200 flex items-center justify-center shrink-0">
+                      <Building2 className="w-4 h-4" />
                     </div>
-                  ))
-                : (data?.topCountries && data.topCountries.length > 0
-                    ? data.topCountries.slice(0, 18).map((c) => {
-                        const totalActive = onlineCount || 1;
-                        const pct = Math.min(
-                          100,
-                          Math.round((c.count / totalActive) * 100),
-                        );
-                        return {
-                          name: c.country,
-                          code: c.code,
-                          visitors: c.count,
-                          pct: `${pct}%`,
-                        };
-                      })
-                    : []
-                  ).map((c, i) => {
-                    const isZebra = i % 2 === 0;
-                    return (
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-sm tracking-tight leading-tight">
+                        Live Cities Telemetry
+                      </h3>
+                      <p className="text-[11px] text-slate-500 leading-tight">
+                        Metropolitan visitor locations online
+                      </p>
+                    </div>
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-white text-indigo-700 border border-slate-300/70 shadow-2xs">
+                    Total Cities: {liveCitiesCount}
+                  </span>
+                </div>
+
+                {/* Cities Interactive Map */}
+                <div className="rounded-xl overflow-hidden border border-slate-300/80 shadow-xs mb-3">
+                  <RealtimeGeoMap
+                    countryData={liveCitiesData.map((c) => ({
+                      country: c.country,
+                      code: c.code,
+                      city: c.city,
+                      count: c.count,
+                    }))}
+                    height="320px"
+                    mode="city"
+                  />
+                </div>
+
+                {/* Cities ranking list */}
+                <div className="space-y-1.5 max-h-[360px] overflow-y-auto pr-1">
+                  {loading && liveCitiesData.length === 0 ? (
+                    [1, 2, 3, 4, 5].map((i) => (
                       <div
                         key={i}
-                        style={{
-                          backgroundColor: isZebra ? "#00000017" : "#ffffff",
-                        }}
-                        className="p-2.5 rounded-lg hover:brightness-95 transition-all flex items-center justify-between text-xs"
+                        className="px-2.5 py-1.5 rounded-lg bg-white/70 flex items-center justify-between text-xs animate-pulse"
                       >
-                        <div className="flex items-center gap-2 truncate">
-                          <CountryFlag code={c.code} size="md" />
-                          <span className="font-semibold text-slate-800 truncate">
-                            {getCountryName(c.code, c.name)}
-                          </span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-slate-300" />
+                          <div className="h-3.5 w-24 bg-slate-300 rounded" />
                         </div>
-                        <div className="text-right shrink-0">
-                          <span className="font-bold text-[#1455bb]">
-                            {c.visitors} online
-                          </span>
-                          <span className="text-[10px] text-slate-500 block">
-                            ({c.pct})
-                          </span>
-                        </div>
+                        <div className="h-3.5 w-12 bg-slate-300 rounded" />
                       </div>
-                    );
-                  })}
+                    ))
+                  ) : liveCitiesData.length === 0 ? (
+                    <div className="py-12 text-center text-xs text-slate-400">
+                      No live city records detected for current visitors.
+                    </div>
+                  ) : (
+                    liveCitiesData.map((c, i) => {
+                      const isZebra = i % 2 === 0;
+                      const totalActive = onlineCount || 1;
+                      const pct = Math.min(
+                        100,
+                        Math.round((c.count / totalActive) * 100),
+                      );
+
+                      return (
+                        <div
+                          key={i}
+                          style={{
+                            backgroundColor: isZebra ? "#00000017" : "#ffffff",
+                          }}
+                          className="px-2.5 py-1.5 rounded-lg hover:brightness-95 transition-all flex items-center justify-between text-xs shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
+                        >
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <div className="w-6 h-6 rounded-full bg-slate-50 border border-slate-200/60 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
+                              <CountryFlag
+                                code={c.code}
+                                countryName={c.country}
+                                city={c.city}
+                                size="sm"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <span className="font-bold text-slate-900 text-xs block truncate leading-tight">
+                                {c.city}
+                              </span>
+                              <span className="text-[10px] text-slate-500 block truncate leading-tight">
+                                {c.country}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className="font-bold text-indigo-700 text-xs block leading-tight">
+                              {c.count} online
+                            </span>
+                            <span className="text-[10px] text-slate-500 block leading-tight">
+                              ({pct}%)
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="pt-2 border-t border-slate-300/60 flex items-center justify-between text-[11px] text-slate-500">
+                <span>Metropolitan breakdown</span>
+                <span className="font-semibold text-slate-700">
+                  {liveCitiesData.reduce((acc, c) => acc + c.count, 0)} active in metros
+                </span>
+              </div>
+            </div>
+
+            {/* RIGHT SIDE: ALL COUNTRIES ONLINE */}
+            <div className="bg-[#eaedf2] border border-slate-300/80 rounded-2xl shadow-xs p-3.5 sm:p-4 space-y-3 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between border-b border-slate-300/80 pb-2 mb-2.5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#1455bb] border border-blue-200 flex items-center justify-center shrink-0">
+                      <Globe2 className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-sm tracking-tight leading-tight">
+                        Live Country Telemetry
+                      </h3>
+                      <p className="text-[11px] text-slate-500 leading-tight">
+                        Global country distribution online
+                      </p>
+                    </div>
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-white text-[#1455bb] border border-slate-300/70 shadow-2xs">
+                    Total Countries: {totalCountriesCount}
+                  </span>
+                </div>
+
+                {/* Country Interactive Map */}
+                <div className="rounded-xl overflow-hidden border border-slate-300/80 shadow-xs mb-3">
+                  <RealtimeGeoMap
+                    countryData={
+                      data?.topCountries && data.topCountries.length > 0
+                        ? data.topCountries
+                        : []
+                    }
+                    height="320px"
+                    mode="country"
+                  />
+                </div>
+
+                {/* Country ranking list */}
+                <div className="space-y-1.5 max-h-[360px] overflow-y-auto pr-1">
+                  {loading &&
+                  (!data?.topCountries || data.topCountries.length === 0) ? (
+                    [1, 2, 3, 4, 5].map((i) => (
+                      <div
+                        key={i}
+                        className="px-2.5 py-1.5 rounded-lg bg-white/70 flex items-center justify-between text-xs animate-pulse"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-slate-300" />
+                          <div className="h-3.5 w-24 bg-slate-300 rounded" />
+                        </div>
+                        <div className="h-3.5 w-12 bg-slate-300 rounded" />
+                      </div>
+                    ))
+                  ) : !data?.topCountries || data.topCountries.length === 0 ? (
+                    <div className="py-12 text-center text-xs text-slate-400">
+                      No country telemetry recorded yet.
+                    </div>
+                  ) : (
+                    data.topCountries.map((c, i) => {
+                      const isZebra = i % 2 === 0;
+                      const totalActive = onlineCount || 1;
+                      const pct = Math.min(
+                        100,
+                        Math.round((c.count / totalActive) * 100),
+                      );
+
+                      return (
+                        <div
+                          key={i}
+                          style={{
+                            backgroundColor: isZebra ? "#00000017" : "#ffffff",
+                          }}
+                          className="px-2.5 py-1.5 rounded-lg hover:brightness-95 transition-all flex items-center justify-between text-xs shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
+                        >
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <div className="w-6 h-6 rounded-full bg-slate-50 border border-slate-200/60 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
+                              <CountryFlag code={c.code} size="sm" />
+                            </div>
+                            <span className="font-bold text-slate-900 text-xs truncate leading-tight">
+                              {getCountryName(c.code, c.country)}
+                            </span>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className="font-bold text-[#1455bb] text-xs block leading-tight">
+                              {c.count} online
+                            </span>
+                            <span className="text-[10px] text-slate-500 block leading-tight">
+                              ({pct}%)
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="pt-2 border-t border-slate-300/60 flex items-center justify-between text-[11px] text-slate-500">
+                <span>International reach</span>
+                <span className="font-semibold text-slate-700">
+                  {data?.topCountries?.reduce((acc, c) => acc + c.count, 0) || 0} active globally
+                </span>
+              </div>
             </div>
           </div>
         )}

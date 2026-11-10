@@ -1409,15 +1409,7 @@ export default function RealtimeHistatsPage() {
                     countryData={
                       data?.topCountries && data.topCountries.length > 0
                         ? data.topCountries
-                        : onlineCount > 0
-                          ? [
-                              {
-                                country: "South Africa",
-                                code: "ZA",
-                                count: onlineCount,
-                              },
-                            ]
-                          : []
+                        : []
                     }
                     height="260px"
                   />
@@ -2159,15 +2151,7 @@ export default function RealtimeHistatsPage() {
               countryData={
                 data?.topCountries && data.topCountries.length > 0
                   ? data.topCountries
-                  : onlineCount > 0
-                    ? [
-                        {
-                          country: "South Africa",
-                          code: "ZA",
-                          count: onlineCount,
-                        },
-                      ]
-                    : []
+                  : []
               }
               height="440px"
             />
@@ -2202,14 +2186,7 @@ export default function RealtimeHistatsPage() {
                           pct: `${pct}%`,
                         };
                       })
-                    : [
-                        {
-                          name: "South Africa",
-                          code: "ZA",
-                          visitors: onlineCount,
-                          pct: "100%",
-                        },
-                      ]
+                    : []
                   ).map((c, i) => {
                     const isZebra = i % 2 === 0;
                     return (

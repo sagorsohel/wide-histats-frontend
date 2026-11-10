@@ -636,7 +636,7 @@ export const Sidebar: React.FC = () => {
                 {group.title}
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {group.items.map((item) => {
                   const isActive =
                     pathname === item.href ||
@@ -650,122 +650,131 @@ export const Sidebar: React.FC = () => {
 
                   const itemHref = getHref(item.href);
 
-                  if (isActive) {
-                    // Active Card (Instant 0ms Next.js navigation with Gradient Border)
-                    return (
-                      <Link
-                        key={item.href}
-                        prefetch={true}
-                        href={itemHref}
-                        className="block rounded-xl group scale-[1.01] transition-all cursor-pointer shadow-md shadow-blue-600/25"
-                      >
-                        <div className="p-[1.5px] rounded-xl bg-gradient-to-r from-blue-300 via-indigo-300 to-sky-300 shadow-2xs">
-                          <div className="p-3 rounded-[10.5px] bg-gradient-to-r from-[#1455bb] to-[#1a62d4] text-white">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex items-center gap-2.5 min-w-0">
-                                {/* 3D Animated Icon Box (Active) */}
-                                <div
-                                  className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 group-hover:scale-110 group-hover:-translate-y-0.5 ${
-                                    item.theme?.active3D ||
-                                    "bg-white/20 text-white shadow-2xs"
-                                  }`}
-                                >
-                                  <item.icon
-                                    className="w-4 h-4 text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]"
-                                    strokeColor="#ffffff"
-                                  />
-                                </div>
-                                <div className="min-w-0">
-                                  <div className="font-extrabold text-xs text-white truncate leading-tight">
-                                    {item.label}
-                                  </div>
-                                  <div className="text-[10px] text-blue-100/80 truncate mt-0.5">
-                                    {item.subtitle}
-                                  </div>
-                                </div>
-                              </div>
+                  // Border & Background per theme (matching pill style exactly)
+                  const themeStyles: Record<
+                    string,
+                    {
+                      border: string;
+                      activeBorder: string;
+                      activeBg: string;
+                      iconBg: string;
+                    }
+                  > = {
+                    "/summary": {
+                      border: "border-blue-200 hover:border-blue-300",
+                      activeBorder: "border-blue-400 shadow-xs",
+                      activeBg: "bg-blue-50/70",
+                      iconBg:
+                        "bg-blue-50 text-blue-600 border border-blue-200/80",
+                    },
+                    "/traffic-stats": {
+                      border: "border-emerald-200 hover:border-emerald-300",
+                      activeBorder: "border-emerald-400 shadow-xs",
+                      activeBg: "bg-emerald-50/70",
+                      iconBg:
+                        "bg-emerald-50 text-emerald-600 border border-emerald-200/80",
+                    },
+                    "/realtime": {
+                      border: "border-rose-200 hover:border-rose-300",
+                      activeBorder: "border-rose-400 shadow-xs",
+                      activeBg: "bg-rose-50/70",
+                      iconBg:
+                        "bg-rose-50 text-rose-600 border border-rose-200/80",
+                    },
+                    "/sources": {
+                      border: "border-amber-200 hover:border-amber-300",
+                      activeBorder: "border-amber-400 shadow-xs",
+                      activeBg: "bg-amber-50/70",
+                      iconBg:
+                        "bg-amber-50 text-amber-600 border border-amber-200/80",
+                    },
+                    "/devices": {
+                      border: "border-purple-200 hover:border-purple-300",
+                      activeBorder: "border-purple-300 shadow-xs",
+                      activeBg: "bg-purple-50/70",
+                      iconBg:
+                        "bg-purple-50 text-purple-600 border border-purple-200/80",
+                    },
+                    "/geography": {
+                      border: "border-sky-200 hover:border-sky-300",
+                      activeBorder: "border-sky-300 shadow-xs",
+                      activeBg: "bg-sky-50/70",
+                      iconBg: "bg-sky-50 text-sky-600 border border-sky-200/80",
+                    },
+                    "/pages": {
+                      border: "border-pink-200 hover:border-pink-300",
+                      activeBorder: "border-pink-300 shadow-xs",
+                      activeBg: "bg-pink-50/70",
+                      iconBg:
+                        "bg-pink-50 text-pink-600 border border-pink-200/80",
+                    },
+                    "/settings": {
+                      border: "border-slate-200 hover:border-slate-300",
+                      activeBorder: "border-slate-300 shadow-xs",
+                      activeBg: "bg-slate-50",
+                      iconBg:
+                        "bg-slate-100 text-slate-600 border border-slate-200/80",
+                    },
+                  };
 
-                              {item.isLive ? (
-                                <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-white text-[#1455bb] shadow-xs flex items-center gap-1 shrink-0">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                  <span>
-                                    {typeof activeCount === "number" &&
-                                    activeCount > 0
-                                      ? `${activeCount} Live`
-                                      : "Live"}
-                                  </span>
-                                </span>
-                              ) : item.badge ? (
-                                <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-white/20 text-white border border-white/30 shrink-0">
-                                  {item.badge}
-                                </span>
-                              ) : (
-                                <ChevronRight className="w-3.5 h-3.5 text-white/70 shrink-0 group-hover:translate-x-0.5 transition-transform" />
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  }
+                  const currentStyle = themeStyles[item.href] || {
+                    border: "border-slate-200",
+                    activeBorder: "border-blue-400",
+                    activeBg: "bg-blue-50/70",
+                    iconBg:
+                      "bg-slate-100 text-slate-600 border border-slate-200/80",
+                  };
 
-                  // Inactive Card (Instant 0ms Next.js navigation with Gradient Border)
                   return (
                     <Link
                       key={item.href}
                       prefetch={true}
                       href={itemHref}
-                      className="block rounded-xl group hover:translate-x-0.5 transition-all duration-200 cursor-pointer shadow-2xs hover:shadow-xs"
+                      style={{ padding: "0.05rem" }}
+                      className={`block rounded-[10px] border transition-all duration-200 cursor-pointer shadow-2xs hover:shadow-xs hover:translate-x-0.5 ${
+                        isActive
+                          ? `${currentStyle.activeBorder} ${currentStyle.activeBg}`
+                          : `${currentStyle.border} bg-white`
+                      }`}
                     >
-                      {/* Gradient Border Frame (1.5px padding reveals vibrant border gradient) */}
-                      <div
-                        className={`p-[1.5px] rounded-xl bg-gradient-to-r ${
-                          item.theme?.cardBorderGradient ||
-                          "from-slate-200 via-slate-300 to-slate-200 group-hover:from-blue-400 group-hover:to-indigo-500"
-                        } transition-all duration-300`}
-                      >
-                        <div className="p-2.5 rounded-[10.5px] bg-white">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              {/* 3D Animated Icon Box (Inactive - Distinct theme color per item) */}
-                              <div
-                                className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 group-hover:scale-110 group-hover:-translate-y-0.5 ${
-                                  item.theme?.inactive3D ||
-                                  "bg-slate-100 text-[#1455bb]"
-                                }`}
-                              >
-                                <item.icon
-                                  className="w-4 h-4 drop-shadow-[0_1px_1px_rgba(0,0,0,0.08)]"
-                                  strokeColor={item.theme?.stroke || "#1455bb"}
-                                />
-                              </div>
-                              <div className="min-w-0">
-                                <div className="font-bold text-xs text-slate-800 group-hover:text-blue-600 truncate leading-tight transition-colors">
-                                  {item.label}
-                                </div>
-                                <div className="text-[10px] text-slate-400 truncate mt-0.5">
-                                  {item.subtitle}
-                                </div>
-                              </div>
-                            </div>
-
-                            {item.isLive ? (
-                              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1 shrink-0">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                <span>
-                                  {typeof activeCount === "number" &&
-                                  activeCount > 0
-                                    ? activeCount
-                                    : "LIVE"}
-                                </span>
-                              </span>
-                            ) : item.badge ? (
-                              <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
-                                {item.badge}
-                              </span>
-                            ) : null}
+                      <div className="flex items-center justify-between gap-2 px-2 py-0.5">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          {/* 3D Animated Icon Box */}
+                          <div
+                            className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 group-hover:scale-105 ${currentStyle.iconBg}`}
+                          >
+                            <item.icon
+                              size={15}
+                              className="w-3.5 h-3.5 drop-shadow-[0_1px_1px_rgba(0,0,0,0.06)]"
+                              strokeColor={item.theme?.stroke || "#1455bb"}
+                            />
                           </div>
+                          <span
+                            className={`font-bold text-xs truncate transition-colors ${
+                              isActive
+                                ? "text-slate-900 font-extrabold"
+                                : "text-slate-800"
+                            }`}
+                          >
+                            {item.label}
+                          </span>
                         </div>
+
+                        {item.isLive ? (
+                          <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1 shrink-0">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <span>
+                              {typeof activeCount === "number" &&
+                              activeCount > 0
+                                ? activeCount
+                                : "LIVE"}
+                            </span>
+                          </span>
+                        ) : item.badge ? (
+                          <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
+                            {item.badge}
+                          </span>
+                        ) : null}
                       </div>
                     </Link>
                   );

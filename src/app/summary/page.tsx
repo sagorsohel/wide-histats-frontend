@@ -535,10 +535,10 @@ export default function SummaryPage() {
             <SearchAndSocialCard referrers={referrers} loading={loading} />
           </div>
 
-          {/* Feature 2: Geography - Visitors by Country & Top Cities Breakdown - Full Width */}
+          {/* Feature 2: Geography - Top Cities & Visitors by Country Breakdown - Full Width */}
           <div className="space-y-6">
-            <GeographyTable countries={countries} loading={loading} />
             <TopCitiesTable cities={cities} loading={loading} />
+            <GeographyTable countries={countries} loading={loading} />
           </div>
 
           {/* Feature 3: Hardware & Platforms - Devices & Browsers + Operating Systems Breakdown - Full Width */}

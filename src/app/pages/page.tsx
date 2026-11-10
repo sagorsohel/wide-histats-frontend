@@ -87,7 +87,7 @@ export default function PagesReportPage() {
         from = dates.from;
         to = dates.to;
       }
-      const q = `websiteId=${siteId}&from=${from}&to=${to}&limit=50`;
+      const q = `websiteId=${siteId}&from=${from}&to=${to}&limit=50000`;
 
       // Strict future check: future date has zero traffic
       if (new Date(from).getTime() > Date.now()) {

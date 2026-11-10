@@ -335,8 +335,20 @@ export const RealtimeGeoMap: React.FC<RealtimeGeoMapProps> = ({
       };
       window.addEventListener("resize", handleResize);
 
+      // Responsive container resize observer
+      let resizeObserver: ResizeObserver | null = null;
+      if (typeof ResizeObserver !== "undefined" && mapContainerRef.current) {
+        resizeObserver = new ResizeObserver(() => {
+          map.resize();
+        });
+        resizeObserver.observe(mapContainerRef.current);
+      }
+
       return () => {
         window.removeEventListener("resize", handleResize);
+        if (resizeObserver) {
+          resizeObserver.disconnect();
+        }
         markersRef.current.forEach((m) => m.remove());
         markersRef.current = [];
         map.remove();

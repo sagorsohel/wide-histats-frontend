@@ -1267,225 +1267,222 @@ export default function RealtimeHistatsPage() {
             </div>
 
             {/* Bottom 2-Column Grid Matching Screenshot */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
-              {/* Left Column: Popular Pages & Popular Referrers */}
-              <div className="space-y-3.5">
-                {/* Box 1: Popular Pages */}
-                <div className="bg-white border-2 border-gray-300 rounded-xl shadow-xs overflow-hidden">
-                  <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-800 text-[12px] tracking-tight">
-                        Popular pages
-                      </span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-[#1455bb] border border-slate-300/70 shadow-2xs">
-                        Total: {displayPages.length}
-                      </span>
-                    </div>
-                    <Search className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 cursor-pointer" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 items-stretch">
+              {/* Row 1, Left: Popular Pages */}
+              <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden flex flex-col h-[285px]">
+                <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between shrink-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-slate-800 text-[12px] tracking-tight">
+                      Popular pages
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-[#1455bb] border border-slate-300/70 shadow-2xs">
+                      Total: {displayPages.length}
+                    </span>
                   </div>
-
-                  <div className="divide-y divide-slate-100 overflow-y-auto max-h-[220px] scroll-smooth">
-                    {loading && displayPages.length === 0 ? (
-                      [1, 2, 3, 4, 5].map((i) => (
-                        <div
-                          key={i}
-                          className="px-3 py-2 flex items-center gap-2.5 animate-pulse"
-                        >
-                          <div className="w-6 h-3.5 bg-slate-200 rounded shrink-0" />
-                          <div className="w-3 h-3 bg-slate-200 rounded shrink-0" />
-                          <div className="h-3.5 bg-slate-200 rounded flex-1 max-w-[280px]" />
-                        </div>
-                      ))
-                    ) : displayPages.length === 0 ? (
-                      <div className="px-3 py-4 text-center text-slate-400 text-[11px]">
-                        No active page hits yet
-                      </div>
-                    ) : (
-                      displayPages.map((page, idx) => {
-                        const pageUrl = getFullUrl(page.url, page.path);
-                        const isZebra = idx % 2 === 0;
-                        return (
-                          <div
-                            key={idx}
-                            style={{
-                              backgroundColor: isZebra
-                                ? "#00000017"
-                                : "#ffffff",
-                            }}
-                            className="px-3 py-0 flex items-center gap-2 hover:brightness-95 text-[11px] transition-colors min-h-[30px] h-[30px]"
-                          >
-                            <div className="w-[36px] text-right font-bold text-[#1455bb] text-[12px] shrink-0 font-sans pr-2">
-                              <span>{page.count}</span>
-                            </div>
-                            <div className="flex-1 flex items-center gap-1.5 truncate min-w-0">
-                              <div
-                                className="shrink-0 cursor-pointer"
-                                onClick={(e) =>
-                                  handleUrlClick(
-                                    e,
-                                    pageUrl,
-                                    page.title || page.path,
-                                  )
-                                }
-                                title={pageUrl}
-                              >
-                                <WebsiteFavicon
-                                  url={page.url}
-                                  domain={selectedWebsite?.domain}
-                                  size={14}
-                                  fallbackIcon="link"
-                                />
-                              </div>
-                              <a
-                                href={pageUrl}
-                                onClick={(e) =>
-                                  handleUrlClick(
-                                    e,
-                                    pageUrl,
-                                    page.title || page.path,
-                                  )
-                                }
-                                title={pageUrl}
-                                className="truncate text-slate-800 font-normal hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
-                              >
-                                <span className="truncate block font-normal text-[11px]">
-                                  {page.title &&
-                                  !page.title.startsWith("http") &&
-                                  page.title !== page.path
-                                    ? page.title
-                                    : pageUrl}
-                                </span>
-                              </a>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
+                  <Search className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 cursor-pointer" />
                 </div>
 
-                {/* Box 2: Popular Referrers */}
-                <div className="bg-white border-2 border-gray-300 rounded-xl shadow-xs overflow-hidden">
-                  <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-800 text-[12px] tracking-tight">
-                        Popular referrer
-                      </span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-[#1455bb] border border-slate-300/70 shadow-2xs">
-                        Total: {displayReferrers.length}
-                      </span>
-                    </div>
-                    <Search className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 cursor-pointer" />
-                  </div>
-
-                  <div className="divide-y divide-slate-100 overflow-y-auto max-h-[220px] scroll-smooth">
-                    {loading && displayReferrers.length === 0 ? (
-                      [1, 2, 3, 4, 5].map((i) => (
-                        <div
-                          key={i}
-                          className="px-3 py-2 flex items-center gap-2.5 animate-pulse"
-                        >
-                          <div className="w-6 h-3.5 bg-slate-200 rounded shrink-0" />
-                          <div className="w-3 h-3 bg-slate-200 rounded shrink-0" />
-                          <div className="h-3.5 bg-slate-200 rounded flex-1 max-w-[220px]" />
-                        </div>
-                      ))
-                    ) : displayReferrers.length === 0 ? (
-                      <div className="px-3 py-4 text-center text-slate-400 text-[11px]">
-                        No active referrer sources yet
+                <div className="divide-y divide-slate-100 overflow-y-auto flex-1 min-h-0 scroll-smooth">
+                  {loading && displayPages.length === 0 ? (
+                    [1, 2, 3, 4, 5].map((i) => (
+                      <div
+                        key={i}
+                        className="px-3 py-2 flex items-center gap-2.5 animate-pulse"
+                      >
+                        <div className="w-6 h-3.5 bg-slate-200 rounded shrink-0" />
+                        <div className="w-3 h-3 bg-slate-200 rounded shrink-0" />
+                        <div className="h-3.5 bg-slate-200 rounded flex-1 max-w-[280px]" />
                       </div>
-                    ) : (
-                      displayReferrers.map((ref, idx) => {
-                        const isUrl =
-                          ref.referrer &&
-                          (ref.referrer.startsWith("http://") ||
-                            ref.referrer.startsWith("https://"));
-                        const isZebra = idx % 2 === 0;
-                        return (
-                          <div
-                            key={idx}
-                            style={{
-                              backgroundColor: isZebra
-                                ? "#00000017"
-                                : "#ffffff",
-                            }}
-                            className="px-3 py-0 flex items-center gap-2 hover:brightness-95 text-[11px] transition-colors min-h-[30px] h-[30px]"
-                          >
-                            <div className="w-[36px] text-right font-bold text-[#1455bb] text-[12px] shrink-0 font-sans pr-2">
-                              <span>{ref.count}</span>
-                            </div>
-                            <div className="flex-1 flex items-center gap-1.5 truncate min-w-0">
-                              <ReferrerBrandIcon
-                                referrer={ref.referrer}
-                                size={14}
-                              />
-                              {isUrl ? (
-                                <a
-                                  href={ref.referrer}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  title={ref.referrer}
-                                  className="truncate text-slate-800 font-normal hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
-                                >
-                                  <span className="truncate block font-normal text-[11px]">
-                                    {ref.referrer}
-                                  </span>
-                                </a>
-                              ) : (
-                                <span className="truncate text-slate-800 font-normal text-[11px]">
-                                  {ref.referrer}
-                                </span>
-                              )}
-                            </div>
+                    ))
+                  ) : displayPages.length === 0 ? (
+                    <div className="px-3 py-4 text-center text-slate-400 text-[11px]">
+                      No active page hits yet
+                    </div>
+                  ) : (
+                    displayPages.map((page, idx) => {
+                      const pageUrl = getFullUrl(page.url, page.path);
+                      const isZebra = idx % 2 === 0;
+                      return (
+                        <div
+                          key={idx}
+                          style={{
+                            backgroundColor: isZebra
+                              ? "#00000017"
+                              : "#ffffff",
+                          }}
+                          className="px-3 py-0 flex items-center gap-2 hover:brightness-95 text-[11px] transition-colors min-h-[30px] h-[30px]"
+                        >
+                          <div className="w-[36px] text-right font-bold text-[#1455bb] text-[12px] shrink-0 font-sans pr-2">
+                            <span>{page.count}</span>
                           </div>
-                        );
-                      })
-                    )}
-                  </div>
+                          <div className="flex-1 flex items-center gap-1.5 truncate min-w-0">
+                            <div
+                              className="shrink-0 cursor-pointer"
+                              onClick={(e) =>
+                                handleUrlClick(
+                                  e,
+                                  pageUrl,
+                                  page.title || page.path,
+                                )
+                              }
+                              title={pageUrl}
+                            >
+                              <WebsiteFavicon
+                                url={page.url}
+                                domain={selectedWebsite?.domain}
+                                size={14}
+                                fallbackIcon="link"
+                              />
+                            </div>
+                            <a
+                              href={pageUrl}
+                              onClick={(e) =>
+                                handleUrlClick(
+                                  e,
+                                  pageUrl,
+                                  page.title || page.path,
+                                )
+                              }
+                              title={pageUrl}
+                              className="truncate text-slate-800 font-normal hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
+                            >
+                              <span className="truncate block font-normal text-[11px]">
+                                {page.title &&
+                                !page.title.startsWith("http") &&
+                                page.title !== page.path
+                                  ? page.title
+                                  : pageUrl}
+                              </span>
+                            </a>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
 
-              {/* Right Column: Geolocation Map & Most Active Visitors */}
-              <div className="space-y-3.5">
-                {/* Box 3: Geolocation World Map (MapLibre GL Telemetry) */}
-                <div className="bg-white border border-slate-200/90 rounded-xl p-2 shadow-xs overflow-hidden">
-                  <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-800 text-[12px] tracking-tight">
-                        Geolocation
-                      </span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-[#1455bb] border border-slate-300/70 shadow-2xs">
-                        Total: {totalCountriesCount}
-                      </span>
-                    </div>
-                    <Search className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 cursor-pointer" />
+              {/* Row 1, Right: Geolocation World Map (MapLibre GL Telemetry) */}
+              <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden flex flex-col h-[285px]">
+                <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between shrink-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-slate-800 text-[12px] tracking-tight">
+                      Geolocation
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-[#1455bb] border border-slate-300/70 shadow-2xs">
+                      Total: {totalCountriesCount}
+                    </span>
                   </div>
+                  <Search className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 cursor-pointer" />
+                </div>
 
+                <div className="p-2 flex-1 min-h-0 flex flex-col">
                   <RealtimeGeoMap
                     countryData={
                       data?.topCountries && data.topCountries.length > 0
                         ? data.topCountries
                         : []
                     }
-                    height="260px"
+                    height="100%"
                   />
                 </div>
+              </div>
 
-                {/* Box 4: Most Active Visitors */}
-                <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden">
-                  <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-800 text-[12px] tracking-tight">
-                        Most active visitors
-                      </span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-[#1455bb] border border-slate-300/70 shadow-2xs">
-                        Total: {displayActiveVisitors.length}
-                      </span>
-                    </div>
-                    <Search className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 cursor-pointer" />
+              {/* Row 2, Left: Popular Referrers */}
+              <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden flex flex-col h-[285px]">
+                <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between shrink-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-slate-800 text-[12px] tracking-tight">
+                      Popular referrer
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-[#1455bb] border border-slate-300/70 shadow-2xs">
+                      Total: {displayReferrers.length}
+                    </span>
                   </div>
+                  <Search className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 cursor-pointer" />
+                </div>
 
-                  <div className="divide-y divide-slate-100 overflow-y-auto max-h-[220px] scroll-smooth">
+                <div className="divide-y divide-slate-100 overflow-y-auto flex-1 min-h-0 scroll-smooth">
+                  {loading && displayReferrers.length === 0 ? (
+                    [1, 2, 3, 4, 5].map((i) => (
+                      <div
+                        key={i}
+                        className="px-3 py-2 flex items-center gap-2.5 animate-pulse"
+                      >
+                        <div className="w-6 h-3.5 bg-slate-200 rounded shrink-0" />
+                        <div className="w-3 h-3 bg-slate-200 rounded shrink-0" />
+                        <div className="h-3.5 bg-slate-200 rounded flex-1 max-w-[220px]" />
+                      </div>
+                    ))
+                  ) : displayReferrers.length === 0 ? (
+                    <div className="px-3 py-4 text-center text-slate-400 text-[11px]">
+                      No active referrer sources yet
+                    </div>
+                  ) : (
+                    displayReferrers.map((ref, idx) => {
+                      const isUrl =
+                        ref.referrer &&
+                        (ref.referrer.startsWith("http://") ||
+                          ref.referrer.startsWith("https://"));
+                      const isZebra = idx % 2 === 0;
+                      return (
+                        <div
+                          key={idx}
+                          style={{
+                            backgroundColor: isZebra
+                              ? "#00000017"
+                              : "#ffffff",
+                          }}
+                          className="px-3 py-0 flex items-center gap-2 hover:brightness-95 text-[11px] transition-colors min-h-[30px] h-[30px]"
+                        >
+                          <div className="w-[36px] text-right font-bold text-[#1455bb] text-[12px] shrink-0 font-sans pr-2">
+                            <span>{ref.count}</span>
+                          </div>
+                          <div className="flex-1 flex items-center gap-1.5 truncate min-w-0">
+                            <ReferrerBrandIcon
+                              referrer={ref.referrer}
+                              size={14}
+                            />
+                            {isUrl ? (
+                              <a
+                                href={ref.referrer}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title={ref.referrer}
+                                className="truncate text-slate-800 font-normal hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
+                              >
+                                <span className="truncate block font-normal text-[11px]">
+                                  {ref.referrer}
+                                </span>
+                              </a>
+                            ) : (
+                              <span className="truncate text-slate-800 font-normal text-[11px]">
+                                {ref.referrer}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+
+              {/* Row 2, Right: Most Active Visitors */}
+              <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden flex flex-col h-[285px]">
+                <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between shrink-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-slate-800 text-[12px] tracking-tight">
+                      Most active visitors
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-[#1455bb] border border-slate-300/70 shadow-2xs">
+                      Total: {displayActiveVisitors.length}
+                    </span>
+                  </div>
+                  <Search className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 cursor-pointer" />
+                </div>
+
+                <div className="divide-y divide-slate-100 overflow-y-auto flex-1 min-h-0 scroll-smooth">
                     {loading && displayActiveVisitors.length === 0 ? (
                       [1, 2, 3, 4, 5].map((i) => (
                         <div
@@ -1590,7 +1587,6 @@ export default function RealtimeHistatsPage() {
                 </div>
               </div>
             </div>
-          </div>
         )}
 
         {/* Tab: Recent (Full view with Real IP stream matching screenshot) */}

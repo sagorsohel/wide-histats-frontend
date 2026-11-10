@@ -449,10 +449,10 @@ export default function PagesReportPage() {
       {/* ============================================================ */}
       {/* 2. FULL WIDTH SECTION: TRAFFIC BY URL & BY TITLE (NICHE)     */}
       {/* ============================================================ */}
-      <div className="grid grid-cols-1  gap-6 items-start w-full">
+      <div className="grid grid-cols-1 gap-5 items-start w-full">
         {/* 1. TRAFFIC BY URL CARD */}
-        <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-xs space-y-4">
-          <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-100">
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-xs space-y-3">
+          <div className="flex items-center justify-between gap-3 pb-2.5 border-b border-slate-100">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#1455bb] border border-blue-200/60 flex items-center justify-center shrink-0 shadow-2xs">
                 <Link2 className="w-4 h-4" />
@@ -472,26 +472,26 @@ export default function PagesReportPage() {
           </div>
 
           {loading && pages.length === 0 ? (
-            <div className="space-y-2.5">
+            <div className="space-y-1.5">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div
                   key={i}
-                  className="p-3 rounded-xl border border-slate-100 bg-slate-50/60 flex items-center justify-between gap-3 animate-pulse"
+                  className="px-3 py-2 rounded-xl border border-slate-100 bg-slate-50/60 flex items-center justify-between gap-3 animate-pulse"
                 >
                   <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                    <div className="w-5 h-4 bg-slate-200 rounded shrink-0" />
+                    <div className="w-6 h-4 bg-slate-200 rounded shrink-0" />
                     <div className="h-3.5 bg-slate-200 rounded w-2/3" />
                   </div>
-                  <div className="h-4 w-14 bg-slate-200 rounded shrink-0" />
+                  <div className="h-4 w-16 bg-slate-200 rounded shrink-0" />
                 </div>
               ))}
             </div>
           ) : pages.length === 0 ? (
-            <div className="py-12 text-center text-xs text-slate-400">
+            <div className="py-10 text-center text-xs text-slate-400">
               No URL pageviews recorded for this window.
             </div>
           ) : (
-            <div className="space-y-2.5 max-h-[620px] overflow-y-auto pr-1 custom-scrollbar">
+            <div className="space-y-1.5 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
               {pages.map((page, index) => {
                 const percentage = Math.round(
                   (page.pageviews / maxViews) * 100,
@@ -511,9 +511,9 @@ export default function PagesReportPage() {
                       style={{ width: `${Math.max(percentage, 4)}%` }}
                     />
 
-                    <div className="relative flex items-center justify-between p-3 text-xs gap-3">
+                    <div className="relative flex items-center justify-between px-3 py-1.5 text-xs gap-3">
                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                        <span className="w-5 text-slate-400 font-mono font-bold text-[11px] shrink-0 text-center">
+                        <span className="w-6 text-slate-400 font-mono font-bold text-[11px] shrink-0 text-center">
                           {index + 1}
                         </span>
                         <div className="min-w-0 flex-1 space-y-0.5">
@@ -540,21 +540,21 @@ export default function PagesReportPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-4 shrink-0 text-right">
-                        <div>
-                          <div className="font-extrabold text-slate-900 tabular-nums">
+                      <div className="flex items-center gap-3 shrink-0 text-right">
+                        <div className="w-16 text-right">
+                          <div className="font-extrabold text-slate-900 text-xs tabular-nums">
                             {page.pageviews.toLocaleString()}
                           </div>
-                          <div className="text-[10px] text-slate-400 flex items-center justify-end gap-0.5">
+                          <div className="text-[9px] text-slate-400 flex items-center justify-end gap-0.5 font-medium">
                             <Eye className="w-2.5 h-2.5" />
                             <span>views</span>
                           </div>
                         </div>
-                        <div className="hidden sm:block">
-                          <div className="font-bold text-slate-600 tabular-nums">
+                        <div className="w-16 text-right hidden sm:block">
+                          <div className="font-bold text-slate-600 text-xs tabular-nums">
                             {page.visitors.toLocaleString()}
                           </div>
-                          <div className="text-[10px] text-slate-400 flex items-center justify-end gap-0.5">
+                          <div className="text-[9px] text-slate-400 flex items-center justify-end gap-0.5 font-medium">
                             <Users className="w-2.5 h-2.5" />
                             <span>visitors</span>
                           </div>
@@ -569,10 +569,10 @@ export default function PagesReportPage() {
         </div>
 
         {/* 2. TRAFFIC BY TITLE CARD */}
-        <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-xs space-y-4">
-          <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-100">
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-xs space-y-3">
+          <div className="flex items-center justify-between gap-3 pb-2.5 border-b border-slate-100">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-200/60 flex items-center justify-center shrink-0 shadow-2xs">
+              <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#1455bb] border border-blue-200/60 flex items-center justify-center shrink-0 shadow-2xs">
                 <FileText className="w-4 h-4" />
               </div>
               <div className="min-w-0">
@@ -584,32 +584,32 @@ export default function PagesReportPage() {
                 </p>
               </div>
             </div>
-            <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/80 shadow-2xs whitespace-nowrap shrink-0">
+            <span className="text-[10px] font-black uppercase px-2.5 py-1 rounded-full bg-blue-50 text-[#1455bb] border border-blue-200/80 shadow-2xs whitespace-nowrap shrink-0">
               {byTitleList.length} Titles
             </span>
           </div>
 
           {loading && byTitleList.length === 0 ? (
-            <div className="space-y-2.5">
+            <div className="space-y-1.5">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div
                   key={i}
-                  className="p-3 rounded-xl border border-slate-100 bg-slate-50/60 flex items-center justify-between gap-3 animate-pulse"
+                  className="px-3 py-2 rounded-xl border border-slate-100 bg-slate-50/60 flex items-center justify-between gap-3 animate-pulse"
                 >
                   <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                    <div className="w-5 h-4 bg-slate-200 rounded shrink-0" />
+                    <div className="w-6 h-4 bg-slate-200 rounded shrink-0" />
                     <div className="h-3.5 bg-slate-200 rounded w-2/3" />
                   </div>
-                  <div className="h-4 w-14 bg-slate-200 rounded shrink-0" />
+                  <div className="h-4 w-16 bg-slate-200 rounded shrink-0" />
                 </div>
               ))}
             </div>
           ) : byTitleList.length === 0 ? (
-            <div className="py-12 text-center text-xs text-slate-400">
+            <div className="py-10 text-center text-xs text-slate-400">
               No title telemetry recorded for this window.
             </div>
           ) : (
-            <div className="space-y-2.5 max-h-[620px] overflow-y-auto pr-1 custom-scrollbar">
+            <div className="space-y-1.5 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
               {byTitleList.map((item, index) => {
                 const percentage = Math.round(
                   (item.pageviews / maxTitleViews) * 100,
@@ -619,23 +619,23 @@ export default function PagesReportPage() {
                 return (
                   <div
                     key={index}
-                    className="group relative rounded-xl border border-slate-100 hover:border-indigo-200 overflow-hidden transition-all bg-white hover:shadow-xs"
+                    className="group relative rounded-xl border border-slate-100 hover:border-blue-200 overflow-hidden transition-all bg-white hover:shadow-xs"
                   >
                     {/* Relative Percentage Progress Fill Bar */}
                     <div
-                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-indigo-500/10 to-indigo-400/5 pointer-events-none transition-all group-hover:from-indigo-500/15"
+                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500/10 to-blue-400/5 pointer-events-none transition-all group-hover:from-blue-500/15"
                       style={{ width: `${Math.max(percentage, 4)}%` }}
                     />
 
-                    <div className="relative flex items-center justify-between p-3 text-xs gap-3">
+                    <div className="relative flex items-center justify-between px-3 py-1.5 text-xs gap-3">
                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                        <span className="w-5 text-indigo-400 font-mono font-bold text-[11px] shrink-0 text-center">
+                        <span className="w-6 text-slate-400 font-mono font-bold text-[11px] shrink-0 text-center">
                           {index + 1}
                         </span>
                         <div className="min-w-0 flex-1 space-y-0.5">
                           <div
                             title={item.title}
-                            className="font-bold text-slate-900 truncate group-hover:text-indigo-600 font-sans text-[12px] block"
+                            className="font-bold text-slate-900 truncate group-hover:text-[#1455bb] font-sans text-[12px] block"
                           >
                             {item.title}
                           </div>
@@ -645,7 +645,7 @@ export default function PagesReportPage() {
                               target="_blank"
                               rel="noopener noreferrer"
                               title={`Open ${sampleUrl}`}
-                              className="text-[10px] text-slate-400 font-mono truncate hover:text-indigo-600 hover:underline block"
+                              className="text-[10px] text-slate-400 font-mono truncate hover:text-[#1455bb] hover:underline block"
                             >
                               {sampleUrl}
                             </a>
@@ -654,21 +654,21 @@ export default function PagesReportPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-4 shrink-0 text-right">
-                        <div>
-                          <div className="font-extrabold text-slate-900 tabular-nums">
+                      <div className="flex items-center gap-3 shrink-0 text-right">
+                        <div className="w-16 text-right">
+                          <div className="font-extrabold text-slate-900 text-xs tabular-nums">
                             {item.pageviews.toLocaleString()}
                           </div>
-                          <div className="text-[10px] text-slate-400 flex items-center justify-end gap-0.5">
+                          <div className="text-[9px] text-slate-400 flex items-center justify-end gap-0.5 font-medium">
                             <Eye className="w-2.5 h-2.5" />
                             <span>views</span>
                           </div>
                         </div>
-                        <div className="hidden sm:block">
-                          <div className="font-bold text-slate-600 tabular-nums">
+                        <div className="w-16 text-right hidden sm:block">
+                          <div className="font-bold text-slate-600 text-xs tabular-nums">
                             {item.visitors.toLocaleString()}
                           </div>
-                          <div className="text-[10px] text-slate-400 flex items-center justify-end gap-0.5">
+                          <div className="text-[9px] text-slate-400 flex items-center justify-end gap-0.5 font-medium">
                             <Users className="w-2.5 h-2.5" />
                             <span>visitors</span>
                           </div>

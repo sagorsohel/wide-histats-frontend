@@ -1698,34 +1698,16 @@ export default function RealtimeHistatsPage() {
 
                           {/* Visitor Phone / Device Badge */}
                           <div className="flex items-center gap-1.5 ml-auto text-xs shrink-0">
-                            {hit.deviceType === "mobile" ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded shadow-2xs">
-                                <OsIcon
-                                  os={hit.os}
-                                  deviceType="mobile"
-                                  size={13}
-                                />
-                                <span>Mobile ({hit.os})</span>
-                              </span>
-                            ) : hit.deviceType === "tablet" ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded shadow-2xs">
-                                <OsIcon
-                                  os={hit.os}
-                                  deviceType="tablet"
-                                  size={13}
-                                />
-                                <span>Tablet</span>
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded shadow-2xs">
-                                <OsIcon
-                                  os={hit.os}
-                                  deviceType="desktop"
-                                  size={13}
-                                />
-                                <span>Desktop ({hit.os})</span>
-                              </span>
-                            )}
+                            <span
+                              className="inline-flex items-center p-0.5 bg-white border border-slate-200 rounded shadow-2xs"
+                              title={`${hit.deviceType || "Device"} (${hit.os || "OS"})`}
+                            >
+                              <OsIcon
+                                os={hit.os}
+                                deviceType={hit.deviceType}
+                                size={15}
+                              />
+                            </span>
                             <span
                               className="inline-flex items-center p-0.5 bg-white border border-slate-200 rounded shadow-2xs"
                               title={`${hit.browser} on ${hit.os}`}
@@ -1956,25 +1938,16 @@ export default function RealtimeHistatsPage() {
                             <span className="text-slate-900 font-bold text-[13px]">
                               {formatVisitorIp(vis)}
                             </span>
-                            {vis.deviceType === "mobile" ? (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded shadow-2xs">
-                                <OsIcon
-                                  os={vis.os}
-                                  deviceType="mobile"
-                                  size={12}
-                                />
-                                <span>Mobile ({vis.os})</span>
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded shadow-2xs">
-                                <OsIcon
-                                  os={vis.os}
-                                  deviceType="desktop"
-                                  size={12}
-                                />
-                                <span>Desktop ({vis.os})</span>
-                              </span>
-                            )}
+                            <span
+                              className="inline-flex items-center p-0.5 bg-white border border-slate-200 rounded shadow-2xs"
+                              title={`${vis.deviceType || "Device"} (${vis.os || "OS"})`}
+                            >
+                              <OsIcon
+                                os={vis.os}
+                                deviceType={vis.deviceType}
+                                size={14}
+                              />
+                            </span>
                             <span
                               className="inline-flex items-center p-0.5 bg-white border border-slate-200 rounded shadow-2xs"
                               title={`${vis.browser} on ${vis.os}`}

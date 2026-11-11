@@ -25,7 +25,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       <Header />
       <div className="desktop-content-row flex-1 flex items-start">
         <Sidebar />
-        <main className="desktop-main-scroll flex-1 min-w-0 p-3 sm:p-4 pb-14 bg-[#F1F5F9]">
+        <main className="desktop-main-scroll flex-1 min-w-0 px-2 py-2.5 lg:p-4 pb-14 bg-[#F1F5F9]">
           <div className="w-full">{children}</div>
         </main>
       </div>

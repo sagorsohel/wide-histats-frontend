@@ -334,7 +334,9 @@ export default function SourcesPage() {
   };
 
   const topReferrer = (data?.detailedReferrers || [])[0] || null;
-  const topReferrerName = topReferrer ? topReferrer.referrerUrl : "Direct / Search";
+  const topReferrerName = topReferrer
+    ? topReferrer.referrerUrl
+    : "Direct / Search";
   const topReferrerVisitors = topReferrer ? topReferrer.visitors : 0;
 
   const referrerStatItems = [
@@ -822,7 +824,7 @@ export default function SourcesPage() {
         </div>
 
         {/* SECONDARY SECTION: TRAFFIC CHANNELS & UTM CAMPAIGNS */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+        <div className="w-full pt-2">
           {/* Main Channels Breakdown */}
           <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs">
             <div className="flex items-center justify-between mb-4">
@@ -881,47 +883,6 @@ export default function SourcesPage() {
                     </div>
                   );
                 })}
-              </div>
-            )}
-          </div>
-
-          {/* UTM Campaigns */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Target className="w-4 h-4 text-emerald-600" />
-                <h3 className="font-bold text-sm text-slate-900">
-                  UTM Campaigns
-                </h3>
-              </div>
-              <span className="text-[11px] font-semibold text-slate-500">
-                Total: {data?.campaigns?.length || 0} campaigns
-              </span>
-            </div>
-
-            {!data?.campaigns || data.campaigns.length === 0 ? (
-              <div className="py-8 text-center text-xs text-slate-400">
-                No active UTM marketing campaigns in this range. Add{" "}
-                <code className="px-1 text-[#1455bb] font-mono bg-blue-50 rounded">
-                  ?utm_campaign=...
-                </code>{" "}
-                to your links.
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {data.campaigns.slice(0, 5).map((c, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200 text-xs"
-                  >
-                    <span className="text-emerald-700 font-semibold truncate max-w-[220px]">
-                      {c.campaign}
-                    </span>
-                    <span className="font-bold text-slate-900 tabular-nums">
-                      {c.sessions.toLocaleString()} visits
-                    </span>
-                  </div>
-                ))}
               </div>
             )}
           </div>

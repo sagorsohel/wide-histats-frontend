@@ -1133,7 +1133,7 @@ export default function RealtimeHistatsPage() {
                 </button>
               </div>
 
-              <div className="realtime-recent-table divide-y divide-slate-100 overflow-x-auto overflow-y-auto h-[480px] lg:h-[260px] scroll-smooth">
+              <div className="realtime-recent-table divide-y divide-slate-100 overflow-x-auto overflow-y-auto h-[300px] lg:h-[300px] scroll-smooth">
                 {loading && displayHits.length === 0 ? (
                   [1, 2, 3, 4, 5, 6].map((i) => (
                     <div

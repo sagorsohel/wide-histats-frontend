@@ -10,6 +10,8 @@ import { UrlWebsiteSync } from "@/components/common/UrlWebsiteSync";
 
 export const viewport: Viewport = {
   width: 1260,
+  initialScale: 0.3,
+  minimumScale: 0.1,
   maximumScale: 5,
   userScalable: true,
 };
@@ -62,27 +64,21 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                function autoZoomDesktop() {
-                  try {
-                    var targetWidth = 1260;
-                    var screenW = window.screen && window.screen.width ? window.screen.width : window.innerWidth;
-                    if (screenW > 0 && screenW < targetWidth) {
-                      var scale = screenW / targetWidth;
-                      var meta = document.querySelector('meta[name="viewport"]');
-                      if (!meta) {
-                        meta = document.createElement('meta');
-                        meta.name = 'viewport';
-                        document.head.appendChild(meta);
-                      }
-                      meta.setAttribute('content', 'width=' + targetWidth + ', initial-scale=' + scale.toFixed(4) + ', minimum-scale=' + (scale * 0.4).toFixed(4) + ', maximum-scale=5.0, user-scalable=yes');
+                function updateViewport() {
+                  var w = window.screen.width;
+                  if (w && w < 1260) {
+                    var scale = (w / 1260).toFixed(4);
+                    var mv = document.querySelector('meta[name="viewport"]');
+                    if (mv) {
+                      mv.setAttribute('content', 'width=1260, initial-scale=' + scale + ', minimum-scale=0.1, maximum-scale=5.0, user-scalable=yes');
                     }
-                  } catch (e) {}
+                  }
                 }
-                autoZoomDesktop();
-                window.addEventListener('resize', autoZoomDesktop);
+                updateViewport();
                 window.addEventListener('orientationchange', function() {
-                  setTimeout(autoZoomDesktop, 150);
+                  setTimeout(updateViewport, 150);
                 });
+                window.addEventListener('resize', updateViewport);
               })();
             `,
           }}

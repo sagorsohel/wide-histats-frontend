@@ -1133,7 +1133,7 @@ export default function RealtimeHistatsPage() {
                 </button>
               </div>
 
-              <div className="divide-y divide-slate-100 overflow-x-auto overflow-y-auto h-[480px] scroll-smooth">
+              <div className="realtime-recent-table divide-y divide-slate-100 overflow-x-auto overflow-y-auto h-[480px] lg:h-[260px] scroll-smooth">
                 {loading && displayHits.length === 0 ? (
                   [1, 2, 3, 4, 5, 6].map((i) => (
                     <div
@@ -1269,7 +1269,7 @@ export default function RealtimeHistatsPage() {
             {/* Bottom 2-Column Grid Matching Screenshot */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 items-stretch">
               {/* Row 1, Left: Popular Pages */}
-              <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden flex flex-col h-[420px]">
+              <div className="realtime-grid-card bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden flex flex-col h-[420px] lg:h-[285px]">
                 <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-slate-800 text-[12px] tracking-tight">
@@ -1363,7 +1363,7 @@ export default function RealtimeHistatsPage() {
               </div>
 
               {/* Row 1, Right: Geolocation World Map (MapLibre GL Telemetry) */}
-              <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden flex flex-col h-[420px]">
+              <div className="realtime-grid-card bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden flex flex-col h-[420px] lg:h-[285px]">
                 <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-slate-800 text-[12px] tracking-tight">
@@ -1389,7 +1389,7 @@ export default function RealtimeHistatsPage() {
               </div>
 
               {/* Row 2, Left: Popular Referrers */}
-              <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden flex flex-col h-[420px]">
+              <div className="realtime-grid-card bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden flex flex-col h-[420px] lg:h-[285px]">
                 <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-slate-800 text-[12px] tracking-tight">
@@ -1469,7 +1469,7 @@ export default function RealtimeHistatsPage() {
               </div>
 
               {/* Row 2, Right: Most Active Visitors */}
-              <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden flex flex-col h-[420px]">
+              <div className="realtime-grid-card bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden flex flex-col h-[420px] lg:h-[285px]">
                 <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-slate-800 text-[12px] tracking-tight">

@@ -20,81 +20,77 @@
   --radius: 0.5rem;
 }
 
-html {
-  width: 100%;
-  min-height: 100%;
-  overflow-x: auto;
-  overflow-y: scroll !important;
-  -webkit-overflow-scrolling: touch;
-}
-
-body {
-  width: 100%;
-  min-width: 1140px;
-  min-height: 100%;
-  background-color: #f1f4f8;
-  color: #1e293b;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-
 /* ============================================================ */
-/* App Layout: 1140px Boxed Layout with Scroll on Far Right Edge */
-/* Fixed Header, Fixed Left Sidebar, Fixed Bottom Footer        */
-/* ============================================================ */
-.desktop-app-container {
-  height: auto !important;
-  min-height: 100vh !important;
-  max-height: none !important;
-  overflow: visible !important;
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-.desktop-content-row {
-  flex: 1 1 auto !important;
-  height: auto !important;
-  min-height: calc(100vh - 4rem - 2.5rem) !important;
-  max-height: none !important;
-  overflow: visible !important;
-  display: flex !important;
-  align-items: flex-start !important;
-}
-
-.desktop-sticky-sidebar {
-  position: sticky !important;
-  top: 4rem !important;
-  height: calc(100vh - 4rem - 2.5rem) !important;
-  max-height: calc(100vh - 4rem - 2.5rem) !important;
-  align-self: flex-start !important;
-  flex-shrink: 0 !important;
-  overflow: hidden !important;
-  z-index: 40 !important;
-}
-
-.desktop-main-scroll {
-  flex: 1 1 0% !important;
-  min-width: 0 !important;
-  height: auto !important;
-  max-height: none !important;
-  overflow: visible !important;
-  overflow-y: visible !important;
-  overflow-x: visible !important;
-}
-
-.desktop-footer {
-  position: sticky !important;
-  bottom: 0 !important;
-  height: 2.5rem !important;
-  width: 100% !important;
-  flex-shrink: 0 !important;
-  z-index: 50 !important;
-}
-
-/* ============================================================ */
-/* Realtime Table & Grid Card Heights                           */
-/* Desktop: Compact (260px/285px) | Mobile: Tall (480px/420px)  */
+/* Desktop Layout: Fixed Header, Fixed Left Sidebar, Fixed Footer */
+/* Window Scrollbar on Far Right Edge, Compact Card Heights      */
 /* ============================================================ */
 @media screen and (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+  html {
+    width: 100%;
+    min-height: 100%;
+    overflow-x: auto;
+    overflow-y: scroll !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body {
+    width: 100%;
+    min-width: 1140px;
+    min-height: 100%;
+    background-color: #f1f4f8;
+    color: #1e293b;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  .desktop-app-container {
+    height: auto !important;
+    min-height: 100vh !important;
+    max-height: none !important;
+    overflow: visible !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .desktop-content-row {
+    flex: 1 1 auto !important;
+    height: auto !important;
+    min-height: calc(100vh - 4rem - 2.5rem) !important;
+    max-height: none !important;
+    overflow: visible !important;
+    display: flex !important;
+    align-items: flex-start !important;
+  }
+
+  .desktop-sticky-sidebar {
+    position: sticky !important;
+    top: 4rem !important;
+    height: calc(100vh - 4rem - 2.5rem) !important;
+    max-height: calc(100vh - 4rem - 2.5rem) !important;
+    align-self: flex-start !important;
+    flex-shrink: 0 !important;
+    overflow: hidden !important;
+    z-index: 40 !important;
+  }
+
+  .desktop-main-scroll {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    overflow-y: visible !important;
+    overflow-x: visible !important;
+  }
+
+  .desktop-footer {
+    position: sticky !important;
+    bottom: 0 !important;
+    height: 2.5rem !important;
+    width: 100% !important;
+    flex-shrink: 0 !important;
+    z-index: 50 !important;
+  }
+
   .realtime-recent-table {
     height: 260px !important;
   }
@@ -103,17 +99,74 @@ body {
   }
 }
 
+/* ============================================================ */
+/* Mobile Layout: Header Fixed, Sidebar Fixed, Footer Fixed      */
+/* ONLY Right Side Content Scrollable, ZERO X-Axis Scroll       */
+/* ============================================================ */
 @media screen and (max-width: 1023px), (hover: none), (pointer: coarse) {
-  /* Phone: ZERO X-Axis Scroll (Locked horizontally) */
   html,
   body {
-    overflow-x: hidden !important;
-    max-width: 100vw !important;
-    overscroll-behavior-x: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    height: 100dvh !important;
+    max-height: 100% !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
   }
 
   .desktop-app-container {
+    width: 100% !important;
+    max-width: 1140px !important;
+    height: 100% !important;
+    height: 100dvh !important;
+    max-height: 100% !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .desktop-content-row {
+    flex: 1 1 0% !important;
+    height: calc(100vh - 4rem - 2.5rem) !important;
+    height: calc(100dvh - 4rem - 2.5rem) !important;
+    max-height: calc(100vh - 4rem - 2.5rem) !important;
+    max-height: calc(100dvh - 4rem - 2.5rem) !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: stretch !important;
+  }
+
+  .desktop-sticky-sidebar {
+    position: relative !important;
+    top: 0 !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    flex-shrink: 0 !important;
+    overflow: hidden !important;
+    align-self: stretch !important;
+    z-index: 30 !important;
+  }
+
+  .desktop-main-scroll {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    overflow-y: auto !important;
     overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-y: contain !important;
+  }
+
+  .desktop-footer {
+    position: relative !important;
+    bottom: 0 !important;
+    height: 2.5rem !important;
+    width: 100% !important;
+    flex-shrink: 0 !important;
+    z-index: 30 !important;
   }
 
   .realtime-recent-table {

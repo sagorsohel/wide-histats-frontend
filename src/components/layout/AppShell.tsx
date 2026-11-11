@@ -19,13 +19,13 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
     );
   }
 
-  // Dashboard shell: Header at top, Left Sidebar, Footer right under content, zero empty space
+  // Dashboard shell: 1140px boxed container, Header fixed at top, Left Sidebar fixed, Footer fixed at bottom, Window scroll on far right
   return (
-    <div className="desktop-app-container w-[1140px] min-w-[1140px] max-w-[1140px] mx-auto flex flex-col bg-white shadow-[0_0_50px_rgba(0,0,0,0.06)] border-x border-slate-200/90 relative">
+    <div className="desktop-app-container w-[1140px] min-w-[1140px] max-w-[1140px] mx-auto min-h-screen flex flex-col bg-white shadow-[0_0_50px_rgba(0,0,0,0.06)] border-x border-slate-200/90 relative">
       <Header />
-      <div className="desktop-content-row flex-1 flex items-stretch">
+      <div className="desktop-content-row flex-1 flex items-start">
         <Sidebar />
-        <main className="desktop-main-scroll flex-1 min-w-0 p-3 sm:p-4 bg-[#F1F5F9]">
+        <main className="desktop-main-scroll flex-1 min-w-0 p-3 sm:p-4 pb-14 bg-[#F1F5F9]">
           <div className="w-full">{children}</div>
         </main>
       </div>

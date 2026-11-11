@@ -506,7 +506,7 @@ export const Sidebar: React.FC = () => {
   }
 
   return (
-    <aside className="desktop-sticky-sidebar flex flex-row shrink-0 self-stretch select-none border-r border-slate-200/80 shadow-xs z-30">
+    <aside className="desktop-sticky-sidebar flex flex-row shrink-0 self-start select-none border-r border-slate-200/80 shadow-xs z-40">
       {/* ============================================================ */}
       {/* COLUMN 1: Left Royal Blue Dock / Rail (Width: 64px)           */}
       {/* macOS dots + real favicons with seamless organic carved tab  */}

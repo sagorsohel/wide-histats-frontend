@@ -6,7 +6,7 @@ import { AnalycosLogo } from "@/components/common/AnalycosLogo";
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="desktop-footer w-full bg-white/95 backdrop-blur-md border-t border-slate-200/90 shrink-0 z-40 select-none">
+    <footer className="desktop-footer w-full bg-white/95 backdrop-blur-md border-t border-slate-200/90 shrink-0 z-50 select-none sticky bottom-0">
       <div className="h-10 px-3 sm:px-5 flex items-center justify-between gap-3 text-[11px] text-slate-500">
         {/* Left: Brand & Telemetry Status */}
         <div className="flex items-center gap-2.5 min-w-0">

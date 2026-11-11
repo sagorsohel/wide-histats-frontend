@@ -10,9 +10,6 @@ import { UrlWebsiteSync } from "@/components/common/UrlWebsiteSync";
 
 export const viewport: Viewport = {
   width: 1140,
-  initialScale: 0.35,
-  minimumScale: 0.2,
-  maximumScale: 5,
   userScalable: true,
 };
 
@@ -58,33 +55,40 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full scroll-smooth">
+    <html lang="en" className="h-full scroll-smooth bg-[#f1f4f8]">
       <head>
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                function updateViewport() {
-                  var w = window.screen.width;
-                  if (w && w < 1140) {
-                    var scale = (w / 1140).toFixed(4);
-                    var mv = document.querySelector('meta[name="viewport"]');
-                    if (mv) {
-                      mv.setAttribute('content', 'width=1140, initial-scale=' + scale + ', minimum-scale=0.2, maximum-scale=5.0, user-scalable=yes');
+                function fitExactViewport() {
+                  var targetWidth = 1140;
+                  var screenW = window.screen.width || 0;
+                  var innerW = window.innerWidth || 0;
+                  var w = (screenW > 0 && screenW < targetWidth) ? screenW : ((innerW > 0 && innerW < targetWidth) ? innerW : 0);
+                  if (w > 0 && w < targetWidth) {
+                    var scale = (w / targetWidth).toFixed(5);
+                    var content = 'width=' + targetWidth + ', initial-scale=' + scale + ', minimum-scale=' + scale + ', maximum-scale=3.0, user-scalable=yes';
+                    var meta = document.querySelector('meta[name="viewport"]');
+                    if (meta) {
+                      meta.setAttribute('content', content);
+                    } else {
+                      meta = document.createElement('meta');
+                      meta.name = 'viewport';
+                      meta.content = content;
+                      document.head.appendChild(meta);
                     }
                   }
                 }
-                updateViewport();
-                window.addEventListener('orientationchange', function() {
-                  setTimeout(updateViewport, 150);
-                });
-                window.addEventListener('resize', updateViewport);
+                fitExactViewport();
+                window.addEventListener('resize', fitExactViewport);
+                window.addEventListener('orientationchange', fitExactViewport);
               })();
             `,
           }}
         />
       </head>
-      <body className="min-h-screen bg-[#f8fafc] text-slate-800 antialiased selection:bg-[#1d5b9f]/20 selection:text-[#1d5b9f]">
+      <body className="min-h-screen bg-[#f1f4f8] text-slate-800 antialiased selection:bg-[#1d5b9f]/20 selection:text-[#1d5b9f]">
         <StoreProvider>
           <AuthProvider>
             <WebsiteProvider>

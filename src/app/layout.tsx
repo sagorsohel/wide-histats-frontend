@@ -10,6 +10,7 @@ import { UrlWebsiteSync } from "@/components/common/UrlWebsiteSync";
 
 export const viewport: Viewport = {
   width: 1140,
+  initialScale: 0.38,
   userScalable: true,
 };
 
@@ -61,28 +62,17 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                function fitExactViewport() {
-                  var targetWidth = 1140;
-                  var screenW = window.screen.width || 0;
-                  var innerW = window.innerWidth || 0;
-                  var w = (screenW > 0 && screenW < targetWidth) ? screenW : ((innerW > 0 && innerW < targetWidth) ? innerW : 0);
-                  if (w > 0 && w < targetWidth) {
-                    var scale = (w / targetWidth).toFixed(5);
-                    var content = 'width=' + targetWidth + ', initial-scale=' + scale + ', minimum-scale=' + scale + ', maximum-scale=3.0, user-scalable=yes';
+                try {
+                  var targetW = 1140;
+                  var phoneW = Math.min(window.screen.width || targetW, window.screen.height || targetW);
+                  if (phoneW > 0 && phoneW < targetW) {
+                    var scale = +(phoneW / targetW).toFixed(4);
                     var meta = document.querySelector('meta[name="viewport"]');
                     if (meta) {
-                      meta.setAttribute('content', content);
-                    } else {
-                      meta = document.createElement('meta');
-                      meta.name = 'viewport';
-                      meta.content = content;
-                      document.head.appendChild(meta);
+                      meta.setAttribute('content', 'width=' + targetW + ', initial-scale=' + scale + ', user-scalable=yes');
                     }
                   }
-                }
-                fitExactViewport();
-                window.addEventListener('resize', fitExactViewport);
-                window.addEventListener('orientationchange', fitExactViewport);
+                } catch (e) {}
               })();
             `,
           }}

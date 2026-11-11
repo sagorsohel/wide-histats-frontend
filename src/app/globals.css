@@ -100,36 +100,45 @@
 }
 
 /* ============================================================ */
-/* Mobile Layout: Fixed at Box Height (1644px), Footer directly */
-/* below boxes, below is empty space, Content Scrollable inside */
+/* Mobile Layout: Fixed 1140px Boxed Width, Natural Content,   */
+/* Footer directly below cards, Edge-to-Edge with 0px margins   */
 /* ============================================================ */
-@media screen and (max-width: 1023px), (hover: none), (pointer: coarse) {
+@media screen and (max-width: 1023px) {
   html,
   body {
-    width: 100% !important;
-    max-width: 100vw !important;
+    width: 1140px !important;
+    min-width: 1140px !important;
+    max-width: 1140px !important;
     height: auto !important;
-    min-height: 100% !important;
+    min-height: 0 !important;
     overflow-x: hidden !important;
-    overflow-y: hidden !important;
     overscroll-behavior: none !important;
+    background-color: #f1f4f8 !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
   }
 
   .desktop-app-container {
-    width: 100% !important;
+    width: 1140px !important;
+    min-width: 1140px !important;
     max-width: 1140px !important;
-    height: 1644px !important;
-    max-height: 1644px !important;
-    overflow: hidden !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
     display: flex !important;
     flex-direction: column !important;
+    border: none !important;
+    margin: 0 auto !important;
+    box-shadow: none !important;
   }
 
   .desktop-content-row {
     flex: 1 1 auto !important;
-    height: 1540px !important;
-    max-height: 1540px !important;
-    overflow: hidden !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
     display: flex !important;
     align-items: stretch !important;
   }
@@ -137,11 +146,11 @@
   .desktop-sticky-sidebar {
     position: relative !important;
     top: 0 !important;
-    height: 100% !important;
-    min-height: 0 !important;
-    max-height: 1540px !important;
+    height: auto !important;
+    min-height: 100% !important;
+    max-height: none !important;
     flex-shrink: 0 !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     align-self: stretch !important;
     z-index: 30 !important;
   }
@@ -149,28 +158,28 @@
   .desktop-main-scroll {
     flex: 1 1 auto !important;
     min-width: 0 !important;
-    height: 100% !important;
-    max-height: 1540px !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    -webkit-overflow-scrolling: touch !important;
-    overscroll-behavior-y: contain !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding-bottom: 0.5rem !important;
   }
 
   .desktop-footer {
     position: relative !important;
-    bottom: 0 !important;
+    bottom: auto !important;
     height: 2.5rem !important;
     width: 100% !important;
     flex-shrink: 0 !important;
     z-index: 30 !important;
+    margin-top: 0 !important;
   }
 
   .realtime-recent-table {
     height: 300px !important;
   }
   .realtime-grid-card {
-    height: 420px !important;
+    height: 380px !important;
   }
 }
 

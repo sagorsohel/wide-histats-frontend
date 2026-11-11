@@ -9,9 +9,9 @@ import { TrackingModalWrapper } from "@/components/analytics/TrackingModalWrappe
 import { UrlWebsiteSync } from "@/components/common/UrlWebsiteSync";
 
 export const viewport: Viewport = {
-  width: 1260,
-  initialScale: 0.3,
-  minimumScale: 0.1,
+  width: 1140,
+  initialScale: 0.35,
+  minimumScale: 0.2,
   maximumScale: 5,
   userScalable: true,
 };
@@ -66,11 +66,11 @@ export default function RootLayout({
               (function() {
                 function updateViewport() {
                   var w = window.screen.width;
-                  if (w && w < 1260) {
-                    var scale = (w / 1260).toFixed(4);
+                  if (w && w < 1140) {
+                    var scale = (w / 1140).toFixed(4);
                     var mv = document.querySelector('meta[name="viewport"]');
                     if (mv) {
-                      mv.setAttribute('content', 'width=1260, initial-scale=' + scale + ', minimum-scale=0.1, maximum-scale=5.0, user-scalable=yes');
+                      mv.setAttribute('content', 'width=1140, initial-scale=' + scale + ', minimum-scale=0.2, maximum-scale=5.0, user-scalable=yes');
                     }
                   }
                 }

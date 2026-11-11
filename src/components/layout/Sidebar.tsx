@@ -512,7 +512,7 @@ export const Sidebar: React.FC = () => {
       {/* COLUMN 1: Left Royal Blue Dock / Rail (Width: 64px)           */}
       {/* macOS dots + real favicons with seamless organic carved tab  */}
       {/* ============================================================ */}
-      <div className="w-[64px] bg-gradient-to-b from-[#1455bb] via-[#124cb0] to-[#0f3f94] flex flex-col items-center py-3.5 shrink-0 relative z-20 shadow-[2px_0_10px_rgba(16,83,184,0.15)] h-full min-h-full">
+      <div className="w-[48px] bg-gradient-to-b from-[#1455bb] via-[#124cb0] to-[#0f3f94] flex flex-col items-center py-3 shrink-0 relative z-20 shadow-[2px_0_10px_rgba(16,83,184,0.15)] h-full min-h-full">
         {/* macOS Window Control Dots at top */}
         <div className="flex items-center gap-1.5 mb-5 px-2">
           <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56] shadow-2xs" />
@@ -543,20 +543,20 @@ export const Sidebar: React.FC = () => {
                     </div>
 
                     {/* Active Carved Notch Tab */}
-                    <div className="bg-[#f8fafc] w-[56px] h-[50px] rounded-l-2xl flex items-center justify-center relative z-20 pr-1 shadow-2xs">
+                    <div className="bg-[#f8fafc] w-[42px] h-[42px] rounded-l-xl flex items-center justify-center relative z-20 pr-0.5 shadow-2xs">
                       <button
                         type="button"
                         onClick={() => handleSwitchWebsite(site)}
                         disabled={!!reloadingSite}
                         title={`Active: ${site.name} (${site.domain}) - Click to reload`}
-                        className={`w-10 h-10 rounded-full bg-white flex items-center justify-center p-2 shadow-sm border border-slate-200/80 ring-2 ring-blue-500/25 cursor-pointer active:scale-95 transition-all relative ${
+                        className={`w-8 h-8 rounded-full bg-white flex items-center justify-center p-1.5 shadow-sm border border-slate-200/80 ring-2 ring-blue-500/25 cursor-pointer active:scale-95 transition-all relative ${
                           reloadingSite?.id === site.id ? "opacity-75" : ""
                         }`}
                       >
                         <WebsiteFavicon
                           name={site.name}
                           domain={site.domain}
-                          className="w-5 h-5"
+                          className="w-4 h-4"
                         />
                         {reloadingSite?.id === site.id && (
                           <span className="absolute -inset-0.5 rounded-full border-2 border-[#1455bb] border-t-transparent animate-spin" />
@@ -585,14 +585,14 @@ export const Sidebar: React.FC = () => {
                   onClick={() => handleSwitchWebsite(site)}
                   disabled={!!reloadingSite}
                   title={`Switch to: ${site.name} (${site.domain})`}
-                  className={`w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 border border-white/25 flex items-center justify-center p-2 shadow-xs hover:scale-105 active:scale-95 transition-all cursor-pointer group backdrop-blur-xs relative ${
+                  className={`w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 border border-white/25 flex items-center justify-center p-1.5 shadow-xs hover:scale-105 active:scale-95 transition-all cursor-pointer group backdrop-blur-xs relative ${
                     reloadingSite?.id === site.id ? "ring-2 ring-white/60" : ""
                   }`}
                 >
                   <WebsiteFavicon
                     name={site.name}
                     domain={site.domain}
-                    className="w-5 h-5 drop-shadow-xs"
+                    className="w-4 h-4 drop-shadow-xs"
                   />
                   {reloadingSite?.id === site.id && (
                     <span className="absolute -inset-0.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
@@ -602,7 +602,7 @@ export const Sidebar: React.FC = () => {
             })
           ) : (
             // Default placeholder circle if no sites yet
-            <div className="w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center font-black text-xs shadow-sm">
+            <div className="w-8 h-8 rounded-full bg-white/20 text-white flex items-center justify-center font-black text-[11px] shadow-sm">
               W
             </div>
           )}
@@ -611,11 +611,11 @@ export const Sidebar: React.FC = () => {
           <Link
             href="/websites"
             title="Add or Manage Websites"
-            className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border border-white/20 transition-all hover:scale-105 active:scale-95 cursor-pointer mt-1 group"
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border border-white/20 transition-all hover:scale-105 active:scale-95 cursor-pointer mt-1 group"
           >
             <UseAnimations
               animation={plusToX}
-              size={18}
+              size={15}
               strokeColor="#ffffff"
               interaction="hover"
             />
@@ -624,19 +624,19 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* ============================================================ */}
-      {/* COLUMN 2: Secondary Navigation Panel (Width: 236px)          */}
+      {/* COLUMN 2: Secondary Navigation Panel (Width: 162px)          */}
       {/* Clean card items starting directly from top                  */}
       {/* ============================================================ */}
-      <div className="w-[236px] bg-[#F1F5F9] flex flex-col justify-between relative z-10 h-full min-h-full">
+      <div className="w-[162px] bg-[#F1F5F9] flex flex-col justify-between relative z-10 h-full min-h-full">
         {/* Navigation Cards List (Starts directly from top without redundant website block) */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-3.5 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-2 space-y-2.5 custom-scrollbar">
           {NAV_GROUPS.map((group) => (
-            <div key={group.title} className="space-y-1.5">
-              <div className="px-1 text-[9px] font-extrabold uppercase tracking-wider text-slate-400">
+            <div key={group.title} className="space-y-1">
+              <div className="px-1 text-[8.5px] font-extrabold uppercase tracking-wider text-slate-400">
                 {group.title}
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {group.items.map((item) => {
                   const isActive =
                     pathname === item.href ||
@@ -731,26 +731,26 @@ export const Sidebar: React.FC = () => {
                       prefetch={true}
                       href={itemHref}
                       style={{ padding: "0.05rem" }}
-                      className={`block rounded-[10px] border transition-all duration-200 cursor-pointer shadow-2xs hover:shadow-xs hover:translate-x-0.5 ${
+                      className={`block rounded-[9px] border transition-all duration-200 cursor-pointer shadow-2xs hover:shadow-xs hover:translate-x-0.5 ${
                         isActive
                           ? `${currentStyle.activeBorder} ${currentStyle.activeBg}`
                           : `${currentStyle.border} bg-white`
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-2 px-2 py-0.5">
-                        <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="flex items-center justify-between gap-1.5 px-1.5 py-0.5">
+                        <div className="flex items-center gap-1.5 min-w-0">
                           {/* 3D Animated Icon Box */}
                           <div
-                            className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 group-hover:scale-105 ${currentStyle.iconBg}`}
+                            className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-all duration-200 group-hover:scale-105 ${currentStyle.iconBg}`}
                           >
                             <item.icon
-                              size={15}
-                              className="w-3.5 h-3.5 drop-shadow-[0_1px_1px_rgba(0,0,0,0.06)]"
+                              size={13}
+                              className="w-3 h-3 drop-shadow-[0_1px_1px_rgba(0,0,0,0.06)]"
                               strokeColor={item.theme?.stroke || "#1455bb"}
                             />
                           </div>
                           <span
-                            className={`font-bold text-xs truncate transition-colors ${
+                            className={`font-bold text-[11px] truncate transition-colors ${
                               isActive
                                 ? "text-slate-900 font-extrabold"
                                 : "text-slate-800"
@@ -761,8 +761,8 @@ export const Sidebar: React.FC = () => {
                         </div>
 
                         {item.isLive ? (
-                          <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1 shrink-0">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          <span className="px-1 py-0.2 rounded-full text-[8px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-0.5 shrink-0">
+                            <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
                             <span>
                               {typeof activeCount === "number" &&
                               activeCount > 0
@@ -771,7 +771,7 @@ export const Sidebar: React.FC = () => {
                             </span>
                           </span>
                         ) : item.badge ? (
-                          <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
+                          <span className="px-1 py-0.2 rounded-full text-[8px] font-bold bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
                             {item.badge}
                           </span>
                         ) : null}
@@ -785,16 +785,16 @@ export const Sidebar: React.FC = () => {
         </div>
 
         {/* Bottom Card: Tracking Script Action */}
-        <div className="p-3 border-t border-slate-200/80 bg-white/60 space-y-1.5">
+        <div className="p-2 border-t border-slate-200/80 bg-white/60 space-y-1">
           {selectedWebsite ? (
             <button
               type="button"
               onClick={() => openTrackingModal(selectedWebsite, "code")}
-              className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#1455bb] hover:bg-[#1047a0] active:scale-[0.98] text-white font-bold text-xs shadow-xs shadow-blue-600/20 transition-all cursor-pointer group"
+              className="w-full inline-flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-[#1455bb] hover:bg-[#1047a0] active:scale-[0.98] text-white font-bold text-[10.5px] shadow-xs shadow-blue-600/20 transition-all cursor-pointer group"
             >
               <UseAnimations
                 animation={code}
-                size={16}
+                size={14}
                 strokeColor="#ffffff"
                 interaction="hover"
               />
@@ -803,16 +803,16 @@ export const Sidebar: React.FC = () => {
           ) : (
             <Link
               href="/control-panel"
-              className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#1455bb] hover:bg-[#1047a0] active:scale-[0.98] text-white font-bold text-xs shadow-xs transition-all group"
+              className="w-full inline-flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-[#1455bb] hover:bg-[#1047a0] active:scale-[0.98] text-white font-bold text-[10.5px] shadow-xs transition-all group"
             >
               <span>Manage Websites</span>
-              <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           )}
 
           {/* Engine Status */}
-          <div className="flex items-center justify-center gap-1.5 text-[9px] text-slate-400 font-medium pt-0.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="flex items-center justify-center gap-1 text-[8px] text-slate-400 font-medium pt-0.5">
+            <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
             <span>Analycos Engine v2.4</span>
           </div>
         </div>

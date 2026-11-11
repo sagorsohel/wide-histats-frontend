@@ -18,13 +18,13 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
     );
   }
 
-  // For dashboard and app routes: fixed 1260px desktop container with Header and Sidebar everywhere
+  // For dashboard and app routes: cohesive 1140px desktop container with Header and Sidebar everywhere
   return (
-    <div className="desktop-app-container w-[1260px] min-w-[1260px] max-w-[1260px] mx-auto min-h-screen flex flex-col bg-white shadow-[0_0_50px_rgba(0,0,0,0.06)] border-x border-slate-200/90 relative">
+    <div className="desktop-app-container w-[1140px] min-w-[1140px] max-w-[1140px] mx-auto min-h-screen flex flex-col bg-white shadow-[0_0_50px_rgba(0,0,0,0.06)] border-x border-slate-200/90 relative">
       <Header />
       <div className="desktop-content-row flex-1 flex min-h-[calc(100vh-4rem)] items-stretch">
         <Sidebar />
-        <main className="desktop-main-scroll flex-1 min-w-0 p-4 lg:p-6 bg-[#F1F5F9]">
+        <main className="desktop-main-scroll flex-1 min-w-0 p-3.5 sm:p-5 bg-[#F1F5F9]">
           <div className="w-full">{children}</div>
         </main>
       </div>

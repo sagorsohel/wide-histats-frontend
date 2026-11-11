@@ -23,7 +23,7 @@
 html,
 body {
   width: 100%;
-  min-width: 1260px;
+  min-width: 1140px;
   min-height: 100%;
   background-color: #f1f4f8;
   color: #1e293b;
@@ -61,39 +61,47 @@ body {
   }
 }
 
-/* Mobile layout: Fixed height of 100vh - 100px with scrollable right side */
+/* Mobile layout: Full-page layout, natural height to content, smooth scrolling */
 @media screen and (max-width: 1023px), (hover: none), (pointer: coarse) {
+  html,
+  body {
+    width: 100%;
+    min-width: 1140px;
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .desktop-app-container {
-    height: 100vh !important;
-    height: 100dvh !important;
-    max-height: 100vh !important;
-    max-height: 100dvh !important;
-    overflow: hidden !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    max-height: none !important;
+    overflow: visible !important;
   }
 
   .desktop-content-row {
-    height: calc(100vh - 100px) !important;
-    height: calc(100dvh - 100px) !important;
-    max-height: calc(100vh - 100px) !important;
-    max-height: calc(100dvh - 100px) !important;
-    overflow: hidden !important;
-    min-height: 0 !important;
+    height: auto !important;
+    min-height: calc(100vh - 4rem) !important;
+    max-height: none !important;
+    overflow: visible !important;
+    align-items: stretch !important;
   }
 
   .desktop-sticky-sidebar {
-    height: 100% !important;
-    max-height: 100% !important;
+    height: auto !important;
+    min-height: 100% !important;
+    max-height: none !important;
     flex-shrink: 0 !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     align-self: stretch !important;
   }
 
   .desktop-main-scroll {
-    height: 100% !important;
-    max-height: 100% !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    -webkit-overflow-scrolling: touch;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
   }
 }
 

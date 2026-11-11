@@ -80,7 +80,7 @@ export default function GeographyPage() {
         from = dates.from;
         to = dates.to;
       }
-      const q = `websiteId=${siteId}&from=${from}&to=${to}&limit=50`;
+      const q = `websiteId=${siteId}&from=${from}&to=${to}&limit=10000`;
 
       // Strict future check: future date has zero traffic
       if (new Date(from).getTime() > Date.now()) {
@@ -371,11 +371,12 @@ export default function GeographyPage() {
       </div>
 
       {/* ============================================================ */}
-      {/* 2. FULL WIDTH SECTION: TOP CITIES (LEFT) & TOP COUNTRIES (RIGHT) */}
+      {/* 2. SIDE-BY-SIDE COMPLETE RANKING LISTS                       */}
+      {/* Top Cities (Left) & Visitors by Country (Right)               */}
       {/* ============================================================ */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 items-stretch w-full">
         {/* Top Cities Box (LEFT SIDE) */}
-        <div className="h-full flex flex-col justify-between bg-white rounded-2xl border border-slate-200/90 shadow-xs p-3.5 sm:p-4 transition-all duration-300">
+        <div className="h-full flex flex-col justify-between bg-white rounded-2xl border border-slate-200/90 shadow-xs p-3.5 sm:p-4 space-y-3 transition-all duration-300">
           <div className="flex-1 flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-100 gap-2.5">
@@ -388,21 +389,21 @@ export default function GeographyPage() {
                     Top Cities
                   </h3>
                   <p className="text-[11px] text-slate-500 truncate">
-                    Metropolitan breakdown of incoming visitors
+                    Metropolitan visitor breakdown by cities
                   </p>
                 </div>
               </div>
 
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-600 border border-indigo-200/80 shadow-2xs whitespace-nowrap shrink-0">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/80 shadow-2xs whitespace-nowrap shrink-0">
                 <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                <span>{cities.length} cities</span>
+                <span>Total Cities: {cities.length}</span>
               </span>
             </div>
 
-            {/* Content List */}
+            {/* Cities Content List */}
             {loading && cities.length === 0 ? (
               <div className="space-y-1.5 flex-1">
-                {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
                   <div
                     key={i}
                     className="rounded-xl border border-slate-100/80 bg-white/50 px-2.5 py-1.5 flex items-center justify-between animate-pulse"
@@ -477,7 +478,7 @@ export default function GeographyPage() {
         </div>
 
         {/* Visitors by Country Box (RIGHT SIDE) */}
-        <div className="h-full flex flex-col justify-between bg-white rounded-2xl border border-slate-200/90 shadow-xs p-3.5 sm:p-4 transition-all duration-300">
+        <div className="h-full flex flex-col justify-between bg-white rounded-2xl border border-slate-200/90 shadow-xs p-3.5 sm:p-4 space-y-3 transition-all duration-300">
           <div className="flex-1 flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-100 gap-2.5">
@@ -497,14 +498,14 @@ export default function GeographyPage() {
 
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-[#1455bb] border border-blue-200/80 shadow-2xs whitespace-nowrap shrink-0">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#1455bb]" />
-                <span>{countries.length} countries</span>
+                <span>Total Countries: {countries.length}</span>
               </span>
             </div>
 
             {/* Content List */}
             {loading && countries.length === 0 ? (
               <div className="space-y-1.5 flex-1">
-                {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
                   <div
                     key={i}
                     className="rounded-xl border border-slate-100/80 bg-white/50 px-2.5 py-1.5 flex items-center justify-between animate-pulse"
@@ -591,82 +592,50 @@ export default function GeographyPage() {
       </div>
 
       {/* ============================================================ */}
-      {/* 3. SIDE-BY-SIDE INTERACTIVE MAPS (CITIES & COUNTRIES)        */}
+      {/* 3. ONLY ONE FULL-WIDTH COUNTRY MAP                           */}
       {/* ============================================================ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 items-stretch w-full">
-        {/* Left Map: Top Cities Map */}
-        <div className="bg-white/90 backdrop-blur-xl p-3.5 sm:p-4 rounded-2xl border border-slate-200/90 shadow-xs space-y-3 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2.5">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center shrink-0 shadow-2xs">
-                  <Building2 className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight">
-                      Top Cities Map
-                    </h3>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    Metropolitan visitor breakdown by cities
-                  </p>
-                </div>
-              </div>
-              <span className="text-[10px] text-indigo-700 font-bold px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 shrink-0">
-                {cities.length} Cities
-              </span>
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-3.5 sm:p-4 space-y-3 transition-all duration-300 w-full">
+        {/* Header */}
+        <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 gap-2.5">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#1455bb] border border-blue-100 flex items-center justify-center shrink-0 shadow-2xs">
+              <Globe2 className="w-4 h-4" />
             </div>
-            <div className="rounded-xl overflow-hidden border border-slate-200/80 shadow-xs">
-              <RealtimeGeoMap
-                countryData={cities.map((c) => ({
-                  country: c.country,
-                  code: c.country_code || "",
-                  city: c.city,
-                  count: c.visitors,
-                }))}
-                height="320px"
-                mode="city"
-              />
+            <div className="min-w-0">
+              <h3 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight truncate">
+                Visitors by Country Map
+              </h3>
+              <p className="text-[11px] text-slate-500 truncate">
+                Geographic distribution across territories
+              </p>
             </div>
           </div>
+
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-[#1455bb] border border-blue-200/80 shadow-2xs whitespace-nowrap shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#1455bb]" />
+            <span>Total Countries: {countries.length}</span>
+          </span>
         </div>
 
-        {/* Right Map: Visitors by Country Map */}
-        <div className="bg-white/90 backdrop-blur-xl p-3.5 sm:p-4 rounded-2xl border border-slate-200/90 shadow-xs space-y-3 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2.5">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#1455bb] border border-blue-100 flex items-center justify-center shrink-0 shadow-2xs">
-                  <Globe2 className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight">
-                      Visitors by Country Map
-                    </h3>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    Geographic distribution across territories
-                  </p>
-                </div>
-              </div>
-              <span className="text-[10px] text-[#1455bb] font-bold px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 shrink-0">
-                {countries.length} Countries
-              </span>
-            </div>
-            <div className="rounded-xl overflow-hidden border border-slate-200/80 shadow-xs">
-              <RealtimeGeoMap
-                countryData={countries.map((c) => ({
-                  country: c.country,
-                  code: c.country_code,
-                  count: c.visitors,
-                }))}
-                height="320px"
-                mode="country"
-              />
-            </div>
-          </div>
+        {/* Interactive Full-Width Country Map */}
+        <div className="rounded-xl overflow-hidden border border-slate-200/80 shadow-xs">
+          <RealtimeGeoMap
+            countryData={countries.map((c) => ({
+              country: c.country,
+              code: c.country_code,
+              count: c.visitors,
+            }))}
+            height="420px"
+            mode="country"
+          />
+        </div>
+
+        {/* Footer Info */}
+        <div className="mt-2.5 pt-2 border-t border-slate-100/80 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400">
+          <span>Interactive global visitor distribution</span>
+          <span className="font-semibold text-slate-500">
+            {formatCommas(totalVisitors)} international visitors across {countries.length} countries
+          </span>
         </div>
       </div>
     </div>

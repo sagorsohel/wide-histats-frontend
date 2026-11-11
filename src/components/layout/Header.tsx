@@ -52,25 +52,9 @@ export const Header: React.FC = () => {
       <header className="border-b border-slate-200/90 bg-white/85 backdrop-blur-xl sticky top-0 z-50 shadow-2xs shrink-0">
         <div className="h-16 px-3 sm:px-5 lg:px-7 flex items-center justify-between gap-3">
           {/* ============================================================ */}
-          {/* LEFT: Mobile Hamburger + Clean Brand Logo                    */}
+          {/* LEFT: Clean Brand Logo                                       */}
           {/* ============================================================ */}
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-            {/* Mobile Menu Hamburger */}
-            {!isAuthPage && !isControlPanel && (
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label="Toggle navigation menu"
-                className="md:hidden p-2 -ml-1 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-2xl transition-colors border border-slate-200 shrink-0 cursor-pointer"
-              >
-                {mobileMenuOpen ? (
-                  <X className="w-5 h-5 text-slate-800" />
-                ) : (
-                  <Menu className="w-5 h-5 text-slate-800" />
-                )}
-              </button>
-            )}
-
             {/* Logo & Brand */}
             <Link
               href={isAuthPage ? "/" : "/control-panel"}
@@ -88,9 +72,9 @@ export const Header: React.FC = () => {
           {/* All moved to right side with cohesive frosted glass design   */}
           {/* ============================================================ */}
           <div className="flex items-center gap-2 sm:gap-2.5 lg:gap-3 shrink-0">
-            {/* Desktop Control Panel & Website Pill (Moved to Right Side in Glass Design) */}
+            {/* Desktop Control Panel & Website Pill (Always Shown) */}
             {!isAuthPage && (
-              <div className="hidden md:flex items-center gap-2 lg:gap-2.5">
+              <div className="flex items-center gap-2 lg:gap-2.5">
                 {/* 1. Control Panel Button (Frosted Glass Pill) */}
                 <Link
                   href="/control-panel"

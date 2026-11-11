@@ -454,14 +454,14 @@ export default function SummaryPage() {
         </div>
       </div>
 
-      {/* 2-Column Responsive Layout: Left (Main Analytics), Right (Inline Calendar + Stats Cards) */}
-      <div className="flex flex-col xl:flex-row gap-4 sm:gap-5 items-start relative z-10">
+      {/* 2-Column Desktop Layout: Left (Main Analytics), Right (Inline Calendar + Stats Cards) */}
+      <div className="flex flex-row gap-4 items-start relative z-10">
         {/* ============================================================ */}
         {/* LEFT / MAIN ANALYTICS COLUMN                                 */}
         {/* ============================================================ */}
-        <div className="flex-1 min-w-0 space-y-4 w-full order-2 xl:order-1">
-          {/* KPI Cards Grid - 4 Vibrant Gradient Cards Matching Reference Design */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+        <div className="flex-1 min-w-0 space-y-4 w-full">
+          {/* KPI Cards Grid - 4 Vibrant Gradient Cards in a Single Row Matching Screenshot */}
+          <div className="grid grid-cols-4 gap-2.5">
             <KpiCard
               title="Period Visitors"
               value={formatNumber(overview?.uniqueVisitors || 57900)}
@@ -513,8 +513,8 @@ export default function SummaryPage() {
             loading={loading}
           />
 
-          {/* Feature 4: Top Pages & Landing vs Exit Pages - Full Width */}
-          <div className="space-y-3.5">
+          {/* Feature 4: Top Pages & Landing vs Exit Pages - Side-by-Side */}
+          <div className="grid grid-cols-2 gap-3.5">
             <TopPagesTable
               pages={pages}
               domain={selectedWebsite?.domain}
@@ -528,20 +528,20 @@ export default function SummaryPage() {
             />
           </div>
 
-          {/* Feature 5: Traffic Sources & Search Engines vs Social Channels - Full Width */}
-          <div className="space-y-3.5">
+          {/* Feature 5: Traffic Sources & Search Engines vs Social Channels - Side-by-Side */}
+          <div className="grid grid-cols-2 gap-3.5">
             <SourcesChart sources={sources} loading={loading} />
             <SearchAndSocialCard referrers={referrers} loading={loading} />
           </div>
 
-          {/* Feature 2: Geography - Top Cities & Visitors by Country Breakdown - Full Width */}
-          <div className="space-y-3.5">
-            <TopCitiesTable cities={cities} loading={loading} />
+          {/* Feature 2: Geography - Visitors by Country & Top Cities Breakdown - Side-by-Side */}
+          <div className="grid grid-cols-2 gap-3.5">
             <GeographyTable countries={countries} loading={loading} />
+            <TopCitiesTable cities={cities} loading={loading} />
           </div>
 
-          {/* Feature 3: Hardware & Platforms - Devices & Browsers + Operating Systems Breakdown - Full Width */}
-          <div className="space-y-3.5">
+          {/* Feature 3: Hardware & Platforms - Devices & Browsers + Operating Systems Breakdown - Side-by-Side */}
+          <div className="grid grid-cols-2 gap-3.5">
             <DeviceBreakdown
               devices={devices}
               browsers={browsers}
@@ -557,9 +557,9 @@ export default function SummaryPage() {
         {/* ============================================================ */}
         {/* RIGHT COLUMN: CALENDAR (ON TOP) + LIFETIME TOTALS (BELOW)    */}
         {/* ============================================================ */}
-        <div className="w-full xl:w-[291px] shrink-0 space-y-3.5 xl:sticky xl:top-4 order-1 xl:order-2">
+        <div className="w-[291px] shrink-0 space-y-3.5 sticky top-4">
           {/* Section 1: ALWAYS SHOWN CALENDAR (UPOR) */}
-          <div className="flex justify-center xl:justify-end">
+          <div className="flex justify-end">
             <HistatsCalendar
               selectedPreset={range}
               onPresetChange={handleRangeChange}

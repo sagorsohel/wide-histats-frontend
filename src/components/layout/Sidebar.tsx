@@ -507,12 +507,12 @@ export const Sidebar: React.FC = () => {
   }
 
   return (
-    <aside className="hidden md:flex flex-row shrink-0 h-full select-none border-r border-slate-200/80 shadow-xs">
+    <aside className="flex flex-row shrink-0 self-stretch select-none border-r border-slate-200/80 shadow-xs z-30">
       {/* ============================================================ */}
       {/* COLUMN 1: Left Royal Blue Dock / Rail (Width: 64px)           */}
       {/* macOS dots + real favicons with seamless organic carved tab  */}
       {/* ============================================================ */}
-      <div className="w-[64px] bg-gradient-to-b from-[#1455bb] via-[#124cb0] to-[#0f3f94] flex flex-col items-center py-3.5 shrink-0 relative z-20 shadow-[2px_0_10px_rgba(16,83,184,0.15)]">
+      <div className="w-[64px] bg-gradient-to-b from-[#1455bb] via-[#124cb0] to-[#0f3f94] flex flex-col items-center py-3.5 shrink-0 relative z-20 shadow-[2px_0_10px_rgba(16,83,184,0.15)] h-full min-h-full">
         {/* macOS Window Control Dots at top */}
         <div className="flex items-center gap-1.5 mb-5 px-2">
           <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56] shadow-2xs" />
@@ -627,7 +627,7 @@ export const Sidebar: React.FC = () => {
       {/* COLUMN 2: Secondary Navigation Panel (Width: 236px)          */}
       {/* Clean card items starting directly from top                  */}
       {/* ============================================================ */}
-      <div className="w-[236px] bg-[#F1F5F9] flex flex-col justify-between overflow-hidden relative z-10">
+      <div className="w-[236px] bg-[#F1F5F9] flex flex-col justify-between relative z-10 h-full min-h-full">
         {/* Navigation Cards List (Starts directly from top without redundant website block) */}
         <div className="flex-1 overflow-y-auto p-3 space-y-3.5 custom-scrollbar">
           {NAV_GROUPS.map((group) => (

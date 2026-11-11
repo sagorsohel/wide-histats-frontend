@@ -21,7 +21,6 @@ import fileText from "react-useanimations/lib/fileText";
 import layers from "react-useanimations/lib/layers";
 import settings from "react-useanimations/lib/settings";
 import plusToX from "react-useanimations/lib/plusToX";
-import code from "react-useanimations/lib/code";
 
 export interface NavItem {
   href: string;
@@ -512,7 +511,7 @@ export const Sidebar: React.FC = () => {
       {/* COLUMN 1: Left Royal Blue Dock / Rail (Width: 64px)           */}
       {/* macOS dots + real favicons with seamless organic carved tab  */}
       {/* ============================================================ */}
-      <div className="w-[48px] bg-gradient-to-b from-[#1455bb] via-[#124cb0] to-[#0f3f94] flex flex-col items-center py-3 shrink-0 relative z-20 shadow-[2px_0_10px_rgba(16,83,184,0.15)] h-full min-h-full">
+      <div className="w-[48px] bg-gradient-to-b from-[#1455bb] via-[#124cb0] to-[#0f3f94] flex flex-col items-center py-3 shrink-0 relative z-20 shadow-[2px_0_10px_rgba(16,83,184,0.15)] h-full">
         {/* macOS Window Control Dots at top */}
         <div className="flex items-center gap-1.5 mb-5 px-2">
           <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56] shadow-2xs" />
@@ -627,7 +626,7 @@ export const Sidebar: React.FC = () => {
       {/* COLUMN 2: Secondary Navigation Panel (Width: 162px)          */}
       {/* Clean card items starting directly from top                  */}
       {/* ============================================================ */}
-      <div className="w-[162px] bg-[#F1F5F9] flex flex-col justify-between relative z-10 h-full min-h-full">
+      <div className="w-[162px] bg-[#F1F5F9] flex flex-col relative z-10 h-full">
         {/* Navigation Cards List (Starts directly from top without redundant website block) */}
         <div className="flex-1 overflow-y-auto p-2 space-y-2.5 custom-scrollbar">
           {NAV_GROUPS.map((group) => (
@@ -782,39 +781,6 @@ export const Sidebar: React.FC = () => {
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Bottom Card: Tracking Script Action */}
-        <div className="p-2 border-t border-slate-200/80 bg-white/60 space-y-1">
-          {selectedWebsite ? (
-            <button
-              type="button"
-              onClick={() => openTrackingModal(selectedWebsite, "code")}
-              className="w-full inline-flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-[#1455bb] hover:bg-[#1047a0] active:scale-[0.98] text-white font-bold text-[10.5px] shadow-xs shadow-blue-600/20 transition-all cursor-pointer group"
-            >
-              <UseAnimations
-                animation={code}
-                size={14}
-                strokeColor="#ffffff"
-                interaction="hover"
-              />
-              <span>Get Tracking Code</span>
-            </button>
-          ) : (
-            <Link
-              href="/control-panel"
-              className="w-full inline-flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-[#1455bb] hover:bg-[#1047a0] active:scale-[0.98] text-white font-bold text-[10.5px] shadow-xs transition-all group"
-            >
-              <span>Manage Websites</span>
-              <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-            </Link>
-          )}
-
-          {/* Engine Status */}
-          <div className="flex items-center justify-center gap-1 text-[8px] text-slate-400 font-medium pt-0.5">
-            <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Analycos Engine v2.4</span>
-          </div>
         </div>
       </div>
 

@@ -31,7 +31,7 @@ body {
   overflow-x: auto;
 }
 
-/* Desktop only layout: Fixed sidebar on left + independently scrollable right content */
+/* Desktop layout: Fixed sidebar on left + independently scrollable right content */
 @media screen and (min-width: 1024px) and (hover: hover) and (pointer: fine) {
   .desktop-app-container {
     height: 100vh !important;
@@ -58,6 +58,42 @@ body {
     max-height: 100% !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
+  }
+}
+
+/* Mobile layout: Fixed height of 100vh - 100px with scrollable right side */
+@media screen and (max-width: 1023px), (hover: none), (pointer: coarse) {
+  .desktop-app-container {
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-height: 100vh !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+  }
+
+  .desktop-content-row {
+    height: calc(100vh - 100px) !important;
+    height: calc(100dvh - 100px) !important;
+    max-height: calc(100vh - 100px) !important;
+    max-height: calc(100dvh - 100px) !important;
+    overflow: hidden !important;
+    min-height: 0 !important;
+  }
+
+  .desktop-sticky-sidebar {
+    height: 100% !important;
+    max-height: 100% !important;
+    flex-shrink: 0 !important;
+    overflow: hidden !important;
+    align-self: stretch !important;
+  }
+
+  .desktop-main-scroll {
+    height: 100% !important;
+    max-height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
   }
 }
 

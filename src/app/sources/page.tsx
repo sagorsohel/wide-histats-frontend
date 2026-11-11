@@ -7,11 +7,13 @@ import {
   SourcesData,
   DetailedReferrerStat,
   ReferrerSummaryComparison,
+  OverviewStats,
 } from "@/types/analytics";
 import {
   DateRangePicker,
   RangeOption,
 } from "@/components/analytics/DateRangePicker";
+import { DailyStatsCard } from "@/components/analytics/DailyStatsCard";
 import {
   Compass,
   Search,
@@ -51,6 +53,7 @@ export default function SourcesPage() {
   );
   const [showNewAndLost, setShowNewAndLost] = useState(false);
   const [data, setData] = useState<SourcesData | null>(null);
+  const [overview, setOverview] = useState<OverviewStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Search & Pagination & Sorting state
@@ -110,6 +113,17 @@ export default function SourcesPage() {
           referrers: [],
           campaigns: [],
         });
+        setOverview({
+          activeVisitors: 0,
+          totalPageviews: 0,
+          uniqueVisitors: 0,
+          totalSessions: 0,
+          pagesPerSession: 0,
+          bounceRate: 0,
+          avgDuration: 0,
+          from,
+          to,
+        });
         setLoading(false);
         hasDataRef.current = true;
         return;
@@ -117,8 +131,12 @@ export default function SourcesPage() {
 
       if (!isSilent && !hasDataRef.current) {
         const cached = api.getCached<any>(`/api/v1/analytics/sources?${q}`);
+        const cachedOverview = api.getCached<OverviewStats>(
+          `/api/v1/analytics/overview?websiteId=${siteId}&from=${from}&to=${to}`,
+        );
         if (cached?.data?.sources) {
           setData(cached.data);
+          if (cachedOverview?.data) setOverview(cachedOverview.data);
           setLoading(false);
         } else {
           setLoading(true);
@@ -126,9 +144,12 @@ export default function SourcesPage() {
       }
 
       try {
-        const res = await api.get<SourcesData>(
-          `/api/v1/analytics/sources?${q}`,
-        );
+        const [res, overviewRes] = await Promise.all([
+          api.get<SourcesData>(`/api/v1/analytics/sources?${q}`),
+          api.get<OverviewStats>(
+            `/api/v1/analytics/overview?websiteId=${siteId}&from=${from}&to=${to}`,
+          ),
+        ]);
 
         // Strict race condition check: if user switched website while this was in flight, discard!
         if (siteId !== activeSiteIdRef.current) {
@@ -138,6 +159,9 @@ export default function SourcesPage() {
         if (res.success && res.data) {
           setData(res.data);
           hasDataRef.current = true;
+        }
+        if (overviewRes.success && overviewRes.data) {
+          setOverview(overviewRes.data);
         }
       } catch (err) {
         console.error(err);
@@ -309,6 +333,49 @@ export default function SourcesPage() {
     ppvDiffPct: 0,
   };
 
+  const topReferrer = (data?.detailedReferrers || [])[0] || null;
+  const topReferrerName = topReferrer ? topReferrer.referrerUrl : "Direct / Search";
+  const topReferrerVisitors = topReferrer ? topReferrer.visitors : 0;
+
+  const referrerStatItems = [
+    {
+      value: summary.refVisitors.toLocaleString(),
+      label: "Referral visitors",
+      sublabel: `${summary.visitorsPct.toFixed(1)}% of total (${summary.totalVisitors.toLocaleString()})`,
+      highlight: true,
+    },
+    {
+      value: summary.refPageviews.toLocaleString(),
+      label: "Referral page views",
+      sublabel: `${summary.pageviewsPct.toFixed(1)}% of total (${summary.totalPageviews.toLocaleString()})`,
+      highlight: true,
+    },
+    {
+      value: summary.refNewVisitors.toLocaleString(),
+      label: "Referral new visitors",
+      sublabel: `${summary.newVisitorsPct.toFixed(1)}% of new (${summary.totalNewVisitors.toLocaleString()})`,
+      highlight: true,
+    },
+    {
+      value: summary.refPpv.toFixed(2),
+      label: "Pages per visit",
+      sublabel: `${summary.ppvDiffPct > 0 ? "+" : ""}${summary.ppvDiffPct.toFixed(1)}% vs site average`,
+      highlight: false,
+    },
+    {
+      value: topReferrerName,
+      label: "Top referrer URL",
+      sublabel: `${topReferrerVisitors.toLocaleString()} visits referred`,
+      highlight: false,
+    },
+    {
+      value: `${summary.visitorsPct.toFixed(1)}%`,
+      label: "Attribution share",
+      sublabel: "Incoming external channels",
+      highlight: false,
+    },
+  ];
+
   return (
     <div className="space-y-6 select-text antialiased">
       {/* Page Title & Navigation Header */}
@@ -330,129 +397,23 @@ export default function SourcesPage() {
       </div>
 
       {/* ============================================================ */}
-      {/* 1. TOP ROW: SUMMARY TABLE & COMPACT CALENDAR (SIDE-BY-SIDE)   */}
+      {/* 1. TOP ROW: DAILY STATS CARD & COMPACT CALENDAR              */}
       {/* ============================================================ */}
-      <div className="flex flex-col lg:flex-row gap-5 items-stretch relative z-10">
-        {/* Left: Histats Summary Comparison Table */}
-        <div className="flex-1 min-w-0 flex flex-col order-2 lg:order-1">
-          <div className="w-full h-full bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden flex flex-col justify-between">
-            <div className="w-full overflow-x-auto scrollbar-none flex-1 flex flex-col">
-              <table className="w-full text-left border-collapse min-w-full flex-1">
-                <thead>
-                  <tr className="bg-gradient-to-r from-[#1455bb] via-[#165dce] to-[#124cb0] text-white text-[11px] sm:text-xs font-bold border-b border-blue-900/40">
-                    <th className="py-2.5 px-3 sm:px-4 tracking-wide text-left font-bold text-white/95">
-                      Summary
-                    </th>
-                    <th className="py-2.5 px-2.5 sm:px-3 text-right tracking-wide font-bold text-white/95 whitespace-nowrap lg:w-28">
-                      Stats summary
-                    </th>
-                    <th className="py-2.5 px-2.5 sm:px-3 text-right tracking-wide font-bold text-white/95 whitespace-nowrap lg:w-32">
-                      Referrer summary
-                    </th>
-                    <th className="py-2.5 px-2.5 sm:px-3 text-right tracking-wide font-bold text-white/95 whitespace-nowrap lg:w-28">
-                      (%)
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="text-[11px] sm:text-xs font-medium divide-y divide-slate-100 flex-1">
-                  {/* Row 1: Total page views */}
-                  <tr className="hover:bg-blue-50/40 transition-colors">
-                    <td className="py-2.5 px-3 sm:px-4 text-slate-800 font-medium">
-                      Total page views
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
-                      {loading && !data
-                        ? "..."
-                        : summary.totalPageviews.toLocaleString()}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
-                      {loading && !data
-                        ? "..."
-                        : summary.refPageviews.toLocaleString()}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-semibold text-[#1455bb] tabular-nums whitespace-nowrap">
-                      {loading && !data
-                        ? "..."
-                        : `(${summary.pageviewsPct.toFixed(2)} %)`}
-                    </td>
-                  </tr>
-
-                  {/* Row 2: Total visitors (Soft Green Highlight) */}
-                  <tr className="bg-[#eef8e8] hover:bg-[#e4f3dc] transition-colors border-y border-[#d5ebcc]">
-                    <td className="py-2.5 px-3 sm:px-4 text-emerald-950 font-bold flex items-center gap-1.5 whitespace-nowrap">
-                      <span className="w-2 h-2 rounded-full bg-emerald-600 inline-block shrink-0" />
-                      <span>Total visitors</span>
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-black text-slate-950 tabular-nums whitespace-nowrap">
-                      {loading && !data
-                        ? "..."
-                        : summary.totalVisitors.toLocaleString()}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-black text-slate-950 tabular-nums whitespace-nowrap">
-                      {loading && !data
-                        ? "..."
-                        : summary.refVisitors.toLocaleString()}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-[#1455bb] tabular-nums whitespace-nowrap">
-                      {loading && !data
-                        ? "..."
-                        : `(${summary.visitorsPct.toFixed(2)} %)`}
-                    </td>
-                  </tr>
-
-                  {/* Row 3: Total new visitors */}
-                  <tr className="hover:bg-blue-50/40 transition-colors">
-                    <td className="py-2.5 px-3 sm:px-4 text-slate-800 font-medium">
-                      Total new visitors
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
-                      {loading && !data
-                        ? "..."
-                        : summary.totalNewVisitors.toLocaleString()}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
-                      {loading && !data
-                        ? "..."
-                        : summary.refNewVisitors.toLocaleString()}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-semibold text-[#1455bb] tabular-nums whitespace-nowrap">
-                      {loading && !data
-                        ? "..."
-                        : `(${summary.newVisitorsPct.toFixed(2)} %)`}
-                    </td>
-                  </tr>
-
-                  {/* Row 4: Page views per visit */}
-                  <tr className="hover:bg-blue-50/40 transition-colors">
-                    <td className="py-2.5 px-3 sm:px-4 text-slate-800 font-medium">
-                      Page views per visit
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
-                      {loading && !data ? "..." : summary.totalPpv.toFixed(2)}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
-                      {loading && !data ? "..." : summary.refPpv.toFixed(1)}
-                    </td>
-                    <td
-                      className={`py-2.5 px-2.5 sm:px-3 text-right font-semibold tabular-nums whitespace-nowrap ${
-                        summary.ppvDiffPct < 0
-                          ? "text-rose-600"
-                          : "text-[#1455bb]"
-                      }`}
-                    >
-                      {loading && !data
-                        ? "..."
-                        : `(${summary.ppvDiffPct > 0 ? "+" : ""}${summary.ppvDiffPct.toFixed(1)}%)`}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-stretch w-full">
+        {/* Daily Stats Card */}
+        <div className="lg:col-span-8 flex flex-col">
+          <DailyStatsCard
+            title="Referrer stats"
+            items={referrerStatItems}
+            overview={overview}
+            loading={loading}
+            range={range}
+            domain={selectedWebsite?.domain}
+          />
         </div>
 
-        {/* Right: Authentic Compact Histats Calendar (Exact image match) */}
-        <div className="shrink-0 flex items-center justify-center lg:justify-end order-1 lg:order-2">
+        {/* Right: Authentic Compact Histats Calendar */}
+        <div className="lg:col-span-4 flex flex-col">
           <HistatsCalendar
             selectedPreset={range}
             onPresetChange={handleRangeChange}
@@ -460,6 +421,7 @@ export default function SourcesPage() {
             onDateChange={handleCalendarDateChange}
             showNewAndLost={showNewAndLost}
             onToggleNewAndLost={setShowNewAndLost}
+            className="h-full w-full"
           />
         </div>
       </div>

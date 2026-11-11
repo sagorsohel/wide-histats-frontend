@@ -9,12 +9,13 @@ import React, {
 } from "react";
 import { useWebsite } from "@/context/WebsiteContext";
 import { api } from "@/lib/api";
-import { PageStat } from "@/types/analytics";
+import { PageStat, OverviewStats } from "@/types/analytics";
 import {
   RangeOption,
   CustomDateWindow,
 } from "@/components/analytics/DateRangePicker";
 import { HistatsCalendar } from "@/components/analytics/HistatsCalendar";
+import { DailyStatsCard } from "@/components/analytics/DailyStatsCard";
 import {
   FileText,
   LogIn,
@@ -48,6 +49,7 @@ export default function PagesReportPage() {
   const [exitPages, setExitPages] = useState<
     { path: string; sessions: number }[]
   >([]);
+  const [overview, setOverview] = useState<OverviewStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   const getDateRange = useCallback((option: RangeOption) => {
@@ -94,6 +96,17 @@ export default function PagesReportPage() {
         setPages([]);
         setLandingPages([]);
         setExitPages([]);
+        setOverview({
+          activeVisitors: 0,
+          totalPageviews: 0,
+          uniqueVisitors: 0,
+          totalSessions: 0,
+          pagesPerSession: 0,
+          bounceRate: 0,
+          avgDuration: 0,
+          from,
+          to,
+        });
         setLoading(false);
         hasDataRef.current = true;
         return;
@@ -103,8 +116,12 @@ export default function PagesReportPage() {
         const cached = api.getCached<PageStat[]>(
           `/api/v1/analytics/pages?${q}`,
         );
+        const cachedOverview = api.getCached<OverviewStats>(
+          `/api/v1/analytics/overview?websiteId=${siteId}&from=${from}&to=${to}`,
+        );
         if (cached?.data) {
           setPages(cached.data);
+          if (cachedOverview?.data) setOverview(cachedOverview.data);
           setLoading(false);
         } else {
           setLoading(true);
@@ -112,13 +129,16 @@ export default function PagesReportPage() {
       }
 
       try {
-        const [pRes, landRes, exitRes] = await Promise.all([
+        const [pRes, landRes, exitRes, overviewRes] = await Promise.all([
           api.get<PageStat[]>(`/api/v1/analytics/pages?${q}`),
           api.get<{ path: string; sessions: number }[]>(
             `/api/v1/analytics/landing-pages?${q}`,
           ),
           api.get<{ path: string; sessions: number }[]>(
             `/api/v1/analytics/exit-pages?${q}`,
+          ),
+          api.get<OverviewStats>(
+            `/api/v1/analytics/overview?websiteId=${siteId}&from=${from}&to=${to}`,
           ),
         ]);
 
@@ -130,6 +150,7 @@ export default function PagesReportPage() {
         if (pRes.success && pRes.data) setPages(pRes.data);
         if (landRes.success && landRes.data) setLandingPages(landRes.data);
         if (exitRes.success && exitRes.data) setExitPages(exitRes.data);
+        if (overviewRes.success && overviewRes.data) setOverview(overviewRes.data);
         hasDataRef.current = true;
       } catch (err) {
         console.error(err);
@@ -309,6 +330,45 @@ export default function PagesReportPage() {
       ? (topLandingSessions / totalLandingSessions) * 100
       : 0;
 
+  const contentStatItems = [
+    {
+      value: totalViews.toLocaleString(),
+      label: "Total page views",
+      sublabel: "All content loads recorded",
+      highlight: true,
+    },
+    {
+      value: totalVisitors.toLocaleString(),
+      label: "Total unique visitors",
+      sublabel: "Audience reading content",
+      highlight: true,
+    },
+    {
+      value: `${pages.length}`,
+      label: "Unique URLs",
+      sublabel: "Indexed page URLs active",
+      highlight: true,
+    },
+    {
+      value: `${byTitleList.length}`,
+      label: "Unique titles",
+      sublabel: "Distinct article headlines",
+      highlight: false,
+    },
+    {
+      value: `${totalLandingSessions.toLocaleString()}`,
+      label: "Top landing entries",
+      sublabel: `${topLanding?.path || "/"} (${topLandingPct.toFixed(1)}%)`,
+      highlight: false,
+    },
+    {
+      value: `${topPagePct.toFixed(1)}%`,
+      label: "Top resource share",
+      sublabel: `${topPageViews.toLocaleString()} views on top URL`,
+      highlight: false,
+    },
+  ];
+
   return (
     <div className="space-y-6 select-text antialiased">
       {/* Top Banner */}
@@ -338,110 +398,29 @@ export default function PagesReportPage() {
       </div>
 
       {/* ============================================================ */}
-      {/* 1. TOP ROW: PAGES STATS SUMMARY TABLE & COMPACT CALENDAR     */}
+      {/* 1. TOP ROW: DAILY STATS CARD & COMPACT CALENDAR              */}
       {/* ============================================================ */}
-      <div className="flex flex-col lg:flex-row gap-5 items-stretch relative z-10 w-full">
-        {/* Left: Histats Summary Comparison Table */}
-        <div className="flex-1 min-w-0 flex flex-col order-2 lg:order-1">
-          <div className="w-full h-full bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden flex flex-col justify-between">
-            <div className="w-full overflow-x-auto scrollbar-none flex-1 flex flex-col">
-              <table className="w-full text-left border-collapse min-w-full flex-1">
-                <thead>
-                  <tr className="bg-gradient-to-r from-[#1455bb] via-[#165dce] to-[#124cb0] text-white text-[11px] sm:text-xs font-bold border-b border-blue-900/40">
-                    <th className="py-2.5 px-3 sm:px-4 tracking-wide text-left font-bold text-white/95">
-                      Summary
-                    </th>
-                    <th className="py-2.5 px-2.5 sm:px-3 text-right tracking-wide font-bold text-white/95 whitespace-nowrap lg:w-28">
-                      Content stats
-                    </th>
-                    <th className="py-2.5 px-2.5 sm:px-3 text-right tracking-wide font-bold text-white/95 whitespace-nowrap lg:w-32">
-                      Top resource
-                    </th>
-                    <th className="py-2.5 px-2.5 sm:px-3 text-right tracking-wide font-bold text-white/95 whitespace-nowrap lg:w-28">
-                      (%)
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="text-[11px] sm:text-xs font-medium divide-y divide-slate-100 flex-1">
-                  {/* Row 1: Total page views */}
-                  <tr className="hover:bg-blue-50/40 transition-colors">
-                    <td className="py-2.5 px-3 sm:px-4 text-slate-800 font-medium">
-                      Total page views
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
-                      {loading ? "..." : totalViews.toLocaleString()}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
-                      {loading ? "..." : topPageViews.toLocaleString()}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-semibold text-[#1455bb] tabular-nums whitespace-nowrap">
-                      {loading ? "..." : `(${topPagePct.toFixed(1)} %)`}
-                    </td>
-                  </tr>
-
-                  {/* Row 2: Total unique visitors (Soft Green Highlight) */}
-                  <tr className="bg-[#eef8e8] hover:bg-[#e4f3dc] transition-colors border-y border-[#d5ebcc]">
-                    <td className="py-2.5 px-3 sm:px-4 text-emerald-950 font-bold flex items-center gap-1.5 whitespace-nowrap">
-                      <span className="w-2 h-2 rounded-full bg-emerald-600 inline-block shrink-0" />
-                      <span>Total visitors</span>
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-black text-slate-950 tabular-nums whitespace-nowrap">
-                      {loading ? "..." : totalVisitors.toLocaleString()}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-black text-slate-950 tabular-nums whitespace-nowrap">
-                      {loading ? "..." : topPageVisitors.toLocaleString()}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-[#1455bb] tabular-nums whitespace-nowrap">
-                      {loading ? "..." : `(${topPageVisitorsPct.toFixed(1)} %)`}
-                    </td>
-                  </tr>
-
-                  {/* Row 3: Unique URLs & Titles */}
-                  <tr className="hover:bg-blue-50/40 transition-colors">
-                    <td className="py-2.5 px-3 sm:px-4 text-slate-800 font-medium">
-                      Unique URLs &amp; titles
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
-                      {loading ? "..." : `${pages.length} URLs`}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap truncate max-w-[140px]">
-                      {loading ? "..." : `${byTitleList.length} titles`}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-semibold text-[#1455bb] tabular-nums whitespace-nowrap">
-                      {loading ? "..." : `(${topTitlePct.toFixed(1)} %)`}
-                    </td>
-                  </tr>
-
-                  {/* Row 4: Top Landing Entry */}
-                  <tr className="hover:bg-blue-50/40 transition-colors">
-                    <td className="py-2.5 px-3 sm:px-4 text-slate-800 font-medium">
-                      Top landing entry
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
-                      {loading
-                        ? "..."
-                        : `${totalLandingSessions.toLocaleString()} entries`}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap truncate max-w-[140px]">
-                      {loading ? "..." : topLanding?.path || "/"}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-semibold text-[#1455bb] tabular-nums whitespace-nowrap">
-                      {loading ? "..." : `(${topLandingPct.toFixed(1)} %)`}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-stretch w-full">
+        {/* Daily Stats Card */}
+        <div className="lg:col-span-8 flex flex-col">
+          <DailyStatsCard
+            title="Content stats"
+            items={contentStatItems}
+            overview={overview}
+            loading={loading}
+            range={range}
+            domain={selectedWebsite?.domain}
+          />
         </div>
 
-        {/* Right: Authentic Compact Histats Calendar (Exact match) */}
-        <div className="shrink-0 flex items-center justify-center lg:justify-end order-1 lg:order-2">
+        {/* Right: Authentic Compact Histats Calendar */}
+        <div className="lg:col-span-4 flex flex-col">
           <HistatsCalendar
             selectedPreset={range}
             onPresetChange={handleRangeChange}
             currentWindow={customWindow}
             onDateChange={handleCustomRangeChange}
+            className="h-full w-full"
           />
         </div>
       </div>

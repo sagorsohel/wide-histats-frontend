@@ -3,12 +3,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useWebsite } from "@/context/WebsiteContext";
 import { api } from "@/lib/api";
-import { CountryStat, CityStat } from "@/types/analytics";
+import { CountryStat, CityStat, OverviewStats } from "@/types/analytics";
 import {
   RangeOption,
   CustomDateWindow,
 } from "@/components/analytics/DateRangePicker";
 import { HistatsCalendar } from "@/components/analytics/HistatsCalendar";
+import { DailyStatsCard } from "@/components/analytics/DailyStatsCard";
 import { Globe2, Building2, Info, ArrowUpRight } from "lucide-react";
 import { CountryFlag } from "@/components/common/CountryFlag";
 import { formatCommas } from "@/lib/utils";
@@ -39,6 +40,7 @@ export default function GeographyPage() {
   );
   const [countries, setCountries] = useState<CountryStat[]>([]);
   const [cities, setCities] = useState<CityStat[]>([]);
+  const [overview, setOverview] = useState<OverviewStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   const getDateRange = useCallback((option: RangeOption) => {
@@ -86,6 +88,17 @@ export default function GeographyPage() {
       if (new Date(from).getTime() > Date.now()) {
         setCountries([]);
         setCities([]);
+        setOverview({
+          activeVisitors: 0,
+          totalPageviews: 0,
+          uniqueVisitors: 0,
+          totalSessions: 0,
+          pagesPerSession: 0,
+          bounceRate: 0,
+          avgDuration: 0,
+          from,
+          to,
+        });
         setLoading(false);
         hasDataRef.current = true;
         return;
@@ -93,9 +106,13 @@ export default function GeographyPage() {
 
       if (!isSilent && !hasDataRef.current) {
         const cached = api.getCached<any>(`/api/v1/analytics/geography?${q}`);
+        const cachedOverview = api.getCached<OverviewStats>(
+          `/api/v1/analytics/overview?websiteId=${siteId}&from=${from}&to=${to}`,
+        );
         if (cached?.data?.countries) {
           setCountries(cached.data.countries);
           if (cached.data.cities) setCities(cached.data.cities);
+          if (cachedOverview?.data) setOverview(cachedOverview.data);
           setLoading(false);
         } else {
           setLoading(true);
@@ -103,10 +120,15 @@ export default function GeographyPage() {
       }
 
       try {
-        const res = await api.get<{
-          countries: CountryStat[];
-          cities: CityStat[];
-        }>(`/api/v1/analytics/geography?${q}`);
+        const [res, overviewRes] = await Promise.all([
+          api.get<{
+            countries: CountryStat[];
+            cities: CityStat[];
+          }>(`/api/v1/analytics/geography?${q}`),
+          api.get<OverviewStats>(
+            `/api/v1/analytics/overview?websiteId=${siteId}&from=${from}&to=${to}`,
+          ),
+        ]);
 
         // Strict race condition check: if user switched website while this was in flight, discard!
         if (siteId !== activeSiteIdRef.current) {
@@ -116,8 +138,11 @@ export default function GeographyPage() {
         if (res.success && res.data) {
           setCountries(res.data.countries || []);
           setCities(res.data.cities || []);
-          hasDataRef.current = true;
         }
+        if (overviewRes.success && overviewRes.data) {
+          setOverview(overviewRes.data);
+        }
+        hasDataRef.current = true;
       } catch (err) {
         console.error(err);
       } finally {
@@ -236,6 +261,45 @@ export default function GeographyPage() {
     .reduce((sum, c) => sum + (c.visitors || 0), 0);
   const top3Pct = totalVisitors > 0 ? (top3Visitors / totalVisitors) * 100 : 0;
 
+  const geoStatItems = [
+    {
+      value: totalVisitors.toLocaleString(),
+      label: "Total visitors",
+      sublabel: "Global audience analyzed",
+      highlight: true,
+    },
+    {
+      value: `${countries.length}`,
+      label: "Countries & territories",
+      sublabel: "Distinct global regions",
+      highlight: true,
+    },
+    {
+      value: `${cities.length}`,
+      label: "Top cities & metros",
+      sublabel: "Urban centers identified",
+      highlight: true,
+    },
+    {
+      value: topCountry?.country || "-",
+      label: "Top territory",
+      sublabel: `${topCountryVisitors.toLocaleString()} (${topCountryPct.toFixed(1)}%)`,
+      highlight: false,
+    },
+    {
+      value: topCity?.city || "-",
+      label: "Top city",
+      sublabel: `${topCityVisitors.toLocaleString()} (${topCityPct.toFixed(1)}%)`,
+      highlight: false,
+    },
+    {
+      value: `${top3Pct.toFixed(1)}%`,
+      label: "Top 3 countries reach",
+      sublabel: `${top3Visitors.toLocaleString()} visitors in top 3`,
+      highlight: false,
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Top Banner */}
@@ -264,108 +328,29 @@ export default function GeographyPage() {
       </div>
 
       {/* ============================================================ */}
-      {/* 1. TOP ROW: GEO STATS SUMMARY TABLE & COMPACT CALENDAR       */}
+      {/* 1. TOP ROW: DAILY STATS CARD & COMPACT CALENDAR              */}
       {/* ============================================================ */}
-      <div className="flex flex-col lg:flex-row gap-5 items-stretch relative z-10">
-        {/* Left: Histats Summary Comparison Table */}
-        <div className="flex-1 min-w-0 flex flex-col order-2 lg:order-1">
-          <div className="w-full h-full bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden flex flex-col justify-between">
-            <div className="w-full overflow-x-auto scrollbar-none flex-1 flex flex-col">
-              <table className="w-full text-left border-collapse min-w-full flex-1">
-                <thead>
-                  <tr className="bg-gradient-to-r from-[#1455bb] via-[#165dce] to-[#124cb0] text-white text-[11px] sm:text-xs font-bold border-b border-blue-900/40">
-                    <th className="py-2.5 px-3 sm:px-4 tracking-wide text-left font-bold text-white/95">
-                      Summary
-                    </th>
-                    <th className="py-2.5 px-2.5 sm:px-3 text-right tracking-wide font-bold text-white/95 whitespace-nowrap lg:w-28">
-                      Global stats
-                    </th>
-                    <th className="py-2.5 px-2.5 sm:px-3 text-right tracking-wide font-bold text-white/95 whitespace-nowrap lg:w-32">
-                      Top territory
-                    </th>
-                    <th className="py-2.5 px-2.5 sm:px-3 text-right tracking-wide font-bold text-white/95 whitespace-nowrap lg:w-28">
-                      (%)
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="text-[11px] sm:text-xs font-medium divide-y divide-slate-100 flex-1">
-                  {/* Row 1: Countries & Regions */}
-                  <tr className="hover:bg-blue-50/40 transition-colors">
-                    <td className="py-2.5 px-3 sm:px-4 text-slate-800 font-medium">
-                      Countries &amp; territories
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
-                      {loading ? "..." : `${countries.length} countries`}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap truncate max-w-[140px]">
-                      {loading ? "..." : topCountry?.country || "-"}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-semibold text-[#1455bb] tabular-nums whitespace-nowrap">
-                      {loading ? "..." : `(${topCountryPct.toFixed(1)} %)`}
-                    </td>
-                  </tr>
-
-                  {/* Row 2: Total visitors (Soft Green Highlight) */}
-                  <tr className="bg-[#eef8e8] hover:bg-[#e4f3dc] transition-colors border-y border-[#d5ebcc]">
-                    <td className="py-2.5 px-3 sm:px-4 text-emerald-950 font-bold flex items-center gap-1.5 whitespace-nowrap">
-                      <span className="w-2 h-2 rounded-full bg-emerald-600 inline-block shrink-0" />
-                      <span>Total visitors</span>
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-black text-slate-950 tabular-nums whitespace-nowrap">
-                      {loading ? "..." : totalVisitors.toLocaleString()}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-black text-slate-950 tabular-nums whitespace-nowrap truncate max-w-[140px]">
-                      {loading ? "..." : topCountryVisitors.toLocaleString()}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-[#1455bb] tabular-nums whitespace-nowrap">
-                      {loading ? "..." : `(${topCountryPct.toFixed(1)} %)`}
-                    </td>
-                  </tr>
-
-                  {/* Row 3: Urban centers & Metros */}
-                  <tr className="hover:bg-blue-50/40 transition-colors">
-                    <td className="py-2.5 px-3 sm:px-4 text-slate-800 font-medium">
-                      Top cities &amp; metros
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
-                      {loading ? "..." : `${cities.length} cities`}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap truncate max-w-[140px]">
-                      {loading ? "..." : topCity?.city || "-"}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-semibold text-[#1455bb] tabular-nums whitespace-nowrap">
-                      {loading ? "..." : `(${topCityPct.toFixed(1)} %)`}
-                    </td>
-                  </tr>
-
-                  {/* Row 4: Top 3 Concentration */}
-                  <tr className="hover:bg-blue-50/40 transition-colors">
-                    <td className="py-2.5 px-3 sm:px-4 text-slate-800 font-medium">
-                      Top 3 countries reach
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
-                      {loading ? "..." : `${top3Pct.toFixed(1)}%`}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-bold text-slate-900 tabular-nums whitespace-nowrap">
-                      {loading ? "..." : top3Visitors.toLocaleString()}
-                    </td>
-                    <td className="py-2.5 px-2.5 sm:px-3 text-right font-semibold text-[#1455bb] tabular-nums whitespace-nowrap">
-                      {loading ? "..." : `(${top3Pct.toFixed(1)} %)`}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-stretch w-full">
+        {/* Daily Stats Card */}
+        <div className="lg:col-span-8 flex flex-col">
+          <DailyStatsCard
+            title="Geography stats"
+            items={geoStatItems}
+            overview={overview}
+            loading={loading}
+            range={range}
+            domain={selectedWebsite?.domain}
+          />
         </div>
 
-        {/* Right: Authentic Compact Histats Calendar (Exact image match) */}
-        <div className="shrink-0 flex items-center justify-center lg:justify-end order-1 lg:order-2">
+        {/* Right: Authentic Compact Histats Calendar */}
+        <div className="lg:col-span-4 flex flex-col">
           <HistatsCalendar
             selectedPreset={range}
             onPresetChange={handleRangeChange}
             currentWindow={customWindow}
             onDateChange={handleCustomRangeChange}
+            className="h-full w-full"
           />
         </div>
       </div>

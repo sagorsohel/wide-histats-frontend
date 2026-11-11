@@ -3,12 +3,18 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useWebsite } from "@/context/WebsiteContext";
 import { api } from "@/lib/api";
-import { DeviceStat, BrowserStat, OsStat } from "@/types/analytics";
+import {
+  DeviceStat,
+  BrowserStat,
+  OsStat,
+  OverviewStats,
+} from "@/types/analytics";
 import {
   RangeOption,
   CustomDateWindow,
 } from "@/components/analytics/DateRangePicker";
 import { HistatsCalendar } from "@/components/analytics/HistatsCalendar";
+import { DailyStatsCard } from "@/components/analytics/DailyStatsCard";
 import { Monitor, Smartphone, Tablet, Globe, Cpu } from "lucide-react";
 import { BrowserIcon, OsIcon } from "@/components/common/BrandIcons";
 import { useTabFocus } from "@/hooks/useTabFocus";
@@ -23,6 +29,7 @@ export default function DevicesReportPage() {
   const [devices, setDevices] = useState<DeviceStat[]>([]);
   const [browsers, setBrowsers] = useState<BrowserStat[]>([]);
   const [osList, setOsList] = useState<OsStat[]>([]);
+  const [overview, setOverview] = useState<OverviewStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   const getDateRange = useCallback((option: RangeOption) => {
@@ -71,6 +78,17 @@ export default function DevicesReportPage() {
         setDevices([]);
         setBrowsers([]);
         setOsList([]);
+        setOverview({
+          activeVisitors: 0,
+          totalPageviews: 0,
+          uniqueVisitors: 0,
+          totalSessions: 0,
+          pagesPerSession: 0,
+          bounceRate: 0,
+          avgDuration: 0,
+          from,
+          to,
+        });
         setLoading(false);
         hasDataRef.current = true;
         return;
@@ -80,8 +98,12 @@ export default function DevicesReportPage() {
         const cached = api.getCached<DeviceStat[]>(
           `/api/v1/analytics/devices?${q}`,
         );
+        const cachedOverview = api.getCached<OverviewStats>(
+          `/api/v1/analytics/overview?websiteId=${siteId}&from=${from}&to=${to}`,
+        );
         if (cached?.data) {
           setDevices(cached.data);
+          if (cachedOverview?.data) setOverview(cachedOverview.data);
           setLoading(false);
         } else {
           setLoading(true);
@@ -89,10 +111,13 @@ export default function DevicesReportPage() {
       }
 
       try {
-        const [devRes, brRes, osRes] = await Promise.all([
+        const [devRes, brRes, osRes, overviewRes] = await Promise.all([
           api.get<DeviceStat[]>(`/api/v1/analytics/devices?${q}`),
           api.get<BrowserStat[]>(`/api/v1/analytics/browsers?${q}`),
           api.get<OsStat[]>(`/api/v1/analytics/operating-systems?${q}`),
+          api.get<OverviewStats>(
+            `/api/v1/analytics/overview?websiteId=${siteId}&from=${from}&to=${to}`,
+          ),
         ]);
 
         // Strict race condition check: if user switched website while this was in flight, discard!
@@ -103,6 +128,8 @@ export default function DevicesReportPage() {
         if (devRes.success && devRes.data) setDevices(devRes.data);
         if (brRes.success && brRes.data) setBrowsers(brRes.data);
         if (osRes.success && osRes.data) setOsList(osRes.data);
+        if (overviewRes.success && overviewRes.data)
+          setOverview(overviewRes.data);
         hasDataRef.current = true;
       } catch (err) {
         console.error(err);
@@ -207,6 +234,67 @@ export default function DevicesReportPage() {
     browsers.reduce((sum, b) => sum + b.sessions, 0) || 1;
   const totalOsSessions = osList.reduce((sum, o) => sum + o.sessions, 0) || 1;
 
+  const desktopItem = devices.find((d) => d.device.toLowerCase() === "desktop");
+  const mobileItem = devices.find((d) => d.device.toLowerCase() === "mobile");
+  const tabletItem = devices.find((d) => d.device.toLowerCase() === "tablet");
+
+  const desktopSessions = desktopItem ? desktopItem.sessions : 0;
+  const mobileSessions = mobileItem ? mobileItem.sessions : 0;
+  const tabletSessions = tabletItem ? tabletItem.sessions : 0;
+
+  const desktopPct = Math.round((desktopSessions / totalDeviceSessions) * 100);
+  const mobilePct = Math.round((mobileSessions / totalDeviceSessions) * 100);
+  const tabletPct = Math.round((tabletSessions / totalDeviceSessions) * 100);
+
+  const topBrowser = browsers[0] || null;
+  const topBrowserPct = topBrowser
+    ? Math.round((topBrowser.sessions / totalBrowserSessions) * 100)
+    : 0;
+
+  const topOs = osList[0] || null;
+  const topOsPct = topOs
+    ? Math.round((topOs.sessions / totalOsSessions) * 100)
+    : 0;
+
+  const deviceStatItems = [
+    {
+      value: mobileSessions.toLocaleString(),
+      label: "Mobile visitors",
+      sublabel: `${mobilePct}% of all devices`,
+      highlight: true,
+    },
+    {
+      value: desktopSessions.toLocaleString(),
+      label: "Desktop visitors",
+      sublabel: `${desktopPct}% of all devices`,
+      highlight: true,
+    },
+    {
+      value: tabletSessions.toLocaleString(),
+      label: "Tablet visitors",
+      sublabel: `${tabletPct}% of all devices`,
+      highlight: true,
+    },
+    {
+      value: totalDeviceSessions.toLocaleString(),
+      label: "Total device visits",
+      sublabel: "All platform sessions recorded",
+      highlight: false,
+    },
+    {
+      value: topBrowser?.browser || "-",
+      label: "Top browser",
+      sublabel: `${topBrowser?.sessions.toLocaleString() || 0} visits (${topBrowserPct}%)`,
+      highlight: false,
+    },
+    {
+      value: topOs?.os || "-",
+      label: "Top operating system",
+      sublabel: `${topOs?.sessions.toLocaleString() || 0} visits (${topOsPct}%)`,
+      highlight: false,
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Top Banner */}
@@ -226,109 +314,38 @@ export default function DevicesReportPage() {
         </div>
       </div>
 
-      {/* 2-Column Responsive Layout: Left (Main Content), Right (Always Shown Calendar) */}
-      <div className="flex flex-col xl:flex-row gap-6 items-start relative z-10">
-        {/* ============================================================ */}
-        {/* LEFT / MAIN CONTENT COLUMN                                   */}
-        {/* ============================================================ */}
-        <div className="flex-1 min-w-0 space-y-6 w-full order-2 xl:order-1">
-          {/* Device Categories Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              {
-                key: "desktop",
-                label: "Desktop",
-                icon: Monitor,
-                color: "text-[#1455bb]",
-                bg: "bg-blue-50 border-blue-200",
-              },
-              {
-                key: "mobile",
-                label: "Mobile",
-                icon: Smartphone,
-                color: "text-emerald-600",
-                bg: "bg-emerald-50 border-emerald-200",
-              },
-              {
-                key: "tablet",
-                label: "Tablet",
-                icon: Tablet,
-                color: "text-purple-600",
-                bg: "bg-purple-50 border-purple-200",
-              },
-            ].map(({ key, label, icon: Icon, color, bg }) => {
-              const matched = devices.find(
-                (d) => d.device.toLowerCase() === key,
-              );
-              const sessions = matched ? matched.sessions : 0;
-              const percentage = Math.round(
-                (sessions / totalDeviceSessions) * 100,
-              );
-
-              return (
-                <div
-                  key={key}
-                  className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col justify-between hover:border-[#1455bb]/40 transition-colors"
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="font-bold text-slate-900 text-base">
-                      {label}
-                    </span>
-                    <div
-                      className={`w-10 h-10 rounded-xl border flex items-center justify-center ${bg}`}
-                    >
-                      <Icon className={`w-5 h-5 ${color}`} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-baseline justify-between mb-2">
-                      {loading && devices.length === 0 ? (
-                        <div className="h-8 w-20 bg-slate-200 rounded animate-pulse" />
-                      ) : (
-                        <span className="text-3xl font-black text-slate-900 tabular-nums">
-                          {sessions}
-                        </span>
-                      )}
-                      {loading && devices.length === 0 ? (
-                        <div className="h-4 w-10 bg-slate-100 rounded animate-pulse" />
-                      ) : (
-                        <span className="text-sm font-bold text-slate-600">
-                          {percentage}%
-                        </span>
-                      )}
-                    </div>
-                    <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                      <div
-                        className="bg-gradient-to-r from-[#1455bb] to-[#1a62d4] h-full rounded-full"
-                        style={{
-                          width: `${loading && devices.length === 0 ? 0 : percentage}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Two Column Breakdown: Browsers & Operating Systems */}
+      {/* ============================================================ */}
+      {/* 1. TOP ROW: DAILY STATS CARD & COMPACT CALENDAR              */}
+      {/* ============================================================ */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-stretch w-full">
+        {/* Daily Stats Card */}
+        <div className="lg:col-span-8 flex flex-col">
+          <DailyStatsCard
+            title="Device & platform stats"
+            items={deviceStatItems}
+            overview={overview}
+            loading={loading}
+            range={range}
+            domain={selectedWebsite?.domain}
+          />
         </div>
 
-        {/* ============================================================ */}
-        {/* RIGHT COLUMN: ALWAYS SHOWN CALENDAR                          */}
-        {/* ============================================================ */}
-        <div className="w-full xl:w-[291px] shrink-0 space-y-5 xl:sticky xl:top-6 order-1 xl:order-2">
-          <div className="flex justify-center xl:justify-end">
-            <HistatsCalendar
-              selectedPreset={range}
-              onPresetChange={handleRangeChange}
-              currentWindow={customWindow}
-              onDateChange={handleCustomRangeChange}
-            />
-          </div>
+        {/* Right: Authentic Compact Histats Calendar */}
+        <div className="lg:col-span-4 flex flex-col">
+          <HistatsCalendar
+            selectedPreset={range}
+            onPresetChange={handleRangeChange}
+            currentWindow={customWindow}
+            onDateChange={handleCustomRangeChange}
+            className="h-full w-full"
+          />
         </div>
       </div>
+
+      {/* ============================================================ */}
+      {/* 2. DEVICE CATEGORIES CARDS (Desktop, Mobile, Tablet)         */}
+      {/* ============================================================ */}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Browsers Table */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs">

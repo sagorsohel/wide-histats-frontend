@@ -24,6 +24,7 @@ import {
   CustomDateWindow,
 } from "@/components/analytics/DateRangePicker";
 import { HistatsCalendar } from "@/components/analytics/HistatsCalendar";
+import { DailyStatsCard } from "@/components/analytics/DailyStatsCard";
 import { KpiCard } from "@/components/analytics/KpiCard";
 import { VisitorChart } from "@/components/analytics/VisitorChart";
 import { TopPagesTable } from "@/components/analytics/TopPagesTable";
@@ -418,146 +419,12 @@ export default function SummaryPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-stretch w-full">
         {/* Daily / Overview Stats Card */}
         <div className="lg:col-span-8 flex flex-col">
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs overflow-hidden flex flex-col justify-between h-full">
-            {/* Header Banner */}
-            <div className="bg-gradient-to-r from-[#1455bb] via-[#1d5b9f] to-[#1e40af] text-white px-4 py-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="font-black text-sm tracking-wide">
-                  {range === "today" || range === "yesterday"
-                    ? "Daily stats"
-                    : "Period stats"}
-                </span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-white/20 text-white/95 border border-white/25 uppercase tracking-wider">
-                  {selectedWebsite?.domain || "streamespn.org"}
-                </span>
-              </div>
-              <div className="text-[11px] font-bold text-blue-100 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>
-                  {range === "today"
-                    ? "Today"
-                    : range === "yesterday"
-                      ? "Yesterday"
-                      : range.toUpperCase()}
-                </span>
-              </div>
-            </div>
-
-            {/* Stats Grid Body */}
-            <div className="p-4 sm:p-5 space-y-4">
-              {/* Row 1: Primary Volume Metrics */}
-              <div className="grid grid-cols-3 divide-x divide-slate-200/80">
-                {/* Metric 1: Total page views */}
-                <div className="pr-4">
-                  <div className="text-2xl sm:text-3xl font-black text-[#1455bb] tracking-tight tabular-nums">
-                    {loading && !overview ? (
-                      <div className="h-8 w-20 bg-slate-200/60 rounded animate-pulse" />
-                    ) : (
-                      formatNumber(overview?.totalPageviews || 0)
-                    )}
-                  </div>
-                  <div className="text-xs sm:text-sm font-bold text-slate-600 mt-1">
-                    Total page views
-                  </div>
-                </div>
-
-                {/* Metric 2: Total visitors */}
-                <div className="px-4">
-                  <div className="text-2xl sm:text-3xl font-black text-[#1455bb] tracking-tight tabular-nums">
-                    {loading && !overview ? (
-                      <div className="h-8 w-20 bg-slate-200/60 rounded animate-pulse" />
-                    ) : (
-                      formatNumber(overview?.uniqueVisitors || 0)
-                    )}
-                  </div>
-                  <div className="text-xs sm:text-sm font-bold text-slate-600 mt-1">
-                    Total visitors
-                  </div>
-                </div>
-
-                {/* Metric 3: First time visitors */}
-                <div className="pl-4">
-                  <div className="text-2xl sm:text-3xl font-black text-[#1455bb] tracking-tight tabular-nums">
-                    {loading && !overview ? (
-                      <div className="h-8 w-20 bg-slate-200/60 rounded animate-pulse" />
-                    ) : (
-                      formatNumber(
-                        overview?.firstTimeVisitors ||
-                          Math.round(
-                            (overview?.uniqueVisitors || 0) *
-                              ((overview?.newVisitorsPct || 59) / 100),
-                          ),
-                      )
-                    )}
-                  </div>
-                  <div className="text-xs sm:text-sm font-bold text-slate-600 mt-1">
-                    First time visitors
-                  </div>
-                </div>
-              </div>
-
-              {/* Horizontal Divider */}
-              <div className="border-t border-slate-200/80" />
-
-              {/* Row 2: Ratios & Behavioral Metrics */}
-              <div className="grid grid-cols-3 divide-x divide-slate-200/80">
-                {/* Ratio 1: Page views per visit */}
-                <div className="pr-4">
-                  <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight tabular-nums">
-                    {loading && !overview ? (
-                      <div className="h-7 w-16 bg-slate-200/60 rounded animate-pulse" />
-                    ) : overview?.pagesPerSession ? (
-                      Number(overview.pagesPerSession).toFixed(2)
-                    ) : (
-                      (
-                        (overview?.totalPageviews || 0) /
-                        Math.max(overview?.uniqueVisitors || 1, 1)
-                      ).toFixed(2)
-                    )}
-                  </div>
-                  <div className="text-xs sm:text-sm font-bold text-slate-600 mt-1">
-                    Page views per visit
-                  </div>
-                </div>
-
-                {/* Ratio 2: New visitors ratio */}
-                <div className="px-4">
-                  <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight tabular-nums">
-                    {loading && !overview ? (
-                      <div className="h-7 w-16 bg-slate-200/60 rounded animate-pulse" />
-                    ) : (
-                      `${
-                        overview?.newVisitorsPct ??
-                        (Math.round(
-                          ((overview?.firstTimeVisitors || 0) /
-                            Math.max(overview?.uniqueVisitors || 1, 1)) *
-                            100,
-                        ) ||
-                          59)
-                      }%`
-                    )}
-                  </div>
-                  <div className="text-xs sm:text-sm font-bold text-slate-600 mt-1">
-                    New visitors ratio
-                  </div>
-                </div>
-
-                {/* Ratio 3: Average visit duration */}
-                <div className="pl-4">
-                  <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight tabular-nums">
-                    {loading && !overview ? (
-                      <div className="h-7 w-16 bg-slate-200/60 rounded animate-pulse" />
-                    ) : (
-                      formatDuration(overview?.avgDuration || 80)
-                    )}
-                  </div>
-                  <div className="text-xs sm:text-sm font-bold text-slate-600 mt-1">
-                    Average visit length
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <DailyStatsCard
+            overview={overview}
+            loading={loading}
+            range={range}
+            domain={selectedWebsite?.domain}
+          />
         </div>
 
         {/* Calendar Card (Row 1 Right, Height matched to Daily stats) */}

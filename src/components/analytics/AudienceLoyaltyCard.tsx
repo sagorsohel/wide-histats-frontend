@@ -11,6 +11,7 @@ interface AudienceLoyaltyCardProps {
   returningVisitorsPct?: number;
   totalVisitors?: number;
   loading?: boolean;
+  className?: string;
 }
 
 export const AudienceLoyaltyCard: React.FC<AudienceLoyaltyCardProps> = ({
@@ -20,6 +21,7 @@ export const AudienceLoyaltyCard: React.FC<AudienceLoyaltyCardProps> = ({
   returningVisitorsPct = 5.8,
   totalVisitors = 23900,
   loading = false,
+  className = "",
 }) => {
   // Ensure valid percentages
   const safeTotal = (firstTimeVisitors + returningVisitors) || totalVisitors || 1;
@@ -36,7 +38,7 @@ export const AudienceLoyaltyCard: React.FC<AudienceLoyaltyCardProps> = ({
   const retStrokeDash = (retPct / 100) * circumference;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-3.5 sm:p-4 transition-all duration-200 flex flex-col justify-between">
+    <div className={`bg-white rounded-2xl border border-slate-200/90 shadow-xs p-3.5 sm:p-4 transition-all duration-200 flex flex-col justify-between ${className}`}>
       {/* Header */}
       <div>
         <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-100 gap-2.5">

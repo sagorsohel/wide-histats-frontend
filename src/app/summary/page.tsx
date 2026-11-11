@@ -410,17 +410,15 @@ export default function SummaryPage() {
   }
 
   return (
-    <div className="space-y-4 relative select-text antialiased">
-      {/* Top Banner & Website Identity */}
-
-      {/* 2-Column Desktop Layout: Left (Main Analytics), Right (Inline Calendar + Stats Cards) */}
-      <div className="flex flex-row gap-4 items-start relative z-10">
-        {/* ============================================================ */}
-        {/* LEFT / MAIN ANALYTICS COLUMN                                 */}
-        {/* ============================================================ */}
-        <div className="flex-1 min-w-0 space-y-4 w-full">
-          {/* Daily / Overview Stats Card (Matching Histats Clean Style Exactly) */}
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs overflow-hidden">
+    <div className="space-y-3.5 relative select-text antialiased w-full">
+      {/* ============================================================ */}
+      {/* ROW 1: Daily Stats (Left) + Calendar (Right)                 */}
+      {/* Heights matched, widths matched!                             */}
+      {/* ============================================================ */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-stretch w-full">
+        {/* Daily / Overview Stats Card */}
+        <div className="lg:col-span-8 flex flex-col">
+          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs overflow-hidden flex flex-col justify-between h-full">
             {/* Header Banner */}
             <div className="bg-gradient-to-r from-[#1455bb] via-[#1d5b9f] to-[#1e40af] text-white px-4 py-2.5 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -560,8 +558,27 @@ export default function SummaryPage() {
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Feature 1: New vs. Returning Visitors (Audience Loyalty & Retention) */}
+        {/* Calendar Card (Row 1 Right, Height matched to Daily stats) */}
+        <div className="lg:col-span-4 flex flex-col">
+          <HistatsCalendar
+            selectedPreset={range}
+            onPresetChange={handleRangeChange}
+            currentWindow={customWindow}
+            onDateChange={handleCustomRangeChange}
+            className="h-full w-full"
+          />
+        </div>
+      </div>
+
+      {/* ============================================================ */}
+      {/* ROW 2: New vs Returning (Left) + Lifetime Totals (Right)     */}
+      {/* Heights matched, widths matched!                             */}
+      {/* ============================================================ */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-stretch w-full">
+        {/* Feature 1: New vs. Returning Visitors */}
+        <div className="lg:col-span-8 flex flex-col">
           <AudienceLoyaltyCard
             firstTimeVisitors={overview?.firstTimeVisitors}
             returningVisitors={overview?.returningVisitors}
@@ -569,61 +586,15 @@ export default function SummaryPage() {
             returningVisitorsPct={overview?.returningVisitorsPct}
             totalVisitors={overview?.uniqueVisitors}
             loading={loading}
+            className="h-full"
           />
-
-          {/* Feature 4: Top Pages & Landing vs Exit Pages - Side-by-Side */}
-          <div className=" gap-3.5">
-            <TopPagesTable
-              pages={pages}
-              domain={selectedWebsite?.domain}
-              loading={loading}
-            />
-          </div>
-
-          {/* Feature 5: Traffic Sources & Search Engines vs Social Channels - Side-by-Side */}
-          <div className="grid grid-cols-2 gap-3.5">
-            <SourcesChart sources={sources} loading={loading} />
-            <SearchAndSocialCard referrers={referrers} loading={loading} />
-          </div>
-
-          {/* Feature 2: Geography - Visitors by Country & Top Cities Breakdown - Side-by-Side */}
-          <div className="grid grid-cols-2 gap-3.5">
-            <GeographyTable countries={countries} loading={loading} />
-            <TopCitiesTable cities={cities} loading={loading} />
-          </div>
-
-          {/* Feature 3: Hardware & Platforms - Devices & Browsers + Operating Systems Breakdown - Side-by-Side */}
-          <div className="grid grid-cols-2 gap-3.5">
-            <DeviceBreakdown
-              devices={devices}
-              browsers={browsers}
-              loading={loading}
-            />
-            <OperatingSystemsCard
-              operatingSystems={operatingSystems}
-              loading={loading}
-            />
-          </div>
         </div>
 
-        {/* ============================================================ */}
-        {/* RIGHT COLUMN: CALENDAR (ON TOP) + LIFETIME TOTALS (BELOW)    */}
-        {/* ============================================================ */}
-        <div className="w-[291px] shrink-0 space-y-3.5 sticky ">
-          {/* Section 1: ALWAYS SHOWN CALENDAR (UPOR) */}
-          <div className="flex justify-end">
-            <HistatsCalendar
-              selectedPreset={range}
-              onPresetChange={handleRangeChange}
-              currentWindow={customWindow}
-              onDateChange={handleCustomRangeChange}
-            />
-          </div>
-
-          {/* Section 2: ALL-TIME LIFETIME TOTALS STATS CARDS (PORE / NICHE) */}
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 sm:p-4 space-y-2.5">
+        {/* Lifetime Totals Card (Row 2 Right, Height matched to Audience Loyalty) */}
+        <div className="lg:col-span-4 flex flex-col">
+          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 sm:p-4 space-y-2.5 flex flex-col justify-between h-full">
             {/* Header */}
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 shrink-0">
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-3.5 rounded-full bg-gradient-to-b from-[#1455bb] to-blue-400 shadow-xs" />
                 <h3 className="text-xs font-black uppercase tracking-wider text-[#1455bb]">
@@ -635,10 +606,10 @@ export default function SummaryPage() {
               </span>
             </div>
 
-            {/* 3 Dedicated Stats Cards with rich card backgrounds */}
-            <div className="space-y-2">
+            {/* 3 Dedicated Stats Cards */}
+            <div className="space-y-2 flex-1 flex flex-col justify-between">
               {/* Card 1: All-Time Users */}
-              <div className="rounded-xl px-3 py-2 bg-gradient-to-br from-blue-50/80 via-white to-blue-50/30 border border-blue-200/70 shadow-2xs hover:shadow-xs transition-all group">
+              <div className="rounded-xl px-3 py-2 bg-gradient-to-br from-blue-50/80 via-white to-blue-50/30 border border-blue-200/70 shadow-2xs hover:shadow-xs transition-all group flex-1 flex flex-col justify-between">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-900/80">
                     All-Time Total Users
@@ -666,7 +637,7 @@ export default function SummaryPage() {
               </div>
 
               {/* Card 2: All-Time Views */}
-              <div className="rounded-xl px-3 py-2 bg-gradient-to-br from-indigo-50/80 via-white to-indigo-50/30 border border-indigo-200/70 shadow-2xs hover:shadow-xs transition-all group">
+              <div className="rounded-xl px-3 py-2 bg-gradient-to-br from-indigo-50/80 via-white to-indigo-50/30 border border-indigo-200/70 shadow-2xs hover:shadow-xs transition-all group flex-1 flex flex-col justify-between">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-900/80">
                     All-Time Views
@@ -694,7 +665,7 @@ export default function SummaryPage() {
               </div>
 
               {/* Card 3: All-Time Visits */}
-              <div className="rounded-xl px-3 py-2 bg-gradient-to-br from-sky-50/80 via-white to-sky-50/30 border border-sky-200/70 shadow-2xs hover:shadow-xs transition-all group">
+              <div className="rounded-xl px-3 py-2 bg-gradient-to-br from-sky-50/80 via-white to-sky-50/30 border border-sky-200/70 shadow-2xs hover:shadow-xs transition-all group flex-1 flex flex-col justify-between">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-extrabold uppercase tracking-wider text-sky-900/80">
                     All-Time Visits
@@ -723,6 +694,48 @@ export default function SummaryPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* ============================================================ */}
+      {/* SECTION 2: Top Pages Table (Full Width)                      */}
+      {/* ============================================================ */}
+      <div className="w-full">
+        <TopPagesTable
+          pages={pages}
+          domain={selectedWebsite?.domain}
+          loading={loading}
+        />
+      </div>
+
+      {/* ============================================================ */}
+      {/* SECTION 3: Traffic Sources & Search/Social (Full Width 2-Col) */}
+      {/* ============================================================ */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 items-stretch w-full">
+        <SourcesChart sources={sources} loading={loading} />
+        <SearchAndSocialCard referrers={referrers} loading={loading} />
+      </div>
+
+      {/* ============================================================ */}
+      {/* SECTION 4: Geography (Visitors & Cities) (Full Width 2-Col)  */}
+      {/* ============================================================ */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 items-stretch w-full">
+        <GeographyTable countries={countries} loading={loading} />
+        <TopCitiesTable cities={cities} loading={loading} />
+      </div>
+
+      {/* ============================================================ */}
+      {/* SECTION 5: Devices & Operating Systems (Full Width 2-Col)    */}
+      {/* ============================================================ */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 items-stretch w-full">
+        <DeviceBreakdown
+          devices={devices}
+          browsers={browsers}
+          loading={loading}
+        />
+        <OperatingSystemsCard
+          operatingSystems={operatingSystems}
+          loading={loading}
+        />
       </div>
     </div>
   );

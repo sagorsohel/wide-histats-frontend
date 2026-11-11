@@ -332,7 +332,7 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
 
   return (
     <div
-      className={`w-full max-w-[291px] select-none font-sans shrink-0 bg-white border border-slate-200/90 rounded-2xl shadow-xs p-2.5 flex flex-col justify-between space-y-2 ${className}`}
+      className={`w-full select-none font-sans bg-white border border-slate-200/90 rounded-2xl shadow-xs p-2.5 flex flex-col justify-between space-y-2 ${className}`}
     >
       {/* ============================================================ */}
       {/* 1. TOP TABS: [Hourly] [Daily] [Monthly] & [Active Badge] & Mini Today Icon */}

@@ -18,7 +18,15 @@ export const SearchAndSocialCard: React.FC<SearchAndSocialCardProps> = ({
   const [activeTab, setActiveTab] = useState<"search" | "social">("search");
 
   // Filter Search Engines
-  const searchKeywords = ["google", "bing", "yandex", "duckduckgo", "yahoo", "baidu", "ecosia"];
+  const searchKeywords = [
+    "google",
+    "bing",
+    "yandex",
+    "duckduckgo",
+    "yahoo",
+    "baidu",
+    "ecosia",
+  ];
   const socialKeywords = [
     "facebook",
     "fb.me",
@@ -70,24 +78,33 @@ export const SearchAndSocialCard: React.FC<SearchAndSocialCardProps> = ({
     { name: "Pinterest", count: 690 },
   ];
 
-  const searchList = rawSearchList.length > 0 ? rawSearchList : defaultSearchList;
-  const socialList = rawSocialList.length > 0 ? rawSocialList : defaultSocialList;
+  const searchList =
+    rawSearchList.length > 0 ? rawSearchList : defaultSearchList;
+  const socialList =
+    rawSocialList.length > 0 ? rawSocialList : defaultSocialList;
 
-  const totalSearchSessions = searchList.reduce((sum, s) => sum + s.count, 0) || 1;
-  const totalSocialSessions = socialList.reduce((sum, s) => sum + s.count, 0) || 1;
+  const totalSearchSessions =
+    searchList.reduce((sum, s) => sum + s.count, 0) || 1;
+  const totalSocialSessions =
+    socialList.reduce((sum, s) => sum + s.count, 0) || 1;
   const combinedTotal = totalSearchSessions + totalSocialSessions;
 
-  const searchSharePct = Math.round((totalSearchSessions / combinedTotal) * 100);
-  const socialSharePct = Math.round((totalSocialSessions / combinedTotal) * 100);
+  const searchSharePct = Math.round(
+    (totalSearchSessions / combinedTotal) * 100,
+  );
+  const socialSharePct = Math.round(
+    (totalSocialSessions / combinedTotal) * 100,
+  );
 
   const currentList = activeTab === "search" ? searchList : socialList;
-  const currentTotal = activeTab === "search" ? totalSearchSessions : totalSocialSessions;
+  const currentTotal =
+    activeTab === "search" ? totalSearchSessions : totalSocialSessions;
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-3.5 sm:p-4 flex flex-col justify-between transition-all duration-200">
       {/* Header with Segmented Switcher */}
       <div>
-        <div className="flex items-center justify-between gap-2.5 mb-2.5 pb-2 border-b border-slate-100">
+        <div className="flex items-center justify-between gap-2 mb-2.5 pb-2 border-b border-slate-100">
           <div className="flex items-center gap-2.5 min-w-0">
             <div
               className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-2xs border transition-colors ${
@@ -102,25 +119,14 @@ export const SearchAndSocialCard: React.FC<SearchAndSocialCardProps> = ({
                 <Share2 className="w-4 h-4" />
               )}
             </div>
-            <div className="min-w-0">
-              <h3 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight truncate">
-                {activeTab === "search"
-                  ? "Search Engine Attribution"
-                  : "Social Media Channels"}
-              </h3>
-              <p className="text-[11px] text-slate-500 truncate">
-                {activeTab === "search"
-                  ? "Google, Bing, DuckDuckGo queries"
-                  : "Twitter/X, Facebook, Reddit shares"}
-              </p>
-            </div>
           </div>
 
           {/* Apple Segmented Switcher */}
           <div className="inline-flex p-0.5 bg-slate-100 rounded-lg border border-slate-200/50 shrink-0">
             <button
+              type="button"
               onClick={() => setActiveTab("search")}
-              className={`px-2 py-0.5 rounded-md text-[11px] font-bold transition-all flex items-center gap-1 ${
+              className={`px-2 py-0.5 rounded-md text-[10.5px] font-bold transition-all flex items-center gap-1 cursor-pointer ${
                 activeTab === "search"
                   ? "bg-white text-blue-700 shadow-2xs"
                   : "text-slate-500 hover:text-slate-800"
@@ -130,8 +136,9 @@ export const SearchAndSocialCard: React.FC<SearchAndSocialCardProps> = ({
               <span>Search ({searchSharePct}%)</span>
             </button>
             <button
+              type="button"
               onClick={() => setActiveTab("social")}
-              className={`px-2 py-0.5 rounded-md text-[11px] font-bold transition-all flex items-center gap-1 ${
+              className={`px-2 py-0.5 rounded-md text-[10.5px] font-bold transition-all flex items-center gap-1 cursor-pointer ${
                 activeTab === "social"
                   ? "bg-white text-purple-700 shadow-2xs"
                   : "text-slate-500 hover:text-slate-800"
@@ -194,7 +201,10 @@ export const SearchAndSocialCard: React.FC<SearchAndSocialCardProps> = ({
         {loading ? (
           <div className="space-y-1.5">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="space-y-1 animate-pulse px-2.5 py-1.5 rounded-xl border border-slate-100 bg-white/50">
+              <div
+                key={i}
+                className="space-y-1 animate-pulse px-2.5 py-1.5 rounded-xl border border-slate-100 bg-white/50"
+              >
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 bg-slate-200 rounded shrink-0" />
@@ -260,7 +270,9 @@ export const SearchAndSocialCard: React.FC<SearchAndSocialCardProps> = ({
         <span className="flex items-center gap-1">
           <Compass className="w-3 h-3 text-slate-400" />
           <span>
-            {activeTab === "search" ? "Search Distribution" : "Social Distribution"}
+            {activeTab === "search"
+              ? "Search Distribution"
+              : "Social Distribution"}
           </span>
         </span>
         <span className="font-semibold text-slate-500">

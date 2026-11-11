@@ -412,47 +412,6 @@ export default function SummaryPage() {
   return (
     <div className="space-y-4 relative select-text antialiased">
       {/* Top Banner & Website Identity */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-1 relative z-10 border-b border-slate-200/80">
-        <div className="flex items-center gap-3">
-          {/* Website Favicon */}
-          <div className="w-9 h-9 rounded-xl bg-white border border-slate-200/90 shadow-2xs flex items-center justify-center shrink-0">
-            <WebsiteFavicon
-              domain={selectedWebsite?.domain}
-              size={20}
-              className="rounded-xs shadow-2xs"
-            />
-          </div>
-
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight flex items-center gap-1.5">
-                {selectedWebsite ? selectedWebsite.name : "streamespn"}
-              </h1>
-              {selectedWebsite && (
-                <a
-                  href={`https://${selectedWebsite.domain}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="p-1 rounded-lg text-slate-400 hover:text-[#1455bb] hover:bg-slate-100 transition-colors inline-flex items-center"
-                  title={`Open https://${selectedWebsite.domain}`}
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-              )}
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100/90 text-emerald-700 border border-emerald-200 shadow-2xs flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                LIVE ENGINE
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-              Real-time telemetry, visitor attribution, and historical trends for{" "}
-              <span className="font-bold text-slate-700">
-                {selectedWebsite?.domain || "streamespn.org"}
-              </span>
-            </p>
-          </div>
-        </div>
-      </div>
 
       {/* 2-Column Desktop Layout: Left (Main Analytics), Right (Inline Calendar + Stats Cards) */}
       <div className="flex flex-row gap-4 items-start relative z-10">
@@ -480,8 +439,8 @@ export default function SummaryPage() {
                   {range === "today"
                     ? "Today"
                     : range === "yesterday"
-                    ? "Yesterday"
-                    : range.toUpperCase()}
+                      ? "Yesterday"
+                      : range.toUpperCase()}
                 </span>
               </div>
             </div>
@@ -549,13 +508,13 @@ export default function SummaryPage() {
                   <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight tabular-nums">
                     {loading && !overview ? (
                       <div className="h-7 w-16 bg-slate-200/60 rounded animate-pulse" />
+                    ) : overview?.pagesPerSession ? (
+                      Number(overview.pagesPerSession).toFixed(2)
                     ) : (
-                      overview?.pagesPerSession
-                        ? Number(overview.pagesPerSession).toFixed(2)
-                        : (
-                            (overview?.totalPageviews || 0) /
-                            Math.max(overview?.uniqueVisitors || 1, 1)
-                          ).toFixed(2)
+                      (
+                        (overview?.totalPageviews || 0) /
+                        Math.max(overview?.uniqueVisitors || 1, 1)
+                      ).toFixed(2)
                     )}
                   </div>
                   <div className="text-xs sm:text-sm font-bold text-slate-600 mt-1">
@@ -575,7 +534,8 @@ export default function SummaryPage() {
                           ((overview?.firstTimeVisitors || 0) /
                             Math.max(overview?.uniqueVisitors || 1, 1)) *
                             100,
-                        ) || 59)
+                        ) ||
+                          59)
                       }%`
                     )}
                   </div>
@@ -601,8 +561,6 @@ export default function SummaryPage() {
             </div>
           </div>
 
-         
-
           {/* Feature 1: New vs. Returning Visitors (Audience Loyalty & Retention) */}
           <AudienceLoyaltyCard
             firstTimeVisitors={overview?.firstTimeVisitors}
@@ -614,15 +572,9 @@ export default function SummaryPage() {
           />
 
           {/* Feature 4: Top Pages & Landing vs Exit Pages - Side-by-Side */}
-          <div className="grid grid-cols-2 gap-3.5">
+          <div className=" gap-3.5">
             <TopPagesTable
               pages={pages}
-              domain={selectedWebsite?.domain}
-              loading={loading}
-            />
-            <LandingExitPagesCard
-              landingPages={landingPages}
-              exitPages={exitPages}
               domain={selectedWebsite?.domain}
               loading={loading}
             />
@@ -657,7 +609,7 @@ export default function SummaryPage() {
         {/* ============================================================ */}
         {/* RIGHT COLUMN: CALENDAR (ON TOP) + LIFETIME TOTALS (BELOW)    */}
         {/* ============================================================ */}
-        <div className="w-[291px] shrink-0 space-y-3.5 sticky top-4">
+        <div className="w-[291px] shrink-0 space-y-3.5 sticky ">
           {/* Section 1: ALWAYS SHOWN CALENDAR (UPOR) */}
           <div className="flex justify-end">
             <HistatsCalendar

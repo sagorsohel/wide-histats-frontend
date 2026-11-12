@@ -100,10 +100,82 @@
 }
 
 /* ============================================================ */
-/* Mobile Layout: Fixed 1140px Boxed Width, Natural Content,   */
-/* Footer directly below cards, Edge-to-Edge with 0px margins   */
+/* Mobile Touch Devices: Footer DIRECTLY Below Content          */
 /* ============================================================ */
-@media screen and (max-width: 1023px) {
+html.is-mobile-device,
+html.is-mobile-device body {
+  width: 1140px !important;
+  min-width: 1140px !important;
+  max-width: 1140px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: none !important;
+  background-color: #f1f4f8 !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+}
+
+html.is-mobile-device .desktop-app-container {
+  width: 1140px !important;
+  min-width: 1140px !important;
+  max-width: 1140px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  display: flex !important;
+  flex-direction: column !important;
+  border: none !important;
+  margin: 0 auto !important;
+  box-shadow: none !important;
+}
+
+html.is-mobile-device .desktop-content-row {
+  flex: none !important;
+  width: 1140px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  display: flex !important;
+  align-items: stretch !important;
+}
+
+html.is-mobile-device .desktop-sticky-sidebar {
+  position: relative !important;
+  top: 0 !important;
+  height: auto !important;
+  min-height: 100% !important;
+  max-height: none !important;
+  flex-shrink: 0 !important;
+  overflow: visible !important;
+  align-self: stretch !important;
+  z-index: 30 !important;
+}
+
+html.is-mobile-device .desktop-main-scroll {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding-bottom: 0.25rem !important;
+}
+
+html.is-mobile-device .desktop-footer {
+  position: relative !important;
+  bottom: auto !important;
+  height: 2.5rem !important;
+  width: 100% !important;
+  flex-shrink: 0 !important;
+  z-index: 30 !important;
+  margin-top: 0 !important;
+}
+
+@media screen and (hover: none) and (pointer: coarse) {
   html,
   body {
     width: 1140px !important;
@@ -111,6 +183,7 @@
     max-width: 1140px !important;
     height: auto !important;
     min-height: 0 !important;
+    max-height: none !important;
     overflow-x: hidden !important;
     overscroll-behavior: none !important;
     background-color: #f1f4f8 !important;
@@ -134,7 +207,8 @@
   }
 
   .desktop-content-row {
-    flex: 1 1 auto !important;
+    flex: none !important;
+    width: 1140px !important;
     height: auto !important;
     min-height: 0 !important;
     max-height: none !important;
@@ -162,7 +236,7 @@
     min-height: 0 !important;
     max-height: none !important;
     overflow: visible !important;
-    padding-bottom: 0.5rem !important;
+    padding-bottom: 0.25rem !important;
   }
 
   .desktop-footer {

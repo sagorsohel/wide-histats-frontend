@@ -63,6 +63,10 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
+                  var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (window.screen && Math.min(window.screen.width, window.screen.height) < 768);
+                  if (isMobile) {
+                    document.documentElement.classList.add('is-mobile-device');
+                  }
                   var targetW = 1140;
                   var phoneW = Math.min(window.screen.width || targetW, window.screen.height || targetW);
                   if (phoneW > 0 && phoneW < targetW) {

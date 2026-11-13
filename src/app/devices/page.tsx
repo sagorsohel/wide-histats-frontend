@@ -18,6 +18,7 @@ import { DailyStatsCard } from "@/components/analytics/DailyStatsCard";
 import { Monitor, Smartphone, Tablet, Globe, Cpu } from "lucide-react";
 import { BrowserIcon, OsIcon } from "@/components/common/BrandIcons";
 import { useTabFocus } from "@/hooks/useTabFocus";
+import { formatCommas } from "@/lib/utils";
 
 export default function DevicesReportPage() {
   const { selectedWebsite } = useWebsite();
@@ -324,135 +325,213 @@ export default function DevicesReportPage() {
       {/* 2. DEVICE CATEGORIES CARDS (Desktop, Mobile, Tablet)         */}
       {/* ============================================================ */}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 items-stretch w-full">
         {/* Browsers Table */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs">
-          <div className="flex items-center gap-2 mb-4">
-            <Globe className="w-4 h-4 text-[#1455bb]" />
-            <h3 className="font-bold text-base text-slate-900">
-              Browser Breakdown
-            </h3>
+        <div className="h-full flex flex-col justify-between bg-white rounded-2xl border border-slate-200/90 shadow-xs p-3.5 sm:p-4 space-y-3 transition-all duration-300">
+          <div className="flex-1 flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-100 gap-2.5">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 border border-slate-200/60 flex items-center justify-center shrink-0 shadow-2xs">
+                  <Globe className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight truncate">
+                    Browser Breakdown
+                  </h3>
+                  <p className="text-[11px] text-slate-500 truncate">
+                    Web browser client distribution
+                  </p>
+                </div>
+              </div>
+
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200/80 shadow-2xs whitespace-nowrap shrink-0">
+                <span>Total: {browsers.length}</span>
+              </span>
+            </div>
+
+            {/* Content List */}
+            {loading && browsers.length === 0 ? (
+              <div className="space-y-1.5 flex-1">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                  <div
+                    key={i}
+                    className="h-9 rounded-md bg-slate-100 animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : browsers.length === 0 ? (
+              <div className="py-14 text-center text-xs text-slate-400 flex-1 flex items-center justify-center">
+                No browser records found for this period.
+              </div>
+            ) : (
+              <div className="flex-1 max-h-[460px] overflow-y-auto pr-1">
+                {/* Fixed Header */}
+                <div className="sticky top-0 z-10 flex items-center justify-between px-3 py-2 bg-slate-100 rounded-md text-xs font-bold text-slate-600 mb-1">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className="w-5 text-center text-slate-400">#</span>
+                    <span>Browser</span>
+                  </div>
+                  <div className="flex items-center gap-4 text-right shrink-0">
+                    <span className="w-20 text-right">Visits</span>
+                    <span className="w-12 text-right">Share</span>
+                  </div>
+                </div>
+
+                {/* Rows */}
+                <div className="space-y-1">
+                  {browsers.map((b, idx) => {
+                    const percentage = Math.round(
+                      (b.sessions / totalBrowserSessions) * 100,
+                    );
+                    return (
+                      <div
+                        key={idx}
+                        className={`flex items-center justify-between px-3 py-1.5 rounded-md transition-colors ${
+                          idx % 2 === 0 ? "bg-white" : "bg-[#e8e8e8]"
+                        }`}
+                      >
+                        {/* Left: # + Icon + Browser Name */}
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
+                          <span className="w-5 text-slate-400 font-mono text-[11px] shrink-0 text-center">
+                            {idx + 1}
+                          </span>
+                          <div className="w-6 h-6 rounded-full bg-white border border-slate-200/70 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
+                            <BrowserIcon browser={b.browser} size={15} />
+                          </div>
+                          <span className="font-semibold text-slate-800 text-xs sm:text-[13px] truncate">
+                            {b.browser}
+                          </span>
+                        </div>
+
+                        {/* Right: Visits + Share % */}
+                        <div className="flex items-center gap-4 shrink-0 text-right">
+                          <span className="font-bold text-slate-900 text-xs sm:text-sm tabular-nums text-right w-20">
+                            {formatCommas(b.sessions)}
+                          </span>
+                          <span className="font-medium text-slate-500 text-xs sm:text-sm tabular-nums text-right w-12">
+                            {percentage}%
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
-          {loading && browsers.length === 0 ? (
-            <div className="space-y-3">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="space-y-1 animate-pulse">
-                  <div className="flex items-center justify-between text-xs">
-                    <div className="h-3.5 w-24 bg-slate-200 rounded" />
-                    <div className="flex items-center gap-3">
-                      <div className="h-3.5 w-14 bg-slate-200 rounded" />
-                      <div className="h-3.5 w-8 bg-slate-200 rounded" />
-                    </div>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-1.5" />
-                </div>
-              ))}
-            </div>
-          ) : browsers.length === 0 ? (
-            <div className="py-12 text-center text-xs text-slate-400">
-              No browser records found.
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {browsers.map((b, i) => {
-                const percentage = Math.round(
-                  (b.sessions / totalBrowserSessions) * 100,
-                );
-                return (
-                  <div key={i} className="space-y-1">
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        <BrowserIcon browser={b.browser} size={16} />
-                        <span className="font-semibold text-slate-800">
-                          {b.browser}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="font-bold text-slate-900 tabular-nums">
-                          {b.sessions} visits
-                        </span>
-                        <span className="text-[#1455bb] font-bold w-10 text-right">
-                          {percentage}%
-                        </span>
-                      </div>
-                    </div>
-                    <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                      <div
-                        className="bg-[#1455bb] h-full rounded-full"
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          {/* Footer Info */}
+          <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400">
+            <span>Client browsers detected</span>
+            <span className="font-semibold text-slate-500">
+              {formatCommas(totalBrowserSessions)} total sessions
+            </span>
+          </div>
         </div>
 
         {/* Operating Systems Table */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs">
-          <div className="flex items-center gap-2 mb-4">
-            <Cpu className="w-4 h-4 text-emerald-600" />
-            <h3 className="font-bold text-base text-slate-900">
-              Operating Systems
-            </h3>
+        <div className="h-full flex flex-col justify-between bg-white rounded-2xl border border-slate-200/90 shadow-xs p-3.5 sm:p-4 space-y-3 transition-all duration-300">
+          <div className="flex-1 flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-100 gap-2.5">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 border border-slate-200/60 flex items-center justify-center shrink-0 shadow-2xs">
+                  <Cpu className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight truncate">
+                    Operating Systems
+                  </h3>
+                  <p className="text-[11px] text-slate-500 truncate">
+                    Visitor operating system platforms
+                  </p>
+                </div>
+              </div>
+
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200/80 shadow-2xs whitespace-nowrap shrink-0">
+                <span>Total: {osList.length}</span>
+              </span>
+            </div>
+
+            {/* Content List */}
+            {loading && osList.length === 0 ? (
+              <div className="space-y-1.5 flex-1">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                  <div
+                    key={i}
+                    className="h-9 rounded-md bg-slate-100 animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : osList.length === 0 ? (
+              <div className="py-14 text-center text-xs text-slate-400 flex-1 flex items-center justify-center">
+                No OS records found for this period.
+              </div>
+            ) : (
+              <div className="flex-1 max-h-[460px] overflow-y-auto pr-1">
+                {/* Fixed Header */}
+                <div className="sticky top-0 z-10 flex items-center justify-between px-3 py-2 bg-slate-100 rounded-md text-xs font-bold text-slate-600 mb-1">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className="w-5 text-center text-slate-400">#</span>
+                    <span>Operating System</span>
+                  </div>
+                  <div className="flex items-center gap-4 text-right shrink-0">
+                    <span className="w-20 text-right">Visits</span>
+                    <span className="w-12 text-right">Share</span>
+                  </div>
+                </div>
+
+                {/* Rows */}
+                <div className="space-y-1">
+                  {osList.map((o, idx) => {
+                    const percentage = Math.round(
+                      (o.sessions / totalOsSessions) * 100,
+                    );
+                    return (
+                      <div
+                        key={idx}
+                        className={`flex items-center justify-between px-3 py-1.5 rounded-md transition-colors ${
+                          idx % 2 === 0 ? "bg-white" : "bg-[#e8e8e8]"
+                        }`}
+                      >
+                        {/* Left: # + Icon + OS Name */}
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
+                          <span className="w-5 text-slate-400 font-mono text-[11px] shrink-0 text-center">
+                            {idx + 1}
+                          </span>
+                          <div className="w-6 h-6 rounded-full bg-white border border-slate-200/70 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
+                            <OsIcon os={o.os} size={15} />
+                          </div>
+                          <span className="font-semibold text-slate-800 text-xs sm:text-[13px] truncate">
+                            {o.os}
+                          </span>
+                        </div>
+
+                        {/* Right: Visits + Share % */}
+                        <div className="flex items-center gap-4 shrink-0 text-right">
+                          <span className="font-bold text-slate-900 text-xs sm:text-sm tabular-nums text-right w-20">
+                            {formatCommas(o.sessions)}
+                          </span>
+                          <span className="font-medium text-slate-500 text-xs sm:text-sm tabular-nums text-right w-12">
+                            {percentage}%
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
-          {loading && osList.length === 0 ? (
-            <div className="space-y-3">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="space-y-1 animate-pulse">
-                  <div className="flex items-center justify-between text-xs">
-                    <div className="h-3.5 w-24 bg-slate-200 rounded" />
-                    <div className="flex items-center gap-3">
-                      <div className="h-3.5 w-14 bg-slate-200 rounded" />
-                      <div className="h-3.5 w-8 bg-slate-200 rounded" />
-                    </div>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-1.5" />
-                </div>
-              ))}
-            </div>
-          ) : osList.length === 0 ? (
-            <div className="py-12 text-center text-xs text-slate-400">
-              No OS records found.
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {osList.map((o, i) => {
-                const percentage = Math.round(
-                  (o.sessions / totalOsSessions) * 100,
-                );
-                return (
-                  <div key={i} className="space-y-1">
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        <OsIcon os={o.os} size={15} />
-                        <span className="font-semibold text-slate-800">
-                          {o.os}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="font-bold text-slate-900 tabular-nums">
-                          {o.sessions} visits
-                        </span>
-                        <span className="text-emerald-700 font-bold w-10 text-right">
-                          {percentage}%
-                        </span>
-                      </div>
-                    </div>
-                    <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                      <div
-                        className="bg-emerald-600 h-full rounded-full"
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          {/* Footer Info */}
+          <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400">
+            <span>Platforms &amp; operating systems</span>
+            <span className="font-semibold text-slate-500">
+              {formatCommas(totalOsSessions)} total sessions
+            </span>
+          </div>
         </div>
       </div>
     </div>

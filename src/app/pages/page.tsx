@@ -27,6 +27,7 @@ import {
   Compass,
 } from "lucide-react";
 import { useTabFocus } from "@/hooks/useTabFocus";
+import { formatCommas } from "@/lib/utils";
 
 interface TitleItem {
   title: string;
@@ -419,18 +420,12 @@ export default function PagesReportPage() {
           </div>
 
           {loading && pages.length === 0 ? (
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 flex-1">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div
                   key={i}
-                  className="px-3 py-2 rounded-xl border border-slate-100 bg-slate-50/60 flex items-center justify-between gap-3 animate-pulse"
-                >
-                  <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                    <div className="w-6 h-4 bg-slate-200 rounded shrink-0" />
-                    <div className="h-3.5 bg-slate-200 rounded w-2/3" />
-                  </div>
-                  <div className="h-4 w-16 bg-slate-200 rounded shrink-0" />
-                </div>
+                  className="h-9 rounded-md bg-slate-100 animate-pulse"
+                />
               ))}
             </div>
           ) : pages.length === 0 ? (
@@ -438,79 +433,65 @@ export default function PagesReportPage() {
               No URL pageviews recorded for this window.
             </div>
           ) : (
-            <div className="space-y-1.5 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
-              {pages.map((page, index) => {
-                const percentage = Math.round(
-                  (page.pageviews / maxViews) * 100,
-                );
-                const fullLink =
-                  page.url ||
-                  `${cleanDomain}${page.path.startsWith("/") ? page.path : `/${page.path}`}`;
+            <div className="flex-1 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
+              {/* Fixed Header */}
+              <div className="sticky top-0 z-10 flex items-center justify-between px-3 py-2 bg-slate-100 rounded-md text-xs font-bold text-slate-600 mb-1">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <span className="w-6 text-center">#</span>
+                  <span>URL</span>
+                </div>
+                <div className="flex items-center gap-4 sm:gap-6 text-right shrink-0">
+                  <span className="w-16 text-right">Views</span>
+                  <span className="w-16 text-right">Visitors</span>
+                </div>
+              </div>
 
-                return (
-                  <div
-                    key={index}
-                    className="group relative rounded-xl border border-slate-100 hover:border-blue-200 overflow-hidden transition-all bg-white hover:shadow-xs"
-                  >
-                    {/* Relative Percentage Progress Fill Bar */}
+              {/* Rows */}
+              <div className="space-y-1">
+                {pages.map((page, index) => {
+                  const fullLink =
+                    page.url ||
+                    `${cleanDomain}${page.path.startsWith("/") ? page.path : `/${page.path}`}`;
+
+                  return (
                     <div
-                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500/10 to-blue-400/5 pointer-events-none transition-all group-hover:from-blue-500/15"
-                      style={{ width: `${Math.max(percentage, 4)}%` }}
-                    />
-
-                    <div className="relative flex items-center justify-between px-3 py-1.5 text-xs gap-3">
-                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      key={index}
+                      className={`flex items-center justify-between px-3 py-2 rounded-md transition-colors ${
+                        index % 2 === 0 ? "bg-white" : "bg-[#e8e8e8]"
+                      }`}
+                    >
+                      {/* Left: # + Just URL */}
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-3">
                         <span className="w-6 text-slate-400 font-mono font-bold text-[11px] shrink-0 text-center">
                           {index + 1}
                         </span>
-                        <div className="min-w-0 flex-1 space-y-0.5">
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <a
-                              href={fullLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              title={fullLink}
-                              className="font-bold text-slate-900 truncate group-hover:text-[#1455bb] hover:underline font-mono text-[12px] block"
-                            >
-                              {fullLink}
-                            </a>
-                            <ExternalLink className="w-3 h-3 text-slate-400 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                          </div>
-                          {page.title && (
-                            <div
-                              title={page.title}
-                              className="text-[10px] text-slate-400 truncate block font-sans"
-                            >
-                              {page.title}
-                            </div>
-                          )}
+                        <div className="min-w-0 flex-1 flex items-center gap-1.5">
+                          <a
+                            href={fullLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={fullLink}
+                            className="font-bold text-slate-900 truncate hover:text-[#1455bb] hover:underline font-mono text-xs sm:text-[13px] block"
+                          >
+                            {fullLink}
+                          </a>
+                          <ExternalLink className="w-3 h-3 text-slate-400 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 shrink-0 text-right">
-                        <div className="w-16 text-right">
-                          <div className="font-extrabold text-slate-900 text-xs tabular-nums">
-                            {page.pageviews.toLocaleString()}
-                          </div>
-                          <div className="text-[9px] text-slate-400 flex items-center justify-end gap-0.5 font-medium">
-                            <Eye className="w-2.5 h-2.5" />
-                            <span>views</span>
-                          </div>
+                      {/* Right: Views + Visitors */}
+                      <div className="flex items-center gap-4 sm:gap-6 shrink-0 text-right">
+                        <div className="w-16 text-right font-bold text-slate-900 text-xs sm:text-sm tabular-nums">
+                          {formatCommas(page.pageviews)}
                         </div>
-                        <div className="w-16 text-right hidden sm:block">
-                          <div className="font-bold text-slate-600 text-xs tabular-nums">
-                            {page.visitors.toLocaleString()}
-                          </div>
-                          <div className="text-[9px] text-slate-400 flex items-center justify-end gap-0.5 font-medium">
-                            <Users className="w-2.5 h-2.5" />
-                            <span>visitors</span>
-                          </div>
+                        <div className="w-16 text-right font-bold text-slate-900 text-xs sm:text-sm tabular-nums">
+                          {formatCommas(page.visitors)}
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
@@ -537,18 +518,12 @@ export default function PagesReportPage() {
           </div>
 
           {loading && byTitleList.length === 0 ? (
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 flex-1">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div
                   key={i}
-                  className="px-3 py-2 rounded-xl border border-slate-100 bg-slate-50/60 flex items-center justify-between gap-3 animate-pulse"
-                >
-                  <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                    <div className="w-6 h-4 bg-slate-200 rounded shrink-0" />
-                    <div className="h-3.5 bg-slate-200 rounded w-2/3" />
-                  </div>
-                  <div className="h-4 w-16 bg-slate-200 rounded shrink-0" />
-                </div>
+                  className="h-9 rounded-md bg-slate-100 animate-pulse"
+                />
               ))}
             </div>
           ) : byTitleList.length === 0 ? (
@@ -556,75 +531,57 @@ export default function PagesReportPage() {
               No title telemetry recorded for this window.
             </div>
           ) : (
-            <div className="space-y-1.5 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
-              {byTitleList.map((item, index) => {
-                const percentage = Math.round(
-                  (item.pageviews / maxTitleViews) * 100,
-                );
-                const sampleUrl = `${cleanDomain}${item.samplePath.startsWith("/") ? item.samplePath : `/${item.samplePath}`}`;
+            <div className="flex-1 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
+              {/* Fixed Header */}
+              <div className="sticky top-0 z-10 flex items-center justify-between px-3 py-2 bg-slate-100 rounded-md text-xs font-bold text-slate-600 mb-1">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <span className="w-6 text-center">#</span>
+                  <span>Title</span>
+                </div>
+                <div className="flex items-center gap-4 sm:gap-6 text-right shrink-0">
+                  <span className="w-16 text-right">Views</span>
+                  <span className="w-16 text-right">Visitors</span>
+                </div>
+              </div>
 
-                return (
-                  <div
-                    key={index}
-                    className="group relative rounded-xl border border-slate-100 hover:border-blue-200 overflow-hidden transition-all bg-white hover:shadow-xs"
-                  >
-                    {/* Relative Percentage Progress Fill Bar */}
+              {/* Rows */}
+              <div className="space-y-1">
+                {byTitleList.map((item, index) => {
+                  return (
                     <div
-                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500/10 to-blue-400/5 pointer-events-none transition-all group-hover:from-blue-500/15"
-                      style={{ width: `${Math.max(percentage, 4)}%` }}
-                    />
-
-                    <div className="relative flex items-center justify-between px-3 py-1.5 text-xs gap-3">
-                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      key={index}
+                      className={`flex items-center justify-between px-3 py-2 rounded-md transition-colors ${
+                        index % 2 === 0 ? "bg-white" : "bg-[#e8e8e8]"
+                      }`}
+                    >
+                      {/* Left: # + Just Title */}
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-3">
                         <span className="w-6 text-slate-400 font-mono font-bold text-[11px] shrink-0 text-center">
                           {index + 1}
                         </span>
-                        <div className="min-w-0 flex-1 space-y-0.5">
-                          <div
+                        <div className="min-w-0 flex-1">
+                          <span
                             title={item.title}
-                            className="font-bold text-slate-900 truncate group-hover:text-[#1455bb] font-sans text-[12px] block"
+                            className="font-bold text-slate-900 truncate text-xs sm:text-[13px] block"
                           >
                             {item.title}
-                          </div>
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <a
-                              href={sampleUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              title={`Open ${sampleUrl}`}
-                              className="text-[10px] text-slate-400 font-mono truncate hover:text-[#1455bb] hover:underline block"
-                            >
-                              {sampleUrl}
-                            </a>
-                            <ExternalLink className="w-2.5 h-2.5 text-slate-400 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                          </div>
+                          </span>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 shrink-0 text-right">
-                        <div className="w-16 text-right">
-                          <div className="font-extrabold text-slate-900 text-xs tabular-nums">
-                            {item.pageviews.toLocaleString()}
-                          </div>
-                          <div className="text-[9px] text-slate-400 flex items-center justify-end gap-0.5 font-medium">
-                            <Eye className="w-2.5 h-2.5" />
-                            <span>views</span>
-                          </div>
+                      {/* Right: Views + Visitors */}
+                      <div className="flex items-center gap-4 sm:gap-6 shrink-0 text-right">
+                        <div className="w-16 text-right font-bold text-slate-900 text-xs sm:text-sm tabular-nums">
+                          {formatCommas(item.pageviews)}
                         </div>
-                        <div className="w-16 text-right hidden sm:block">
-                          <div className="font-bold text-slate-600 text-xs tabular-nums">
-                            {item.visitors.toLocaleString()}
-                          </div>
-                          <div className="text-[9px] text-slate-400 flex items-center justify-end gap-0.5 font-medium">
-                            <Users className="w-2.5 h-2.5" />
-                            <span>visitors</span>
-                          </div>
+                        <div className="w-16 text-right font-bold text-slate-900 text-xs sm:text-sm tabular-nums">
+                          {formatCommas(item.visitors)}
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>

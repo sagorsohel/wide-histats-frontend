@@ -506,10 +506,10 @@ export const Sidebar: React.FC = () => {
   }
 
   return (
-    <aside className="desktop-sticky-sidebar flex flex-row shrink-0 self-start select-none border-r border-slate-200/80 shadow-xs z-40">
+    <aside className="desktop-sticky-sidebar flex flex-col shrink-0 self-start select-none z-40 w-[48px]">
       {/* ============================================================ */}
-      {/* COLUMN 1: Left Royal Blue Dock / Rail (Width: 64px)           */}
-      {/* macOS dots + real favicons with seamless organic carved tab  */}
+      {/* Left Royal Blue Dock / Rail (Width: 48px)                     */}
+      {/* macOS dots + real favicons with seamless organic carved tab   */}
       {/* ============================================================ */}
       <div className="w-[48px] bg-gradient-to-b from-[#1455bb] via-[#124cb0] to-[#0f3f94] flex flex-col items-center py-3 shrink-0 relative z-20 shadow-[2px_0_10px_rgba(16,83,184,0.15)] h-full">
         {/* macOS Window Control Dots at top */}
@@ -531,10 +531,10 @@ export const Sidebar: React.FC = () => {
                     key={site.id}
                     className="relative w-full flex justify-end items-center my-0.5"
                   >
-                    {/* Top Inverted Scoop Curve bridging Column 1 to Column 2 */}
+                    {/* Top Inverted Scoop Curve bridging Column 1 to Main */}
                     <div className="absolute -top-4 right-0 w-4 h-4 overflow-hidden pointer-events-none z-30">
                       <svg
-                        className="w-4 h-4 fill-[#f8fafc] text-[#f8fafc]"
+                        className="w-4 h-4 fill-[#F1F5F9] text-[#F1F5F9]"
                         viewBox="0 0 16 16"
                       >
                         <path d="M 16 0 C 16 8.837 8.837 16 0 16 L 16 16 Z" />
@@ -542,7 +542,7 @@ export const Sidebar: React.FC = () => {
                     </div>
 
                     {/* Active Carved Notch Tab */}
-                    <div className="bg-[#f8fafc] w-[42px] h-[42px] rounded-l-xl flex items-center justify-center relative z-20 pr-0.5 shadow-2xs">
+                    <div className="bg-[#F1F5F9] w-[42px] h-[42px] rounded-l-xl flex items-center justify-center relative z-20 pr-0.5 shadow-2xs">
                       <button
                         type="button"
                         onClick={() => handleSwitchWebsite(site)}
@@ -563,10 +563,10 @@ export const Sidebar: React.FC = () => {
                       </button>
                     </div>
 
-                    {/* Bottom Inverted Scoop Curve bridging Column 1 to Column 2 */}
+                    {/* Bottom Inverted Scoop Curve bridging Column 1 to Main */}
                     <div className="absolute -bottom-4 right-0 w-4 h-4 overflow-hidden pointer-events-none z-30">
                       <svg
-                        className="w-4 h-4 fill-[#f8fafc] text-[#f8fafc]"
+                        className="w-4 h-4 fill-[#F1F5F9] text-[#F1F5F9]"
                         viewBox="0 0 16 16"
                       >
                         <path d="M 0 0 C 8.837 0 16 7.163 16 16 L 16 0 Z" />
@@ -619,168 +619,6 @@ export const Sidebar: React.FC = () => {
               interaction="hover"
             />
           </Link>
-        </div>
-      </div>
-
-      {/* ============================================================ */}
-      {/* COLUMN 2: Secondary Navigation Panel (Width: 162px)          */}
-      {/* Clean card items starting directly from top                  */}
-      {/* ============================================================ */}
-      <div className="w-[162px] bg-[#F1F5F9] flex flex-col relative z-10 h-full">
-        {/* Navigation Cards List (Starts directly from top without redundant website block) */}
-        <div className="flex-1 overflow-y-auto p-2 space-y-2.5 custom-scrollbar">
-          {NAV_GROUPS.map((group) => (
-            <div key={group.title} className="space-y-1">
-              <div className="px-1 text-[8.5px] font-extrabold uppercase tracking-wider text-slate-400">
-                {group.title}
-              </div>
-
-              <div className="space-y-1.5">
-                {group.items.map((item) => {
-                  const isActive =
-                    pathname === item.href ||
-                    pathname === `${item.href}/` ||
-                    (item.href === "/summary" &&
-                      (pathname === "/summery" || pathname === "/summery/")) ||
-                    (item.href === "/traffic-stats" &&
-                      (pathname === "/traffic" || pathname === "/traffic/")) ||
-                    (item.href === "/control-panel" &&
-                      (pathname === "/websites" || pathname === "/websites/"));
-
-                  const itemHref = getHref(item.href);
-
-                  // Border & Background per theme (matching pill style exactly)
-                  const themeStyles: Record<
-                    string,
-                    {
-                      border: string;
-                      activeBorder: string;
-                      activeBg: string;
-                      iconBg: string;
-                    }
-                  > = {
-                    "/summary": {
-                      border: "border-blue-200 hover:border-blue-300",
-                      activeBorder: "border-blue-400 shadow-xs",
-                      activeBg: "bg-blue-50/70",
-                      iconBg:
-                        "bg-blue-50 text-blue-600 border border-blue-200/80",
-                    },
-                    "/traffic-stats": {
-                      border: "border-emerald-200 hover:border-emerald-300",
-                      activeBorder: "border-emerald-400 shadow-xs",
-                      activeBg: "bg-emerald-50/70",
-                      iconBg:
-                        "bg-emerald-50 text-emerald-600 border border-emerald-200/80",
-                    },
-                    "/realtime": {
-                      border: "border-rose-200 hover:border-rose-300",
-                      activeBorder: "border-rose-400 shadow-xs",
-                      activeBg: "bg-rose-50/70",
-                      iconBg:
-                        "bg-rose-50 text-rose-600 border border-rose-200/80",
-                    },
-                    "/sources": {
-                      border: "border-amber-200 hover:border-amber-300",
-                      activeBorder: "border-amber-400 shadow-xs",
-                      activeBg: "bg-amber-50/70",
-                      iconBg:
-                        "bg-amber-50 text-amber-600 border border-amber-200/80",
-                    },
-                    "/devices": {
-                      border: "border-purple-200 hover:border-purple-300",
-                      activeBorder: "border-purple-300 shadow-xs",
-                      activeBg: "bg-purple-50/70",
-                      iconBg:
-                        "bg-purple-50 text-purple-600 border border-purple-200/80",
-                    },
-                    "/geography": {
-                      border: "border-sky-200 hover:border-sky-300",
-                      activeBorder: "border-sky-300 shadow-xs",
-                      activeBg: "bg-sky-50/70",
-                      iconBg: "bg-sky-50 text-sky-600 border border-sky-200/80",
-                    },
-                    "/pages": {
-                      border: "border-pink-200 hover:border-pink-300",
-                      activeBorder: "border-pink-300 shadow-xs",
-                      activeBg: "bg-pink-50/70",
-                      iconBg:
-                        "bg-pink-50 text-pink-600 border border-pink-200/80",
-                    },
-                    "/settings": {
-                      border: "border-slate-200 hover:border-slate-300",
-                      activeBorder: "border-slate-300 shadow-xs",
-                      activeBg: "bg-slate-50",
-                      iconBg:
-                        "bg-slate-100 text-slate-600 border border-slate-200/80",
-                    },
-                  };
-
-                  const currentStyle = themeStyles[item.href] || {
-                    border: "border-slate-200",
-                    activeBorder: "border-blue-400",
-                    activeBg: "bg-blue-50/70",
-                    iconBg:
-                      "bg-slate-100 text-slate-600 border border-slate-200/80",
-                  };
-
-                  return (
-                    <Link
-                      key={item.href}
-                      prefetch={true}
-                      href={itemHref}
-                      style={{ padding: "0.05rem" }}
-                      className={`block rounded-[9px] border transition-all duration-200 cursor-pointer shadow-2xs hover:shadow-xs hover:translate-x-0.5 ${
-                        isActive
-                          ? `${currentStyle.activeBorder} ${currentStyle.activeBg}`
-                          : `${currentStyle.border} bg-white`
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-1.5 px-1.5 py-0.5">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          {/* 3D Animated Icon Box */}
-                          <div
-                            className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-all duration-200 group-hover:scale-105 ${currentStyle.iconBg}`}
-                          >
-                            <item.icon
-                              size={13}
-                              className="w-3 h-3 drop-shadow-[0_1px_1px_rgba(0,0,0,0.06)]"
-                              strokeColor={item.theme?.stroke || "#1455bb"}
-                            />
-                          </div>
-                          <span
-                            className={`font-bold text-[11px] truncate transition-colors ${
-                              isActive
-                                ? "text-slate-900 font-extrabold"
-                                : "text-slate-800"
-                            }`}
-                          >
-                            {item.label}
-                          </span>
-                        </div>
-
-                        {item.isLive ? (
-                          <span className="px-1 py-0.2 rounded-full text-[8px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-0.5 shrink-0">
-                            <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                            <span>
-                              {typeof activeCount === "number" &&
-                              activeCount > 0
-                                ? activeCount
-                                : "LIVE"}
-                            </span>
-                          </span>
-                        ) : item.badge ? (
-                          <span className="px-1 py-0.2 rounded-full text-[8px] font-bold bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
-                            {item.badge}
-                          </span>
-                        ) : null}
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
         </div>
       </div>
 

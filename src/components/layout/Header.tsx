@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useWebsite } from "@/context/WebsiteContext";
-import { NAV_GROUPS, WebsiteFavicon } from "@/components/layout/Sidebar";
+import { useAppSelector } from "@/store";
+import { Website } from "@/types/analytics";
 import { getSite7DigitId } from "@/lib/utils";
 import {
   AnalycosLogo,
@@ -13,13 +14,18 @@ import {
 } from "@/components/common/AnalycosLogo";
 import {
   Globe,
-  Code,
-  LogOut,
+  Plus,
+  Bell,
   ChevronDown,
+  LogOut,
+  LayoutGrid,
+  BarChart2,
+  Layers,
+  Compass,
+  Smartphone,
+  Settings,
+  Check,
   Activity,
-  ExternalLink,
-  Menu,
-  X,
   Sliders,
 } from "lucide-react";
 
@@ -27,426 +33,362 @@ export const Header: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [websiteDropdownOpen, setWebsiteDropdownOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Auto close mobile drawer on navigation
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [pathname]);
-
   const isAuthPage =
     pathname === "/" || pathname === "/login" || pathname === "/register";
-  const isControlPanel =
-    pathname === "/control-panel" || pathname === "/websites";
 
   const { user, logout } = useAuth();
-  const { websites, selectedWebsite, openTrackingModal } = useWebsite();
+  const { websites, selectedWebsite, setSelectedWebsite, openTrackingModal } =
+    useWebsite();
+
+  const realtimeData = useAppSelector((state) =>
+    selectedWebsite?.id
+      ? state.realtime.byWebsite[selectedWebsite.id]?.data
+      : null,
+  );
+  const activeCount = realtimeData?.activeCount;
+
+  const getHref = (href: string) => {
+    const site7Digit = getSite7DigitId(selectedWebsite);
+    if (!site7Digit) return href;
+    const cleanHref = href.replace(/\/$/, "");
+    return `${cleanHref}?id=${site7Digit}`;
+  };
+
+  const handleSwitchWebsite = (site: Website) => {
+    if (selectedWebsite?.id === site.id) {
+      setWebsiteDropdownOpen(false);
+      return;
+    }
+    setSelectedWebsite(site);
+    setWebsiteDropdownOpen(false);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("histat:website_changed", { detail: site }),
+      );
+      if (
+        !isAuthPage &&
+        pathname !== "/control-panel" &&
+        pathname !== "/websites"
+      ) {
+        const cleanPath = pathname.endsWith("/") ? pathname : `${pathname}/`;
+        const site7Digit = getSite7DigitId(site);
+        window.history.replaceState(null, "", `${cleanPath}?id=${site7Digit}`);
+        router.push(`${cleanPath}?id=${site7Digit}`);
+      }
+    }
+  };
+
+  // 8 Navigation Tabs using exact original names with modern pill bar design
+  const navTabs = [
+    {
+      id: "summary",
+      label: "Overview ",
+      href: "/summary",
+      icon: LayoutGrid,
+      matches: ["/summary", "/summery"],
+    },
+    {
+      id: "traffic-stats",
+      label: "Traffic Stats",
+      href: "/traffic-stats",
+      icon: BarChart2,
+      matches: ["/traffic-stats", "/traffic"],
+    },
+    {
+      id: "realtime",
+      label: "Users Online",
+      href: "/realtime",
+      icon: Activity,
+      matches: ["/realtime"],
+      isLive: true,
+    },
+    {
+      id: "sources",
+      label: "Referring Sites",
+      href: "/sources",
+      icon: Compass,
+      matches: ["/sources"],
+    },
+    {
+      id: "devices",
+      label: "Browsers & OS",
+      href: "/devices",
+      icon: Smartphone,
+      matches: ["/devices"],
+    },
+    {
+      id: "geography",
+      label: "Geolocation",
+      href: "/geography",
+      icon: Globe,
+      matches: ["/geography"],
+    },
+    {
+      id: "pages",
+      label: "Traffic by URL",
+      href: "/pages",
+      icon: Layers,
+      matches: ["/pages"],
+    },
+    {
+      id: "settings",
+      label: "Settings",
+      href: "/settings",
+      icon: Settings,
+      matches: ["/settings"],
+    },
+  ];
 
   return (
-    <>
-      <header className="border-b border-slate-200/90 bg-white/85 backdrop-blur-xl sticky top-0 z-50 shadow-2xs shrink-0">
-        <div className="h-16 px-3 sm:px-5 lg:px-7 flex items-center justify-between gap-3">
-          {/* ============================================================ */}
-          {/* LEFT: Clean Brand Logo                                       */}
-          {/* ============================================================ */}
-          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-            {/* Logo & Brand */}
-            <Link
-              href={isAuthPage ? "/" : "/control-panel"}
-              className="flex items-center gap-2.5 shrink-0 group"
-            >
-              <AnalycosLogo size={32} animated={true} speed="fast" />
-              <div className="flex items-center">
-                <AnalycosAnimatedText sizeClass="text-base sm:text-lg" />
-              </div>
-            </Link>
-          </div>
+    <header className="w-full bg-white sticky top-0 z-50 shrink-0 select-none shadow-xs">
+      {/* ============================================================ */}
+      {/* ROW 1: Clean White Header Bar                                */}
+      {/* Logo | Website Dropdown | Tracking Active | + Add Website | User */}
+      {/* ============================================================ */}
+      <div className="h-14 px-4 flex items-center justify-between border-b border-slate-200/80 bg-white">
+        {/* Left Side: Logo + Divider + Dropdown */}
+        <div className="flex items-center gap-3 min-w-0">
+          {/* Logo & Brand */}
+          <Link
+            href={isAuthPage ? "/" : "/summary"}
+            className="flex items-center gap-2.5 shrink-0 group"
+          >
+            <AnalycosLogo size={30} animated={true} speed="fast" />
+            <div className="flex items-center">
+              <AnalycosAnimatedText sizeClass="text-base sm:text-lg" />
+            </div>
+          </Link>
 
-          {/* ============================================================ */}
-          {/* RIGHT: Control Panel + Website + Tracking Code + User Avatar */}
-          {/* All moved to right side with cohesive frosted glass design   */}
-          {/* ============================================================ */}
-          <div className="flex items-center gap-2 sm:gap-2.5 lg:gap-3 shrink-0">
-            {/* Desktop Control Panel & Website Pill (Always Shown) */}
-            {!isAuthPage && (
-              <div className="flex items-center gap-2 lg:gap-2.5">
-                {/* 1. Control Panel Button (Frosted Glass Pill) */}
-                <Link
-                  href="/control-panel"
-                  title="Open Control Panel (All Websites)"
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl text-xs font-extrabold transition-all duration-200 active:scale-95 ${
-                    pathname === "/control-panel" || pathname === "/websites"
-                      ? "bg-[#1455bb] text-white shadow-sm shadow-blue-600/30"
-                      : "bg-white/70 hover:bg-white backdrop-blur-md border border-slate-200/90 hover:border-blue-300 text-slate-700 hover:text-[#1455bb] shadow-2xs hover:shadow-xs"
-                  }`}
-                >
-                  <Sliders className="w-3.5 h-3.5" />
-                  <span>Control panel</span>
-                </Link>
+          {!isAuthPage && (
+            <>
+              {/* Thin Vertical Divider */}
+              <div className="h-5 w-px bg-slate-200 mx-1 shrink-0 hidden sm:block" />
 
-                {/* 2. Active Website Pill (Frosted Glass with Favicon & External Link) */}
-                {selectedWebsite && (
-                  <div className="flex items-center gap-1.5 bg-white/75 hover:bg-white/95 backdrop-blur-md border border-slate-200/90 hover:border-blue-300 rounded-2xl p-1 pr-1.5 shadow-2xs transition-all">
-                    <div
-                      title={`Active Website: ${selectedWebsite.name} (${selectedWebsite.domain}) - View Analytics`}
-                      className="flex items-center gap-2 px-2 py-0.5 text-xs font-extrabold text-slate-800 hover:text-[#1455bb] transition-colors select-none"
-                    >
-                      <WebsiteFavicon
-                        name={selectedWebsite.name}
-                        domain={selectedWebsite.domain}
-                        className="w-4 h-4 shadow-2xs"
-                      />
-                      <span className="max-w-[120px] lg:max-w-[170px] truncate">
-                        {selectedWebsite.name}
-                      </span>
-                    </div>
-
-                    {/* Direct Open Link in New Tab */}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* 3. Tracking Code Snippet Button (Frosted Glass Pill) */}
-
-            {/* 4. User Account Dropdown (Frosted Glass Avatar) */}
-            {user ? (
-              <div className="relative">
+              {/* Website Selector Dropdown */}
+              <div className="relative shrink-0">
                 <button
                   type="button"
-                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center gap-2 p-0.5 rounded-2xl hover:ring-2 hover:ring-blue-500/30 transition-all cursor-pointer"
+                  onClick={() => setWebsiteDropdownOpen(!websiteDropdownOpen)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50/70 text-xs font-semibold text-slate-800 shadow-2xs transition-all cursor-pointer"
                 >
-                  <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#1455bb] to-indigo-600 border border-blue-400 flex items-center justify-center text-xs font-black text-white uppercase shadow-sm">
-                    {user.name.charAt(0)}
-                  </div>
+                  <Globe className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                  <span className="max-w-[160px] sm:max-w-[220px] truncate">
+                    {selectedWebsite?.domain ||
+                      selectedWebsite?.name ||
+                      "Select Website"}
+                  </span>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 </button>
 
-                {userDropdownOpen && (
+                {/* Website Dropdown Popup */}
+                {websiteDropdownOpen && (
                   <>
                     <div
                       className="fixed inset-0 z-[60]"
-                      onClick={() => setUserDropdownOpen(false)}
+                      onClick={() => setWebsiteDropdownOpen(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-56 rounded-3xl border border-slate-200/90 bg-white shadow-2xl p-2 z-[70] animate-slide-down">
-                      <div className="px-3.5 py-2.5 border-b border-slate-100">
-                        <div className="font-extrabold text-sm text-slate-900 truncate">
-                          {user.name}
-                        </div>
-                        <div className="text-xs text-slate-500 truncate mt-0.5">
-                          {user.email}
-                        </div>
+                    <div className="absolute left-0 mt-1.5 w-72 rounded-xl border border-slate-200/90 bg-white shadow-xl p-2 z-[70] animate-slide-down">
+                      <div className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                        Select Active Website
                       </div>
 
-                      <div className="py-1.5 space-y-0.5">
-                        <Link
-                          href="/websites"
-                          onClick={() => setUserDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                        >
-                          <Globe className="w-4 h-4 text-slate-500" />
-                          <span>Manage Websites</span>
-                        </Link>
-                        {websites && websites.length > 0 && (
-                          <Link
-                            href="/settings"
-                            onClick={() => setUserDropdownOpen(false)}
-                            className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                          >
-                            <Activity className="w-4 h-4 text-slate-500" />
-                            <span>Settings</span>
-                          </Link>
+                      <div className="max-h-56 overflow-y-auto py-1 space-y-0.5">
+                        {websites && websites.length > 0 ? (
+                          websites.map((site) => {
+                            const isSelected = selectedWebsite?.id === site.id;
+                            return (
+                              <button
+                                key={site.id}
+                                type="button"
+                                onClick={() => handleSwitchWebsite(site)}
+                                className={`w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg text-xs font-medium transition-colors text-left cursor-pointer ${
+                                  isSelected
+                                    ? "bg-blue-50 text-[#1058d1] font-bold"
+                                    : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <Globe
+                                    className={`w-3.5 h-3.5 shrink-0 ${
+                                      isSelected
+                                        ? "text-[#1058d1]"
+                                        : "text-slate-400"
+                                    }`}
+                                  />
+                                  <span className="truncate">
+                                    {site.domain || site.name}
+                                  </span>
+                                </div>
+                                {isSelected && (
+                                  <Check className="w-3.5 h-3.5 text-[#1058d1] shrink-0" />
+                                )}
+                              </button>
+                            );
+                          })
+                        ) : (
+                          <div className="px-3 py-2 text-xs text-slate-400">
+                            No websites yet.
+                          </div>
                         )}
                       </div>
 
-                      <div className="border-t border-slate-100 pt-1">
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            await logout();
-                            setUserDropdownOpen(false);
-                            router.push("/login");
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-rose-600 hover:bg-rose-50 transition-colors font-bold cursor-pointer"
+                      <div className="border-t border-slate-100 pt-1 mt-1">
+                        <Link
+                          href="/websites"
+                          onClick={() => setWebsiteDropdownOpen(false)}
+                          className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-blue-600 hover:bg-blue-50 transition-colors"
                         >
-                          <LogOut className="w-4 h-4" />
-                          <span>Sign Out</span>
-                        </button>
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Add New Website</span>
+                        </Link>
                       </div>
                     </div>
                   </>
                 )}
               </div>
-            ) : (
-              <Link
-                href="/login"
-                className="px-4 py-1.5 rounded-2xl bg-[#1455bb] hover:bg-[#1047a0] text-white font-extrabold text-xs shadow-md shadow-blue-500/25 transition-all"
-              >
-                Sign In
-              </Link>
-            )}
-          </div>
+            </>
+          )}
         </div>
 
-        {/* Mobile Sub-Header: Current Website Indicator + Control Panel Button */}
-        {!isAuthPage && !isControlPanel && selectedWebsite && (
-          <div className="md:hidden border-t border-slate-200/80 bg-gradient-to-r from-slate-50 via-white to-slate-50 px-3 py-2 flex items-center justify-between gap-2 shadow-2xs">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 shrink-0">
-                Site:
-              </span>
-              <div
-                title={`Current Website: ${selectedWebsite.name} (${selectedWebsite.domain})`}
-                className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-white border border-slate-200 shadow-2xs min-w-0 max-w-[170px]"
-              >
-                <WebsiteFavicon
-                  name={selectedWebsite.name}
-                  domain={selectedWebsite.domain}
-                  className="w-3.5 h-3.5"
-                />
-                <span className="text-xs font-extrabold text-slate-900 truncate">
-                  {selectedWebsite.name || selectedWebsite.domain}
-                </span>
-              </div>
-              <a
-                href={
-                  selectedWebsite.domain.startsWith("http")
-                    ? selectedWebsite.domain
-                    : `https://${selectedWebsite.domain}`
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-                title={`Open ${selectedWebsite.domain}`}
-                className="p-1 rounded-lg text-slate-400 hover:text-[#1455bb] hover:bg-slate-200/60 transition-colors shrink-0"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            </div>
-
-            <Link
-              href="/control-panel"
-              title="Open Websites Control Panel"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1455bb] hover:bg-[#1047a0] text-white text-xs font-bold transition-all shadow-xs shrink-0 active:scale-95 cursor-pointer"
-            >
-              <Sliders className="w-3.5 h-3.5" />
-              <span>Control panel</span>
-            </Link>
-          </div>
-        )}
-
-        {/* Mobile Sub-Header on Control Panel page */}
-        {!isAuthPage && isControlPanel && (
-          <div className="md:hidden border-t border-slate-200/80 bg-[#f8fafc] px-3.5 py-2 flex items-center justify-between gap-2 shadow-2xs text-xs">
-            <div className="flex items-center gap-1.5 font-bold text-slate-700">
-              <Sliders className="w-3.5 h-3.5 text-[#1455bb]" />
-              <span>Websites Control Panel</span>
-            </div>
-            <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-[#1455bb] font-black text-[11px] border border-blue-200">
-              {websites.length} websites
-            </span>
-          </div>
-        )}
-      </header>
-
-      {/* Mobile Drawer Navigation (Visible on phones & tablets when open) */}
-      {!isAuthPage && mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 md:hidden flex">
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
-            onClick={() => setMobileMenuOpen(false)}
-          />
-
-          {/* Drawer Content */}
-          <div className="relative w-[300px] max-w-[85vw] bg-white h-full shadow-2xl flex flex-col z-10 overflow-y-auto">
-            {/* Drawer Header */}
-            <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-              <div className="flex items-center gap-2.5">
-                <AnalycosLogo size={28} animated={true} speed="fast" />
-                <div>
-                  <span className="font-black text-base text-slate-900">
-                    Analycos
-                  </span>
-                  <span className="ml-1.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue-100 text-[#1455bb]">
-                    Menu
-                  </span>
-                </div>
-              </div>
+        {/* Right Side: Tracking Active + Add Website + Notification Bell + User Avatar */}
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+          {!isAuthPage && (
+            <>
+              {/* Status Pill: Tracking Active */}
               <button
                 type="button"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-1.5 text-slate-500 hover:text-slate-800 rounded-lg hover:bg-slate-200/60"
+                onClick={() =>
+                  selectedWebsite && openTrackingModal(selectedWebsite)
+                }
+                title="Telemetry tracking active - Click to view tracking code snippet"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/90 text-xs font-semibold text-[#047857] hover:bg-emerald-100/90 transition-colors cursor-pointer shrink-0"
               >
-                <X className="w-5 h-5" />
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Tracking active</span>
               </button>
-            </div>
 
-            {/* Mobile Website Indicator */}
-            {selectedWebsite && (
-              <div className="p-3 border-b border-slate-200 bg-blue-50/40 space-y-2">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                  Current Website
-                </div>
+              {/* Add Website Button */}
+              <Link
+                href="/websites"
+                title="Add or configure websites"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-blue-200/90 hover:border-blue-300 bg-white hover:bg-blue-50/50 text-xs font-bold text-[#1058d1] shadow-2xs transition-all shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5 text-[#1058d1]" />
+                <span>Add website</span>
+              </Link>
+            </>
+          )}
 
-                <div className="flex items-center justify-between bg-white border border-slate-200 rounded-xl p-2.5 text-xs shadow-2xs">
-                  <Link
-                    href={`/summary/?id=${getSite7DigitId(selectedWebsite)}`}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 truncate hover:opacity-80 transition-opacity"
-                  >
-                    <WebsiteFavicon
-                      name={selectedWebsite.name}
-                      domain={selectedWebsite.domain}
-                      className="w-4 h-4 shrink-0"
-                    />
-                    <div className="truncate">
-                      <div className="font-bold text-slate-800 truncate">
-                        {selectedWebsite.name}
-                      </div>
-                      <div className="text-[10px] text-slate-400 font-mono truncate">
-                        {selectedWebsite.domain}
-                      </div>
-                    </div>
-                  </Link>
-                  <a
-                    href={
-                      selectedWebsite.domain.startsWith("http")
-                        ? selectedWebsite.domain
-                        : `https://${selectedWebsite.domain}`
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-[#1455bb] hover:bg-slate-100"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                </div>
-
-                {/* Control Panel and Tracking Code Actions */}
-                <div className="grid grid-cols-2 gap-2 pt-1">
-                  <Link
-                    href="/control-panel"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-blue-100 hover:bg-blue-200 text-[#1455bb] text-xs font-bold transition-colors text-center"
-                  >
-                    <Sliders className="w-3.5 h-3.5 shrink-0" />
-                    <span>Control Panel</span>
-                  </Link>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      openTrackingModal(selectedWebsite);
-                      setMobileMenuOpen(false);
-                    }}
-                    className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-[#1455bb] text-white text-xs font-bold shadow-xs hover:bg-[#1047a0] transition-colors text-center cursor-pointer"
-                  >
-                    <Code className="w-3.5 h-3.5 shrink-0" />
-                    <span>Tracker Code</span>
-                  </button>
-                </div>
+          {/* User Account Avatar with Dropdown */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+              className="flex items-center gap-1 p-0.5 rounded-full hover:ring-2 hover:ring-blue-500/20 transition-all cursor-pointer"
+            >
+              <div className="w-7 h-7 rounded-full bg-[#1058d1] text-white flex items-center justify-center font-bold text-xs uppercase shadow-xs">
+                {user?.name?.charAt(0) || "A"}
               </div>
-            )}
+              <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+            </button>
 
-            {/* Navigation Groups */}
-            <nav className="flex-1 p-3 space-y-4">
-              {NAV_GROUPS.map((group) => (
-                <div key={group.title} className="space-y-1">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2 py-0.5 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#1455bb]" />
-                    <span>{group.title}</span>
-                  </div>
-
-                  <div className="space-y-0.5">
-                    {group.items.map((item) => {
-                      const Icon = item.icon;
-                      const isActive =
-                        pathname === item.href ||
-                        pathname === `${item.href}/` ||
-                        (item.href === "/summary" &&
-                          (pathname === "/summery" ||
-                            pathname === "/summery/")) ||
-                        (item.href === "/traffic-stats" &&
-                          (pathname === "/traffic" ||
-                            pathname === "/traffic/"));
-
-                      const site7Digit = getSite7DigitId(selectedWebsite);
-                      const itemHref = site7Digit
-                        ? `${item.href.endsWith("/") ? item.href : `${item.href}/`}?id=${site7Digit}`
-                        : item.href;
-
-                      return (
-                        <Link
-                          key={item.href}
-                          href={itemHref}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                            isActive
-                              ? "bg-blue-50 text-[#1455bb] font-bold border-l-4 border-[#1455bb]"
-                              : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2.5 truncate">
-                            <Icon
-                              className={`w-4 h-4 ${
-                                isActive ? "text-[#1455bb]" : "text-slate-500"
-                              }`}
-                            />
-                            <span className="truncate">{item.label}</span>
-                          </div>
-
-                          {item.badge && (
-                            <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-300">
-                              {item.badge}
-                            </span>
-                          )}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </nav>
-
-            {/* Drawer User Footer */}
-            {user && (
-              <div className="p-3 border-t border-slate-200 bg-slate-50 space-y-2">
-                <div className="flex items-center gap-2.5 px-2">
-                  <div className="w-7 h-7 rounded-full bg-[#1455bb] text-white flex items-center justify-center font-bold text-xs uppercase shadow-2xs">
-                    {user.name.charAt(0)}
-                  </div>
-                  <div className="truncate">
-                    <div className="font-bold text-xs text-slate-800 truncate">
-                      {user.name}
+            {userDropdownOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-[60]"
+                  onClick={() => setUserDropdownOpen(false)}
+                />
+                <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-slate-200/90 bg-white shadow-2xl p-2 z-[70] animate-slide-down">
+                  <div className="px-3 py-2 border-b border-slate-100">
+                    <div className="font-extrabold text-xs text-slate-900 truncate">
+                      {user?.name || "User Account"}
                     </div>
-                    <div className="text-[10px] text-slate-500 truncate">
-                      {user.email}
+                    <div className="text-[11px] text-slate-400 truncate mt-0.5">
+                      {user?.email || "user@analycos.com"}
                     </div>
                   </div>
-                </div>
 
-                <button
-                  type="button"
-                  onClick={async () => {
-                    await logout();
-                    setMobileMenuOpen(false);
-                    router.push("/login");
-                  }}
-                  className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors border border-rose-200 cursor-pointer"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>Sign Out</span>
-                </button>
-              </div>
+                  <div className="py-1 space-y-0.5">
+                    <Link
+                      href="/websites"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                    >
+                      <Globe className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Manage Websites</span>
+                    </Link>
+                    <Link
+                      href="/settings"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                    >
+                      <Settings className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Settings</span>
+                    </Link>
+                  </div>
+
+                  <div className="border-t border-slate-100 pt-1 mt-1">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        await logout();
+                        setUserDropdownOpen(false);
+                        router.push("/login");
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-rose-600 hover:bg-rose-50 transition-colors font-bold cursor-pointer"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </div>
+      </div>
+
+      {/* ============================================================ */}
+      {/* ROW 2: Royal Blue Sub-Header Navigation Bar                 */}
+      {/* 8 Tabs: Overview Summary | Traffic Stats | Users Online...  */}
+      {/* ============================================================ */}
+      {!isAuthPage && (
+        <nav className="h-11 bg-[#1058d1] px-4 flex items-center gap-2 sm:gap-3 overflow-x-auto whitespace-nowrap scrollbar-none shadow-xs">
+          {navTabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = tab.matches.some(
+              (m) => pathname === m || pathname.startsWith(`${m}/`),
+            );
+
+            return (
+              <Link
+                key={tab.id}
+                prefetch={true}
+                href={getHref(tab.href)}
+                className={`flex items-center gap-1.5 transition-all duration-150 cursor-pointer text-xs shrink-0 ${
+                  isActive
+                    ? "bg-white text-[#1058d1] font-bold px-3 py-1.5 rounded-lg shadow-sm"
+                    : "text-white/90 hover:text-white hover:bg-white/10 font-semibold px-2.5 py-1.5 rounded-lg"
+                }`}
+              >
+                <Icon
+                  className={`w-3.5 h-3.5 shrink-0 ${
+                    isActive ? "text-[#1058d1]" : "text-white"
+                  }`}
+                />
+                <span>{tab.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
       )}
-    </>
+    </header>
   );
 };

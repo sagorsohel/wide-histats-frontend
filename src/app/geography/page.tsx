@@ -10,6 +10,7 @@ import {
 } from "@/components/analytics/DateRangePicker";
 import { HistatsCalendar } from "@/components/analytics/HistatsCalendar";
 import { DailyStatsCard } from "@/components/analytics/DailyStatsCard";
+import { GeoPieChart } from "@/components/analytics/GeoPieChart";
 import { Globe2, Building2, Info, ArrowUpRight } from "lucide-react";
 import { CountryFlag } from "@/components/common/CountryFlag";
 import { formatCommas } from "@/lib/utils";
@@ -305,11 +306,10 @@ export default function GeographyPage() {
       {/* Top Banner */}
 
       {/* ============================================================ */}
-      {/* 1. TOP ROW: UNIFIED DAILY STATS & COMPACT CALENDAR           */}
+      {/* 1. TOP ROW: GEOGRAPHY PIE CHART & COMPACT CALENDAR           */}
       {/* ============================================================ */}
       <DailyStatsCard
         title="Geography stats"
-        items={geoStatItems}
         overview={overview}
         loading={loading}
         range={range}
@@ -320,10 +320,11 @@ export default function GeographyPage() {
             onPresetChange={handleRangeChange}
             currentWindow={customWindow}
             onDateChange={handleCustomRangeChange}
-            className="w-full max-w-[340px]"
           />
         }
-      />
+      >
+        <GeoPieChart countries={countries} loading={loading} />
+      </DailyStatsCard>
 
       {/* ============================================================ */}
       {/* 2. SIDE-BY-SIDE COMPLETE RANKING LISTS                       */}

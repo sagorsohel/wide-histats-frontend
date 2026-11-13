@@ -21,6 +21,7 @@ interface DailyStatsCardProps {
   title?: string;
   dateText?: string;
   calendar?: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export const DailyStatsCard: React.FC<DailyStatsCardProps> = ({
@@ -32,6 +33,7 @@ export const DailyStatsCard: React.FC<DailyStatsCardProps> = ({
   title,
   dateText,
   calendar,
+  children,
 }) => {
   const displayTitle =
     title ||
@@ -122,73 +124,87 @@ export const DailyStatsCard: React.FC<DailyStatsCardProps> = ({
       {/* Card Body: Compact metrics with smaller font matching screenshot */}
       <div className="p-2.5 sm:p-3 bg-white">
         <div className="flex flex-col lg:flex-row items-start justify-between gap-3">
-          {/* Left Stats Section: Exact columns and compact font sizes */}
+          {/* Left Stats Section: Either custom children (e.g. GeoStackedBarLineChart) or standard 2-row metrics */}
           <div className="flex-1 w-full lg:border-r border-[#d4d4d4] lg:pr-4">
-            {/* Row 1: Primary Metrics with 1px gray vertical dividers */}
-            <div className="grid grid-cols-3 divide-x divide-[#d4d4d4] pb-2 border-b border-[#d4d4d4]">
-              {displayItems.slice(0, 3).map((item, idx) => (
-                <div
-                  key={idx}
-                  className={idx === 0 ? "pr-3" : idx === 1 ? "px-3" : "pl-3"}
-                >
-                  <div className="text-[18px] sm:text-[19px] font-bold text-[#0055aa] leading-tight tracking-tight tabular-nums truncate">
-                    {loading && !overview && (!items || items.length === 0) ? (
-                      <div className="h-5 w-16 bg-slate-200/60 rounded animate-pulse" />
-                    ) : (
-                      item.value
-                    )}
-                  </div>
-                  <div className="text-[11px] sm:text-[11.5px] font-normal text-[#222222] mt-0.5 truncate leading-tight">
-                    {item.label}
-                  </div>
+            {children ? (
+              children
+            ) : (
+              <>
+                {/* Row 1: Primary Metrics with 1px gray vertical dividers */}
+                <div className="grid grid-cols-3 divide-x divide-[#d4d4d4] pb-2 border-b border-[#d4d4d4]">
+                  {displayItems.slice(0, 3).map((item, idx) => (
+                    <div
+                      key={idx}
+                      className={
+                        idx === 0 ? "pr-3" : idx === 1 ? "px-3" : "pl-3"
+                      }
+                    >
+                      <div className="text-[18px] sm:text-[19px] font-bold text-[#0055aa] leading-tight tracking-tight tabular-nums truncate">
+                        {loading &&
+                        !overview &&
+                        (!items || items.length === 0) ? (
+                          <div className="h-5 w-16 bg-slate-200/60 rounded animate-pulse" />
+                        ) : (
+                          item.value
+                        )}
+                      </div>
+                      <div className="text-[11px] sm:text-[11.5px] font-normal text-[#222222] mt-0.5 truncate leading-tight">
+                        {item.label}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            {/* Row 2: Secondary Metrics directly under row 1 */}
-            <div className="grid grid-cols-3 pt-2">
-              {/* Col 1 */}
-              <div className="pr-3 border-r border-[#d4d4d4]">
-                <div className="text-[17px] sm:text-[18px] font-bold text-[#111111] leading-tight tracking-tight tabular-nums truncate">
-                  {loading && !overview && (!items || items.length === 0) ? (
-                    <div className="h-5 w-12 bg-slate-200/60 rounded animate-pulse" />
+                {/* Row 2: Secondary Metrics directly under row 1 */}
+                <div className="grid grid-cols-3 pt-2">
+                  {/* Col 1 */}
+                  <div className="pr-3 border-r border-[#d4d4d4]">
+                    <div className="text-[17px] sm:text-[18px] font-bold text-[#111111] leading-tight tracking-tight tabular-nums truncate">
+                      {loading &&
+                      !overview &&
+                      (!items || items.length === 0) ? (
+                        <div className="h-5 w-12 bg-slate-200/60 rounded animate-pulse" />
+                      ) : (
+                        displayItems[3]?.value
+                      )}
+                    </div>
+                    <div className="text-[11px] sm:text-[11.5px] font-normal text-[#222222] mt-0.5 truncate leading-tight">
+                      {displayItems[3]?.label}
+                    </div>
+                  </div>
+
+                  {/* Col 2 */}
+                  <div className="px-3">
+                    <div className="text-[17px] sm:text-[18px] font-bold text-[#111111] leading-tight tracking-tight tabular-nums truncate">
+                      {loading &&
+                      !overview &&
+                      (!items || items.length === 0) ? (
+                        <div className="h-5 w-12 bg-slate-200/60 rounded animate-pulse" />
+                      ) : (
+                        displayItems[4]?.value
+                      )}
+                    </div>
+                    <div className="text-[11px] sm:text-[11.5px] font-normal text-[#222222] mt-0.5 truncate leading-tight">
+                      {displayItems[4]?.label}
+                    </div>
+                  </div>
+
+                  {/* Col 3: empty or extra item */}
+                  {displayItems[5] ? (
+                    <div className="pl-3 border-l border-[#d4d4d4]">
+                      <div className="text-[17px] sm:text-[18px] font-bold text-[#111111] leading-tight tracking-tight tabular-nums truncate">
+                        {displayItems[5].value}
+                      </div>
+                      <div className="text-[11px] sm:text-[11.5px] font-normal text-[#222222] mt-0.5 truncate leading-tight">
+                        {displayItems[5].label}
+                      </div>
+                    </div>
                   ) : (
-                    displayItems[3]?.value
+                    <div />
                   )}
                 </div>
-                <div className="text-[11px] sm:text-[11.5px] font-normal text-[#222222] mt-0.5 truncate leading-tight">
-                  {displayItems[3]?.label}
-                </div>
-              </div>
-
-              {/* Col 2 */}
-              <div className="px-3">
-                <div className="text-[17px] sm:text-[18px] font-bold text-[#111111] leading-tight tracking-tight tabular-nums truncate">
-                  {loading && !overview && (!items || items.length === 0) ? (
-                    <div className="h-5 w-12 bg-slate-200/60 rounded animate-pulse" />
-                  ) : (
-                    displayItems[4]?.value
-                  )}
-                </div>
-                <div className="text-[11px] sm:text-[11.5px] font-normal text-[#222222] mt-0.5 truncate leading-tight">
-                  {displayItems[4]?.label}
-                </div>
-              </div>
-
-              {/* Col 3: empty or extra item */}
-              {displayItems[5] ? (
-                <div className="pl-3 border-l border-[#d4d4d4]">
-                  <div className="text-[17px] sm:text-[18px] font-bold text-[#111111] leading-tight tracking-tight tabular-nums truncate">
-                    {displayItems[5].value}
-                  </div>
-                  <div className="text-[11px] sm:text-[11.5px] font-normal text-[#222222] mt-0.5 truncate leading-tight">
-                    {displayItems[5].label}
-                  </div>
-                </div>
-              ) : (
-                <div />
-              )}
-            </div>
+              </>
+            )}
           </div>
 
           {/* Right Calendar Section: Exact 222px width, strictly 127px height */}

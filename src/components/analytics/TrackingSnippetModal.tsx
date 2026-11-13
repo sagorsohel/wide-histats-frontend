@@ -155,6 +155,9 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
   const publicTunnelUrl =
     process.env.NEXT_PUBLIC_TRACKER_URL || "https://analycos.com";
   const scriptUrl = `${publicTunnelUrl}/tracker.js`;
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_URL || "https://api.analycos.com";
+  const beaconUrl = `${apiBase}/0.gif?${website.trackingId}&101`;
 
   const activeCounter = selectedCounter || counters[0] || {
     id: "default",
@@ -181,6 +184,7 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
   src="${scriptUrl}"
   data-website-id="${website.trackingId}"
 ></script>
+<noscript><img src="${beaconUrl}" alt="Analycos" style="display:none;" /></noscript>
 <!-- End Analycos Analytics -->`;
 
   const standardCounterSnippet = `<!-- Analycos Analytics Counter Code -->
@@ -192,6 +196,7 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
   data-website-id="${website.trackingId}"
   data-counter-id="${activeCounter.counterId}"
 ></script>
+<noscript><img src="${beaconUrl}" alt="Analycos" style="display:none;" /></noscript>
 <!-- End Analycos Analytics -->`;
 
   const asyncCounterSnippet = `<!-- Analycos Analytics Counter (async) -->
@@ -206,6 +211,7 @@ _Aasync.push(['Analycos.track_hits']);
   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(as);
 })();
 </script>
+<noscript><img src="${beaconUrl}" alt="Analycos" style="display:none;" /></noscript>
 <!-- End Analycos Analytics -->`;
 
   const activeSnippet = activeCounter.isHidden

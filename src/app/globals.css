@@ -100,7 +100,7 @@
 }
 
 /* ============================================================ */
-/* Mobile Touch Devices: Footer DIRECTLY Below Content          */
+/* Mobile Touch Devices: Fixed First-Page Height & Scrollable Content */
 /* ============================================================ */
 html.is-mobile-device,
 html.is-mobile-device body {
@@ -121,24 +121,25 @@ html.is-mobile-device .desktop-app-container {
   width: 1140px !important;
   min-width: 1140px !important;
   max-width: 1140px !important;
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  overflow: visible !important;
+  height: calc(4rem + 1080px + 2.5rem) !important;
+  min-height: calc(4rem + 1080px + 2.5rem) !important;
+  max-height: calc(4rem + 1080px + 2.5rem) !important;
+  overflow: hidden !important;
   display: flex !important;
   flex-direction: column !important;
   border: none !important;
   margin: 0 auto !important;
   box-shadow: none !important;
+  position: relative !important;
 }
 
 html.is-mobile-device .desktop-content-row {
   flex: none !important;
   width: 1140px !important;
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  overflow: visible !important;
+  height: 1080px !important;
+  min-height: 1080px !important;
+  max-height: 1080px !important;
+  overflow: hidden !important;
   display: flex !important;
   align-items: stretch !important;
 }
@@ -146,11 +147,11 @@ html.is-mobile-device .desktop-content-row {
 html.is-mobile-device .desktop-sticky-sidebar {
   position: relative !important;
   top: 0 !important;
-  height: auto !important;
-  min-height: 100% !important;
-  max-height: none !important;
+  height: 1080px !important;
+  min-height: 1080px !important;
+  max-height: 1080px !important;
   flex-shrink: 0 !important;
-  overflow: visible !important;
+  overflow: hidden !important;
   align-self: stretch !important;
   z-index: 30 !important;
 }
@@ -158,16 +159,19 @@ html.is-mobile-device .desktop-sticky-sidebar {
 html.is-mobile-device .desktop-main-scroll {
   flex: 1 1 auto !important;
   min-width: 0 !important;
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  overflow: visible !important;
-  padding-bottom: 0.25rem !important;
+  height: 1080px !important;
+  min-height: 1080px !important;
+  max-height: 1080px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior-y: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding-bottom: 1.5rem !important;
 }
 
 html.is-mobile-device .desktop-footer {
   position: relative !important;
-  bottom: auto !important;
+  bottom: 0 !important;
   height: 2.5rem !important;
   width: 100% !important;
   flex-shrink: 0 !important;
@@ -195,24 +199,25 @@ html.is-mobile-device .desktop-footer {
     width: 1140px !important;
     min-width: 1140px !important;
     max-width: 1140px !important;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    overflow: visible !important;
+    height: calc(4rem + 1080px + 2.5rem) !important;
+    min-height: calc(4rem + 1080px + 2.5rem) !important;
+    max-height: calc(4rem + 1080px + 2.5rem) !important;
+    overflow: hidden !important;
     display: flex !important;
     flex-direction: column !important;
     border: none !important;
     margin: 0 auto !important;
     box-shadow: none !important;
+    position: relative !important;
   }
 
   .desktop-content-row {
     flex: none !important;
     width: 1140px !important;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    overflow: visible !important;
+    height: 1080px !important;
+    min-height: 1080px !important;
+    max-height: 1080px !important;
+    overflow: hidden !important;
     display: flex !important;
     align-items: stretch !important;
   }
@@ -220,11 +225,11 @@ html.is-mobile-device .desktop-footer {
   .desktop-sticky-sidebar {
     position: relative !important;
     top: 0 !important;
-    height: auto !important;
-    min-height: 100% !important;
-    max-height: none !important;
+    height: 1080px !important;
+    min-height: 1080px !important;
+    max-height: 1080px !important;
     flex-shrink: 0 !important;
-    overflow: visible !important;
+    overflow: hidden !important;
     align-self: stretch !important;
     z-index: 30 !important;
   }
@@ -232,16 +237,19 @@ html.is-mobile-device .desktop-footer {
   .desktop-main-scroll {
     flex: 1 1 auto !important;
     min-width: 0 !important;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    overflow: visible !important;
-    padding-bottom: 0.25rem !important;
+    height: 1080px !important;
+    min-height: 1080px !important;
+    max-height: 1080px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior-y: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: 1.5rem !important;
   }
 
   .desktop-footer {
     position: relative !important;
-    bottom: auto !important;
+    bottom: 0 !important;
     height: 2.5rem !important;
     width: 100% !important;
     flex-shrink: 0 !important;
@@ -253,7 +261,7 @@ html.is-mobile-device .desktop-footer {
     height: 300px !important;
   }
   .realtime-grid-card {
-    height: 380px !important;
+    height: 285px !important;
   }
 }
 

@@ -15,6 +15,7 @@ import {
 } from "@/components/analytics/DateRangePicker";
 import { HistatsCalendar } from "@/components/analytics/HistatsCalendar";
 import { DailyStatsCard } from "@/components/analytics/DailyStatsCard";
+import { DevicePieChart } from "@/components/analytics/DevicePieChart";
 import { Monitor, Smartphone, Tablet, Globe, Cpu } from "lucide-react";
 import { BrowserIcon, OsIcon } from "@/components/common/BrandIcons";
 import { useTabFocus } from "@/hooks/useTabFocus";
@@ -36,15 +37,23 @@ export default function DevicesReportPage() {
   const getDateRange = useCallback((option: RangeOption) => {
     const now = new Date();
     let from = new Date();
-    if (option === "today") from.setHours(0, 0, 0, 0);
-    else if (option === "yesterday") {
+    let to = new Date();
+    if (option === "today") {
+      from.setHours(0, 0, 0, 0);
+    } else if (option === "yesterday") {
       from.setDate(from.getDate() - 1);
       from.setHours(0, 0, 0, 0);
-      now.setDate(now.getDate() - 1);
-    } else if (option === "7d") from.setDate(from.getDate() - 7);
-    else if (option === "30d") from.setDate(from.getDate() - 30);
+      to.setDate(to.getDate() - 1);
+      to.setHours(23, 59, 59, 999);
+    } else if (option === "7d") {
+      from.setDate(from.getDate() - 7);
+      from.setHours(0, 0, 0, 0);
+    } else if (option === "30d") {
+      from.setDate(from.getDate() - 30);
+      from.setHours(0, 0, 0, 0);
+    }
 
-    return { from: from.toISOString(), to: now.toISOString() };
+    return { from: from.toISOString(), to: to.toISOString() };
   }, []);
 
   const hasDataRef = React.useRef(false);
@@ -305,7 +314,6 @@ export default function DevicesReportPage() {
       {/* ============================================================ */}
       <DailyStatsCard
         title="Device & platform stats"
-        items={deviceStatItems}
         overview={overview}
         loading={loading}
         range={range}
@@ -319,7 +327,14 @@ export default function DevicesReportPage() {
             className="w-full max-w-[340px]"
           />
         }
-      />
+      >
+        <DevicePieChart
+          browsers={browsers}
+          osList={osList}
+          devices={devices}
+          loading={loading}
+        />
+      </DailyStatsCard>
 
       {/* ============================================================ */}
       {/* 2. DEVICE CATEGORIES CARDS (Desktop, Mobile, Tablet)         */}

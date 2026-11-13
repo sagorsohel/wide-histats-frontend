@@ -47,15 +47,23 @@ export default function GeographyPage() {
   const getDateRange = useCallback((option: RangeOption) => {
     const now = new Date();
     let from = new Date();
-    if (option === "today") from.setHours(0, 0, 0, 0);
-    else if (option === "yesterday") {
+    let to = new Date();
+    if (option === "today") {
+      from.setHours(0, 0, 0, 0);
+    } else if (option === "yesterday") {
       from.setDate(from.getDate() - 1);
       from.setHours(0, 0, 0, 0);
-      now.setDate(now.getDate() - 1);
-    } else if (option === "7d") from.setDate(from.getDate() - 7);
-    else if (option === "30d") from.setDate(from.getDate() - 30);
+      to.setDate(to.getDate() - 1);
+      to.setHours(23, 59, 59, 999);
+    } else if (option === "7d") {
+      from.setDate(from.getDate() - 7);
+      from.setHours(0, 0, 0, 0);
+    } else if (option === "30d") {
+      from.setDate(from.getDate() - 30);
+      from.setHours(0, 0, 0, 0);
+    }
 
-    return { from: from.toISOString(), to: now.toISOString() };
+    return { from: from.toISOString(), to: to.toISOString() };
   }, []);
 
   const hasDataRef = React.useRef(false);

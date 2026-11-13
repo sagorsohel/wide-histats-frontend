@@ -420,6 +420,7 @@ export default function SummaryPage() {
         loading={loading}
         range={range}
         domain={selectedWebsite?.domain}
+        liveOnlineCount={overview?.activeVisitors}
         calendar={
           <HistatsCalendar
             selectedPreset={range}

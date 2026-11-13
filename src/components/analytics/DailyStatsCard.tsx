@@ -1,15 +1,20 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { OverviewStats } from "@/types/analytics";
 import { RangeOption } from "./DateRangePicker";
 import { formatNumber } from "@/lib/utils";
+import { useWebsite } from "@/context/WebsiteContext";
+import { useAppSelector } from "@/store";
+import { ChevronRight } from "lucide-react";
 
 export interface StatItem {
   value: React.ReactNode;
   label: string;
   sublabel?: string;
   highlight?: boolean;
+  href?: string;
 }
 
 interface DailyStatsCardProps {
@@ -22,6 +27,7 @@ interface DailyStatsCardProps {
   dateText?: string;
   calendar?: React.ReactNode;
   children?: React.ReactNode;
+  liveOnlineCount?: number;
 }
 
 export const DailyStatsCard: React.FC<DailyStatsCardProps> = ({
@@ -34,7 +40,23 @@ export const DailyStatsCard: React.FC<DailyStatsCardProps> = ({
   dateText,
   calendar,
   children,
+  liveOnlineCount,
 }) => {
+  const { selectedWebsite } = useWebsite();
+  const realtimeActiveCount = useAppSelector(
+    (state) =>
+      selectedWebsite?.id
+        ? state.realtime.byWebsite[selectedWebsite.id]?.data?.activeCount
+        : undefined,
+  );
+
+  const liveCount =
+    liveOnlineCount ??
+    realtimeActiveCount ??
+    overview?.activeVisitors ??
+    selectedWebsite?.usersOnline ??
+    0;
+
   const displayTitle =
     title ||
     (range === "today" || range === "yesterday"
@@ -52,9 +74,9 @@ export const DailyStatsCard: React.FC<DailyStatsCardProps> = ({
         }).format(new Date()));
 
   // Default fallback items from overview if custom items are not provided
-  const displayItems: StatItem[] =
+  const baseItems: StatItem[] =
     items && items.length >= 5
-      ? items
+      ? [...items]
       : [
           {
             value: formatNumber(overview?.totalPageviews || 0),
@@ -101,6 +123,31 @@ export const DailyStatsCard: React.FC<DailyStatsCardProps> = ({
             highlight: false,
           },
         ];
+
+  // If slot 6 is missing (like on Overview or Traffic Stats), automatically add live User online with click navigation to /realtime!
+  if (baseItems.length === 5) {
+    baseItems.push({
+      value: (
+        <span className="flex items-center gap-1.5">
+          <span className="text-[17px] sm:text-[18px] font-bold text-[#0055aa] group-hover:text-blue-700 transition-colors">
+            {liveCount.toLocaleString()}
+          </span>
+          <span className="relative flex h-2 w-2 shrink-0">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span className="text-[8.5px] font-black uppercase tracking-wider px-1 py-0.2 rounded bg-emerald-100 text-emerald-700 border border-emerald-300">
+            LIVE
+          </span>
+        </span>
+      ),
+      label: "User online",
+      highlight: true,
+      href: "/realtime",
+    });
+  }
+
+  const displayItems: StatItem[] = baseItems;
 
   return (
     <div className="rounded-[4px] border border-[#b0b0b0] shadow-2xs w-full select-none bg-white font-sans text-slate-800">
@@ -184,16 +231,32 @@ export const DailyStatsCard: React.FC<DailyStatsCardProps> = ({
                     </div>
                   </div>
 
-                  {/* Col 3: empty or extra item */}
+                  {/* Col 3: Users online (Clickable link to /realtime) */}
                   {displayItems[5] ? (
-                    <div className="pl-3 border-l border-[#d4d4d4]">
-                      <div className="text-[17px] sm:text-[18px] font-bold text-[#111111] leading-tight tracking-tight tabular-nums truncate">
-                        {displayItems[5].value}
+                    displayItems[5].href ? (
+                      <Link
+                        href={displayItems[5].href}
+                        className="pl-3 border-l border-[#d4d4d4] block group hover:bg-blue-50/70 -my-1 py-1 rounded transition-colors cursor-pointer"
+                        title="Click to view live users online"
+                      >
+                        <div className="text-[17px] sm:text-[18px] font-bold text-[#0055aa] group-hover:text-blue-700 leading-tight tracking-tight tabular-nums truncate flex items-center">
+                          {displayItems[5].value}
+                        </div>
+                        <div className="text-[11px] sm:text-[11.5px] font-normal text-[#222222] group-hover:text-[#0055aa] mt-0.5 truncate leading-tight flex items-center gap-0.5">
+                          <span>{displayItems[5].label}</span>
+                          <ChevronRight className="w-3 h-3 text-slate-400 group-hover:text-[#0055aa] transition-transform group-hover:translate-x-0.5" />
+                        </div>
+                      </Link>
+                    ) : (
+                      <div className="pl-3 border-l border-[#d4d4d4]">
+                        <div className="text-[17px] sm:text-[18px] font-bold text-[#111111] leading-tight tracking-tight tabular-nums truncate">
+                          {displayItems[5].value}
+                        </div>
+                        <div className="text-[11px] sm:text-[11.5px] font-normal text-[#222222] mt-0.5 truncate leading-tight">
+                          {displayItems[5].label}
+                        </div>
                       </div>
-                      <div className="text-[11px] sm:text-[11.5px] font-normal text-[#222222] mt-0.5 truncate leading-tight">
-                        {displayItems[5].label}
-                      </div>
-                    </div>
+                    )
                   ) : (
                     <div />
                   )}

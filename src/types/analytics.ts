@@ -121,6 +121,8 @@ export interface GeographyData {
 
 export interface SourceStat {
   source: string;
+  url?: string;
+  fullUrl?: string;
   medium: string;
   sessions: number;
   visitors: number;

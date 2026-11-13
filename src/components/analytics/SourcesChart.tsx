@@ -57,25 +57,45 @@ export const SourcesChart: React.FC<SourcesChartProps> = ({
           <div className="space-y-1.5">
             {sources.slice(0, 6).map((item, index) => {
               const percentage = Math.round((item.sessions / totalSessions) * 100);
+              const rawUrl = item.fullUrl || item.url || item.source;
+              const isDirect = !rawUrl || rawUrl.toLowerCase() === "direct" || rawUrl.toLowerCase() === "none";
+              const fullUrl = isDirect ? "direct" : rawUrl.startsWith("http") ? rawUrl : `https://${rawUrl}`;
+              const displayUrl = isDirect ? "direct" : fullUrl;
 
               return (
                 <div
                   key={index}
                   className="px-2.5 py-1.5 rounded-xl border border-slate-100/90 bg-white/70 hover:bg-white hover:border-slate-200/90 transition-all duration-150 space-y-1 group shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
                 >
-                  <div className="flex items-center justify-between text-xs">
-                    {/* Left: Real Favicon + Source Domain Name + Medium Badge */}
+                  <div className="flex items-center justify-between text-xs gap-2">
+                    {/* Left: Rank + Favicon + Full URL + Medium Badge */}
                     <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="w-3.5 text-center font-bold text-slate-400 text-[11px] shrink-0 font-mono">
+                        {index + 1}
+                      </span>
                       <div className="w-3.5 h-3.5 shrink-0 flex items-center justify-center">
                         <WebsiteFavicon
+                          url={isDirect ? undefined : fullUrl}
                           domain={item.source}
                           size={13}
                           className="rounded-xs shadow-2xs"
                         />
                       </div>
-                      <span className="font-bold text-slate-800 text-xs truncate block group-hover:text-blue-600 transition-colors leading-tight">
-                        {item.source}
-                      </span>
+                      {!isDirect ? (
+                        <a
+                          href={fullUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={fullUrl}
+                          className="font-bold text-slate-800 hover:text-blue-600 font-mono text-xs truncate block tracking-tight transition-colors leading-tight min-w-0 flex-1"
+                        >
+                          {displayUrl}
+                        </a>
+                      ) : (
+                        <span className="font-bold text-slate-800 text-xs truncate block leading-tight min-w-0 flex-1">
+                          direct
+                        </span>
+                      )}
                       <span className="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded-full font-medium shrink-0 border border-slate-200/50 leading-tight">
                         {item.medium || "referral"}
                       </span>
@@ -92,10 +112,10 @@ export const SourcesChart: React.FC<SourcesChartProps> = ({
                     </div>
                   </div>
 
-                  {/* Thin Cyan/Blue Progress Bar */}
+                  {/* Thin Progress Bar */}
                   <div className="w-full bg-slate-100/90 rounded-full h-1 overflow-hidden">
                     <div
-                      className="bg-gradient-to-r from-cyan-400 to-blue-500 h-full rounded-full transition-all duration-500"
+                      className="bg-gradient-to-r from-cyan-400 to-[#1058D1] h-full rounded-full transition-all duration-500"
                       style={{ width: `${Math.max(percentage, 2)}%` }}
                     />
                   </div>

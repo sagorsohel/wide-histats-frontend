@@ -678,13 +678,8 @@ export default function RealtimeHistatsPage() {
         cleanKey = "direct";
         displayRef = "direct";
       } else {
-        let clean = rawRef.replace(/^https?:\/\//i, "").replace(/^www\./i, "");
-        const slashIdx = clean.indexOf("/");
-        if (slashIdx !== -1) {
-          clean = clean.slice(0, slashIdx);
-        }
-        cleanKey = clean.toLowerCase().trim();
-        displayRef = cleanKey || "direct";
+        cleanKey = rawRef.trim().toLowerCase();
+        displayRef = rawRef.trim();
       }
 
       const existing = aggregatedMap.get(cleanKey);

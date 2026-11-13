@@ -671,34 +671,35 @@ export default function SourcesPage() {
 
                         {/* Referrer url with Icon & External Link */}
                         <td className="py-2.5 px-3">
-                          <div className="flex items-center gap-2 max-w-[420px] truncate">
+                          <div className="flex items-center gap-2 max-w-[550px] truncate">
                             {/* External link button */}
                             <a
-                              href={ref.fullUrl || `https://${ref.referrerUrl}`}
+                              href={ref.fullUrl || (ref.referrerUrl.startsWith("http") ? ref.referrerUrl : `https://${ref.referrerUrl}`)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-slate-400 hover:text-[#1455bb] transition-colors shrink-0"
-                              title={`Open ${ref.referrerUrl} in new tab`}
+                              className="text-slate-400 hover:text-[#1058D1] transition-colors shrink-0"
+                              title={`Open ${ref.fullUrl || ref.referrerUrl} in new tab`}
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
                             </a>
 
                             {/* Favicon */}
                             <WebsiteFavicon
+                              url={ref.fullUrl || ref.referrerUrl}
                               domain={ref.referrerUrl}
                               size={14}
                               className="shrink-0"
                             />
 
-                            {/* Domain name */}
+                            {/* Full URL link */}
                             <a
-                              href={ref.fullUrl || `https://${ref.referrerUrl}`}
+                              href={ref.fullUrl || (ref.referrerUrl.startsWith("http") ? ref.referrerUrl : `https://${ref.referrerUrl}`)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="font-semibold text-slate-900 hover:text-[#1455bb] hover:underline truncate"
-                              title={ref.referrerUrl}
+                              className="font-bold font-mono text-xs text-slate-800 hover:text-[#1058D1] hover:underline truncate"
+                              title={ref.fullUrl || ref.referrerUrl}
                             >
-                              {ref.referrerUrl}
+                              {ref.fullUrl || ref.referrerUrl}
                             </a>
                           </div>
                         </td>
@@ -817,8 +818,8 @@ export default function SourcesPage() {
                       className="p-3 rounded-xl bg-slate-50 border border-slate-200/90 flex flex-col justify-between"
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span className="font-bold text-slate-800 text-xs capitalize truncate">
-                          {s.source}
+                        <span className="font-bold text-slate-800 text-xs font-mono truncate max-w-[280px]" title={s.fullUrl || s.url || s.source}>
+                          {s.fullUrl || s.url || s.source}
                         </span>
                         <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-100 text-[#1455bb]">
                           {s.medium}

@@ -103,29 +103,24 @@ export const DailyStatsCard: React.FC<DailyStatsCardProps> = ({
         ];
 
   return (
-    <div className="rounded-[4px] border border-[#b0b0b0] overflow-hidden shadow-2xs w-full select-none bg-white font-sans text-slate-800">
-      {/* Top Glossy Gradient Blue Banner: Exact text size matching screenshot */}
-      <div className="bg-[#1058d1] px-3.5 py-1.5 flex items-center justify-between text-white">
-        <div className="flex items-center gap-2">
-          <span className="text-[17px] sm:text-[18px] font-bold text-white tracking-normal font-sans drop-shadow-xs">
-            {displayTitle}
-          </span>
-          {domain && (
-            <span className="px-1 py-0.2 rounded text-[9.5px] font-bold bg-white/20 text-white/95 border border-white/25 uppercase tracking-wider hidden sm:inline-block">
-              {domain}
-            </span>
-          )}
-        </div>
-        <div className="text-[17px] sm:text-[18px] font-bold text-white tracking-normal font-sans drop-shadow-xs">
-          {displayDateText}
-        </div>
-      </div>
+    <div className="rounded-[4px] border border-[#b0b0b0] shadow-2xs w-full select-none bg-white font-sans text-slate-800">
+      <div className="flex flex-col lg:flex-row items-stretch justify-between">
+        {/* Left Stats Section: Header bar extends only up to before the calendar */}
+        <div className="flex-1 w-full lg:border-r border-[#d4d4d4] flex flex-col justify-between">
+          {/* Blue Header Bar: Ends before the calendar */}
+          <div className="bg-[#1058d1] px-3.5 py-1.5 flex items-center justify-between text-white">
+            <div className="flex items-center gap-2">
+              <span className="text-[17px] sm:text-[18px] font-bold text-white tracking-normal font-sans drop-shadow-xs">
+                {displayTitle}
+              </span>
+            </div>
+            <div className="text-[17px] sm:text-[18px] font-bold text-white tracking-normal font-sans drop-shadow-xs">
+              {displayDateText}
+            </div>
+          </div>
 
-      {/* Card Body: Compact metrics with smaller font matching screenshot */}
-      <div className="p-2.5 sm:p-3 bg-white">
-        <div className="flex flex-col lg:flex-row items-start justify-between gap-3">
-          {/* Left Stats Section: Either custom children (e.g. GeoStackedBarLineChart) or standard 2-row metrics */}
-          <div className="flex-1 w-full lg:border-r border-[#d4d4d4] lg:pr-4">
+          {/* Card Body: Compact metrics */}
+          <div className="p-2.5 sm:p-3 flex-1 flex flex-col justify-center">
             {children ? (
               children
             ) : (
@@ -206,14 +201,14 @@ export const DailyStatsCard: React.FC<DailyStatsCardProps> = ({
               </>
             )}
           </div>
-
-          {/* Right Calendar Section: Exact 208px width, strictly 127px height */}
-          {calendar && (
-            <div className="shrink-0 w-full sm:w-[208px] h-[127px] flex justify-center lg:justify-end overflow-hidden">
-              {calendar}
-            </div>
-          )}
         </div>
+
+        {/* Right Calendar Section: Cleanly rendered without clipping */}
+        {calendar && (
+          <div className="shrink-0 w-full lg:w-[276px] p-2 flex items-center justify-center bg-white">
+            {calendar}
+          </div>
+        )}
       </div>
     </div>
   );

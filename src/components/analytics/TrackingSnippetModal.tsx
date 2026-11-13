@@ -188,18 +188,18 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
 <noscript><img src="${beaconUrl}" alt="Analycos" style="display:none;" /></noscript>
 <!-- End Analycos Analytics -->`;
 
-  const hiddenAsyncSnippet = `<!-- Histats.com  START  (aync) -->
-<script type="text/javascript">var _Hasync= _Hasync|| [];
-_Hasync.push(['Histats.start', '1,${website.trackingId},4,0,0,0,00010000']);
-_Hasync.push(['Histats.fasi', '1']);
-_Hasync.push(['Histats.track_hits', '']);
+  const hiddenAsyncSnippet = `<!-- Analycos.com  START  (async) -->
+<script type="text/javascript">var _Aasync= _Aasync|| [];
+_Aasync.push(['Analycos.start', '1,${website.trackingId},4,0,0,0,00010000']);
+_Aasync.push(['Analycos.fasi', '1']);
+_Aasync.push(['Analycos.track_hits', '']);
 (function() {
-var hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async = true;
-hs.src = ('${scriptUrl}');
-(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(hs);
+var as = document.createElement('script'); as.type = 'text/javascript'; as.async = true;
+as.src = ('${scriptUrl}');
+(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(as);
 })();</script>
-<noscript><a href="/" target="_blank"><img  src="${beaconUrl}" alt="counter create hit" border="0"></a></noscript>
-<!-- Histats.com  END  -->`;
+<noscript><a href="/" target="_blank"><img  src="${beaconUrl}" alt="Analycos" border="0"></a></noscript>
+<!-- Analycos.com  END  -->`;
 
   const visibleStandardSnippet = `<!-- Analycos Analytics Counter Code -->
 <div id="analycos_counter"></div>
@@ -213,19 +213,19 @@ hs.src = ('${scriptUrl}');
 <noscript><img src="${beaconUrl}" alt="Analycos" style="display:none;" /></noscript>
 <!-- End Analycos Analytics -->`;
 
-  const visibleAsyncSnippet = `<!-- Histats.com  START  (aync) -->
+  const visibleAsyncSnippet = `<!-- Analycos.com  START  (async) -->
 <div id="analycos_counter"></div>
-<script type="text/javascript">var _Hasync= _Hasync|| [];
-_Hasync.push(['Histats.start', '1,${website.trackingId},4,${activeCounter.counterId},0,0,00010000']);
-_Hasync.push(['Histats.fasi', '1']);
-_Hasync.push(['Histats.track_hits', '']);
+<script type="text/javascript">var _Aasync= _Aasync|| [];
+_Aasync.push(['Analycos.start', '1,${website.trackingId},4,${activeCounter.counterId},0,0,00010000']);
+_Aasync.push(['Analycos.fasi', '1']);
+_Aasync.push(['Analycos.track_hits', '']);
 (function() {
-var hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async = true;
-hs.src = ('${scriptUrl}');
-(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(hs);
+var as = document.createElement('script'); as.type = 'text/javascript'; as.async = true;
+as.src = ('${scriptUrl}');
+(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(as);
 })();</script>
-<noscript><a href="/" target="_blank"><img  src="${beaconUrl}" alt="counter create hit" border="0"></a></noscript>
-<!-- Histats.com  END  -->`;
+<noscript><a href="/" target="_blank"><img  src="${beaconUrl}" alt="Analycos" border="0"></a></noscript>
+<!-- Analycos.com  END  -->`;
 
   const activeSnippet = activeCounter.isHidden
     ? (codeType === "async" ? hiddenAsyncSnippet : hiddenStandardSnippet)
@@ -621,7 +621,7 @@ hs.src = ('${scriptUrl}');
                         : "text-slate-600 hover:text-slate-900"
                     }`}
                   >
-                    Histats Async (Recommended)
+                    Async Code (Recommended)
                   </button>
                   <button
                     type="button"

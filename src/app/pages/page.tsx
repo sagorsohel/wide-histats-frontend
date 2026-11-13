@@ -150,7 +150,8 @@ export default function PagesReportPage() {
         if (pRes.success && pRes.data) setPages(pRes.data);
         if (landRes.success && landRes.data) setLandingPages(landRes.data);
         if (exitRes.success && exitRes.data) setExitPages(exitRes.data);
-        if (overviewRes.success && overviewRes.data) setOverview(overviewRes.data);
+        if (overviewRes.success && overviewRes.data)
+          setOverview(overviewRes.data);
         hasDataRef.current = true;
       } catch (err) {
         console.error(err);
@@ -371,59 +372,26 @@ export default function PagesReportPage() {
 
   return (
     <div className="space-y-6 select-text antialiased">
-      {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-r from-[#1455bb] to-[#1a62d4] flex items-center justify-center text-white shadow-md shadow-blue-600/20 shrink-0">
-            <FileText className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                Pages &amp; Content Performance
-              </h1>
-              <span className="text-xs px-2.5 py-1 rounded-full bg-blue-50 text-[#1455bb] border border-blue-200/80 font-bold shadow-2xs">
-                {pages.length} URLs
-              </span>
-              <span className="text-xs px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/80 font-bold shadow-2xs hidden sm:inline-block">
-                {byTitleList.length} Titles
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Analyze visitor engagement, content headlines, landing entry
-              points &amp; drop-off exits
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* ============================================================ */}
-      {/* 1. TOP ROW: DAILY STATS CARD & COMPACT CALENDAR              */}
+      {/* 1. TOP ROW: UNIFIED DAILY STATS & COMPACT CALENDAR           */}
       {/* ============================================================ */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-stretch w-full">
-        {/* Daily Stats Card */}
-        <div className="lg:col-span-8 flex flex-col">
-          <DailyStatsCard
-            title="Content stats"
-            items={contentStatItems}
-            overview={overview}
-            loading={loading}
-            range={range}
-            domain={selectedWebsite?.domain}
-          />
-        </div>
-
-        {/* Right: Authentic Compact Histats Calendar */}
-        <div className="lg:col-span-4 flex flex-col">
+      <DailyStatsCard
+        title="Content stats"
+        items={contentStatItems}
+        overview={overview}
+        loading={loading}
+        range={range}
+        domain={selectedWebsite?.domain}
+        calendar={
           <HistatsCalendar
             selectedPreset={range}
             onPresetChange={handleRangeChange}
             currentWindow={customWindow}
             onDateChange={handleCustomRangeChange}
-            className="h-full w-full"
+            className="w-full max-w-[340px]"
           />
-        </div>
-      </div>
+        }
+      />
 
       {/* ============================================================ */}
       {/* 2. FULL WIDTH SECTION: TRAFFIC BY URL & BY TITLE (NICHE)     */}

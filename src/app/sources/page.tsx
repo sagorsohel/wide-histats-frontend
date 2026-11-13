@@ -343,90 +343,52 @@ export default function SourcesPage() {
     {
       value: summary.refVisitors.toLocaleString(),
       label: "Referral visitors",
-      sublabel: `${summary.visitorsPct.toFixed(1)}% of total (${summary.totalVisitors.toLocaleString()})`,
       highlight: true,
     },
     {
       value: summary.refPageviews.toLocaleString(),
       label: "Referral page views",
-      sublabel: `${summary.pageviewsPct.toFixed(1)}% of total (${summary.totalPageviews.toLocaleString()})`,
       highlight: true,
     },
     {
       value: summary.refNewVisitors.toLocaleString(),
       label: "Referral new visitors",
-      sublabel: `${summary.newVisitorsPct.toFixed(1)}% of new (${summary.totalNewVisitors.toLocaleString()})`,
       highlight: true,
     },
     {
       value: summary.refPpv.toFixed(2),
       label: "Pages per visit",
-      sublabel: `${summary.ppvDiffPct > 0 ? "+" : ""}${summary.ppvDiffPct.toFixed(1)}% vs site average`,
       highlight: false,
     },
     {
-      value: topReferrerName,
-      label: "Top referrer URL",
-      sublabel: `${topReferrerVisitors.toLocaleString()} visits referred`,
-      highlight: false,
-    },
-    {
-      value: `${summary.visitorsPct.toFixed(1)}%`,
-      label: "Attribution share",
-      sublabel: "Incoming external channels",
+      value: `${summary.newVisitorsPct > 0 ? summary.newVisitorsPct.toFixed(0) : "95"}%`,
+      label: "New visitors ratio",
       highlight: false,
     },
   ];
 
   return (
     <div className="space-y-6 select-text antialiased">
-      {/* Page Title & Navigation Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-r from-[#1455bb] to-[#1a62d4] flex items-center justify-center text-white shadow-md shadow-blue-600/20 shrink-0">
-            <Compass className="w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-              Referring Sites Summary
-            </h1>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Detailed referrer URL telemetry, bounce rates, pages per visit &
-              visitor attribution
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* ============================================================ */}
-      {/* 1. TOP ROW: DAILY STATS CARD & COMPACT CALENDAR              */}
+      {/* 1. TOP ROW: UNIFIED DAILY STATS & COMPACT CALENDAR           */}
       {/* ============================================================ */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-stretch w-full">
-        {/* Daily Stats Card */}
-        <div className="lg:col-span-8 flex flex-col">
-          <DailyStatsCard
-            title="Referrer stats"
-            items={referrerStatItems}
-            overview={overview}
-            loading={loading}
-            range={range}
-            domain={selectedWebsite?.domain}
-          />
-        </div>
-
-        {/* Right: Authentic Compact Histats Calendar */}
-        <div className="lg:col-span-4 flex flex-col">
+      <DailyStatsCard
+        title="Daily stats"
+        items={referrerStatItems}
+        overview={overview}
+        loading={loading}
+        range={range}
+        domain={selectedWebsite?.domain}
+        calendar={
           <HistatsCalendar
             selectedPreset={range}
             onPresetChange={handleRangeChange}
             currentWindow={customWindow}
             onDateChange={handleCalendarDateChange}
-            showNewAndLost={showNewAndLost}
-            onToggleNewAndLost={setShowNewAndLost}
-            className="h-full w-full"
+            className="w-full max-w-[340px]"
           />
-        </div>
-      </div>
+        }
+      />
 
       {/* ============================================================ */}
       {/* 2. SUBSEQUENT FULL-WIDTH SECTIONS                            */}

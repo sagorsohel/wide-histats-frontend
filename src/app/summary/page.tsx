@@ -413,31 +413,23 @@ export default function SummaryPage() {
   return (
     <div className="space-y-3.5 relative select-text antialiased w-full">
       {/* ============================================================ */}
-      {/* ROW 1: Daily Stats (Left) + Calendar (Right)                 */}
-      {/* Heights matched, widths matched!                             */}
+      {/* ROW 1: UNIFIED Daily Stats (Left) + Calendar (Right)         */}
       {/* ============================================================ */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-stretch w-full">
-        {/* Daily / Overview Stats Card */}
-        <div className="lg:col-span-8 flex flex-col">
-          <DailyStatsCard
-            overview={overview}
-            loading={loading}
-            range={range}
-            domain={selectedWebsite?.domain}
-          />
-        </div>
-
-        {/* Calendar Card (Row 1 Right, Height matched to Daily stats) */}
-        <div className="lg:col-span-4 flex flex-col">
+      <DailyStatsCard
+        overview={overview}
+        loading={loading}
+        range={range}
+        domain={selectedWebsite?.domain}
+        calendar={
           <HistatsCalendar
             selectedPreset={range}
             onPresetChange={handleRangeChange}
             currentWindow={customWindow}
             onDateChange={handleCustomRangeChange}
-            className="h-full w-full"
+            className="w-full max-w-[340px]"
           />
-        </div>
-      </div>
+        }
+      />
 
       {/* ============================================================ */}
       {/* ROW 2: New vs Returning (Left) + Lifetime Totals (Right)     */}

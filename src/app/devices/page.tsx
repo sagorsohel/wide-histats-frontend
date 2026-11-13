@@ -298,49 +298,27 @@ export default function DevicesReportPage() {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-r from-[#1455bb] to-[#1a62d4] flex items-center justify-center text-white shadow-md shadow-blue-600/20 shrink-0">
-            <Monitor className="w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-              Devices &amp; Technology
-            </h1>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Browser families, operating systems, and device form factors
-            </p>
-          </div>
-        </div>
-      </div>
 
       {/* ============================================================ */}
-      {/* 1. TOP ROW: DAILY STATS CARD & COMPACT CALENDAR              */}
+      {/* 1. TOP ROW: UNIFIED DAILY STATS & COMPACT CALENDAR           */}
       {/* ============================================================ */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-stretch w-full">
-        {/* Daily Stats Card */}
-        <div className="lg:col-span-8 flex flex-col">
-          <DailyStatsCard
-            title="Device & platform stats"
-            items={deviceStatItems}
-            overview={overview}
-            loading={loading}
-            range={range}
-            domain={selectedWebsite?.domain}
-          />
-        </div>
-
-        {/* Right: Authentic Compact Histats Calendar */}
-        <div className="lg:col-span-4 flex flex-col">
+      <DailyStatsCard
+        title="Device & platform stats"
+        items={deviceStatItems}
+        overview={overview}
+        loading={loading}
+        range={range}
+        domain={selectedWebsite?.domain}
+        calendar={
           <HistatsCalendar
             selectedPreset={range}
             onPresetChange={handleRangeChange}
             currentWindow={customWindow}
             onDateChange={handleCustomRangeChange}
-            className="h-full w-full"
+            className="w-full max-w-[340px]"
           />
-        </div>
-      </div>
+        }
+      />
 
       {/* ============================================================ */}
       {/* 2. DEVICE CATEGORIES CARDS (Desktop, Mobile, Tablet)         */}

@@ -13,6 +13,7 @@ import {
   CalendarViewTab,
   CalendarSelectionMode,
 } from "@/components/analytics/HistatsCalendar";
+import { DailyStatsCard } from "@/components/analytics/DailyStatsCard";
 import { TrafficStatsChart } from "@/components/analytics/TrafficStatsChart";
 import { TrafficHourlyTable } from "@/components/analytics/TrafficHourlyTable";
 import { Eye, Users, UserPlus, RefreshCw, Layers } from "lucide-react";
@@ -24,7 +25,8 @@ export default function TrafficStatsPage() {
 
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
   const [viewTab, setViewTab] = useState<CalendarViewTab>("hourly");
-  const [selectionMode, setSelectionMode] = useState<CalendarSelectionMode>("normal");
+  const [selectionMode, setSelectionMode] =
+    useState<CalendarSelectionMode>("normal");
   const [rangeStart, setRangeStart] = useState<Date | null>(null);
   const [rangeEnd, setRangeEnd] = useState<Date | null>(null);
 
@@ -56,7 +58,11 @@ export default function TrafficStatsPage() {
       if (from.getTime() > Date.now()) {
         setTrafficData({
           date: targetDate.toISOString(),
-          dateFormatted: targetDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+          dateFormatted: targetDate.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          }),
           dateFull: targetDate.toDateString(),
           totalPageviews: 0,
           totalVisitors: 0,
@@ -86,7 +92,9 @@ export default function TrafficStatsPage() {
       }
 
       try {
-        const res = await api.get<TrafficStatsData>(endpoint, { skipCache: isSilent });
+        const res = await api.get<TrafficStatsData>(endpoint, {
+          skipCache: isSilent,
+        });
 
         if (res.success && res.data) {
           setTrafficData(res.data);
@@ -97,7 +105,7 @@ export default function TrafficStatsPage() {
         setLoading(false);
       }
     },
-    [selectedWebsite?.id, trafficData]
+    [selectedWebsite?.id, trafficData],
   );
 
   // Initial and reactive load on website or date change
@@ -158,116 +166,61 @@ export default function TrafficStatsPage() {
     month: "long",
   });
 
+  // Prepare stat items for DailyStatsCard
+  const trafficStatItems = [
+    {
+      value: trafficData ? formatCommas(trafficData.totalPageviews) : "...",
+      label: "Total page views",
+      highlight: true,
+    },
+    {
+      value: trafficData ? formatCommas(trafficData.totalVisitors) : "...",
+      label: "Total visitors",
+      highlight: true,
+    },
+    {
+      value: trafficData ? formatCommas(trafficData.firstTimeVisitors) : "...",
+      label: "First time visitors",
+      highlight: true,
+    },
+    {
+      value: trafficData ? trafficData.pagesPerVisit.toFixed(2) : "...",
+      label: "Page views per visit",
+      highlight: false,
+    },
+    {
+      value: trafficData
+        ? `${trafficData.newVisitorsRatio.toFixed(0)}%`
+        : "...",
+      label: "New visitors ratio",
+      highlight: false,
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-[#f1f4f8] text-slate-800 font-sans pb-12">
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 pt-3 sm:pt-5 space-y-3">
-        {/* Top Glossy Blue Banner: Daily stats | 5 November */}
-        <div className="bg-gradient-to-r from-[#2968a3] via-[#337ab7] to-[#2968a3] border border-[#1b4b79] rounded-t shadow-md px-3 sm:px-5 py-2.5 flex items-center justify-between text-white select-none">
-          <div className="flex items-center gap-2">
-            <h1 className="font-extrabold text-base sm:text-xl tracking-tight text-white drop-shadow-xs">
-              Daily stats
-            </h1>
-            <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-white/20 text-white/90 hidden sm:inline-block">
-              {selectedWebsite?.domain || "Analytics"}
-            </span>
-          </div>
-
-          <div className="font-extrabold text-sm sm:text-lg tracking-tight text-white drop-shadow-xs flex items-center gap-2">
-            <span>{trafficData?.dateFormatted || headerDateStr}</span>
-            {loading && (
-              <RefreshCw className="w-3.5 h-3.5 animate-spin text-white/70" />
-            )}
-          </div>
-        </div>
-
-        {/* Upper Card: 5 Metric Boxes (Left) + Histats Calendar (Right) */}
-        <div className="bg-white border-x border-b border-[#c4d1db] shadow-xs p-3 sm:p-5">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-            {/* Left 8 Cols: Metric Statistics */}
-            <div className="lg:col-span-8 flex flex-col justify-between h-full space-y-6 order-2 lg:order-1">
-              {/* Row 1: 3 Primary Big Metrics */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-b border-slate-200 pb-5">
-                {/* 1. Total page views */}
-                <div className="sm:border-r border-slate-200 sm:pr-4">
-                  <div className="text-2xl sm:text-3xl font-black text-[#1d5b9f] tracking-tight">
-                    {trafficData
-                      ? formatCommas(trafficData.totalPageviews)
-                      : "..."}
-                  </div>
-                  <div className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
-                    Total page views
-                  </div>
-                </div>
-
-                {/* 2. Total visitors */}
-                <div className="sm:border-r border-slate-200 sm:pr-4">
-                  <div className="text-2xl sm:text-3xl font-black text-[#1d5b9f] tracking-tight">
-                    {trafficData
-                      ? formatCommas(trafficData.totalVisitors)
-                      : "..."}
-                  </div>
-                  <div className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
-                    Total visitors
-                  </div>
-                </div>
-
-                {/* 3. First time visitors */}
-                <div>
-                  <div className="text-2xl sm:text-3xl font-black text-[#1d5b9f] tracking-tight">
-                    {trafficData
-                      ? formatCommas(trafficData.firstTimeVisitors)
-                      : "..."}
-                  </div>
-                  <div className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
-                    First time visitors
-                  </div>
-                </div>
-              </div>
-
-              {/* Row 2: 2 Secondary Ratio Metrics */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                {/* 4. Page views per visit */}
-                <div>
-                  <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                    {trafficData
-                      ? trafficData.pagesPerVisit.toFixed(2)
-                      : "..."}
-                  </div>
-                  <div className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
-                    Page views per visit
-                  </div>
-                </div>
-
-                {/* 5. New visitors ratio */}
-                <div>
-                  <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                    {trafficData
-                      ? `${trafficData.newVisitorsRatio.toFixed(0)}%`
-                      : "..."}
-                  </div>
-                  <div className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
-                    New visitors ratio
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right 4 Cols: Histats Calendar */}
-            <div className="lg:col-span-4 flex justify-center lg:justify-end order-1 lg:order-2">
-              <HistatsCalendar
-                selectedDate={selectedDate}
-                onSelectDate={handleDateSelect}
-                viewTab={viewTab}
-                onViewTabChange={setViewTab}
-                selectionMode={selectionMode}
-                onSelectionModeChange={setSelectionMode}
-                rangeStart={rangeStart}
-                rangeEnd={rangeEnd}
-                onSelectRange={handleRangeSelect}
-              />
-            </div>
-          </div>
-        </div>
+      <div className="max-w-7xl mx-auto space-y-3">
+        {/* Top Unified DailyStatsCard with Integrated Calendar */}
+        <DailyStatsCard
+          title="Daily stats"
+          items={trafficStatItems}
+          loading={loading}
+          domain={selectedWebsite?.domain}
+          dateText={trafficData?.dateFormatted || headerDateStr}
+          calendar={
+            <HistatsCalendar
+              selectedDate={selectedDate}
+              onSelectDate={handleDateSelect}
+              viewTab={viewTab}
+              onViewTabChange={setViewTab}
+              selectionMode={selectionMode}
+              onSelectionModeChange={setSelectionMode}
+              rangeStart={rangeStart}
+              rangeEnd={rangeEnd}
+              onSelectRange={handleRangeSelect}
+            />
+          }
+        />
 
         {/* Multi-Bar Chart Section (Screenshot 1) */}
         <TrafficStatsChart

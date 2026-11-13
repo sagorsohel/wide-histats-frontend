@@ -111,13 +111,14 @@ const COUNTER_STYLES: {
 export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
   website,
   onClose,
+  initialTab,
 }) => {
-  const [view, setView] = useState<ModalView>("list");
+  const [view, setView] = useState<ModalView>(initialTab === "code" ? "code" : "list");
   const [counters, setCounters] = useState<WebsiteCounter[]>([]);
   const [selectedCounter, setSelectedCounter] = useState<WebsiteCounter | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [codeType, setCodeType] = useState<"standard" | "async">("standard");
+  const [codeType, setCodeType] = useState<"standard" | "async">("async");
 
   // Counter creation state
   const [newStyle, setNewStyle] = useState<CounterStyle>("cloud");
@@ -177,7 +178,7 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
   };
 
   // Generate Snippets
-  const hiddenSnippet = `<!-- Analycos Analytics Tracking Code -->
+  const hiddenStandardSnippet = `<!-- Analycos Analytics Tracking Code -->
 <script
   async
   defer
@@ -187,7 +188,20 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
 <noscript><img src="${beaconUrl}" alt="Analycos" style="display:none;" /></noscript>
 <!-- End Analycos Analytics -->`;
 
-  const standardCounterSnippet = `<!-- Analycos Analytics Counter Code -->
+  const hiddenAsyncSnippet = `<!-- Histats.com  START  (aync) -->
+<script type="text/javascript">var _Hasync= _Hasync|| [];
+_Hasync.push(['Histats.start', '1,${website.trackingId},4,0,0,0,00010000']);
+_Hasync.push(['Histats.fasi', '1']);
+_Hasync.push(['Histats.track_hits', '']);
+(function() {
+var hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async = true;
+hs.src = ('${scriptUrl}');
+(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(hs);
+})();</script>
+<noscript><a href="/" target="_blank"><img  src="${beaconUrl}" alt="counter create hit" border="0"></a></noscript>
+<!-- Histats.com  END  -->`;
+
+  const visibleStandardSnippet = `<!-- Analycos Analytics Counter Code -->
 <div id="analycos_counter"></div>
 <script
   async
@@ -199,26 +213,23 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
 <noscript><img src="${beaconUrl}" alt="Analycos" style="display:none;" /></noscript>
 <!-- End Analycos Analytics -->`;
 
-  const asyncCounterSnippet = `<!-- Analycos Analytics Counter (async) -->
+  const visibleAsyncSnippet = `<!-- Histats.com  START  (aync) -->
 <div id="analycos_counter"></div>
-<script type="text/javascript">
-var _Aasync= _Aasync|| [];
-_Aasync.push(['Analycos.start', '${website.trackingId}', '${activeCounter.counterId}']);
-_Aasync.push(['Analycos.track_hits']);
+<script type="text/javascript">var _Hasync= _Hasync|| [];
+_Hasync.push(['Histats.start', '1,${website.trackingId},4,${activeCounter.counterId},0,0,00010000']);
+_Hasync.push(['Histats.fasi', '1']);
+_Hasync.push(['Histats.track_hits', '']);
 (function() {
-  var as = document.createElement('script'); as.type = 'text/javascript'; as.async = true;
-  as.src = ('${scriptUrl}');
-  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(as);
-})();
-</script>
-<noscript><img src="${beaconUrl}" alt="Analycos" style="display:none;" /></noscript>
-<!-- End Analycos Analytics -->`;
+var hs = document.createElement('script'); hs.type = 'text/javascript'; hs.async = true;
+hs.src = ('${scriptUrl}');
+(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(hs);
+})();</script>
+<noscript><a href="/" target="_blank"><img  src="${beaconUrl}" alt="counter create hit" border="0"></a></noscript>
+<!-- Histats.com  END  -->`;
 
   const activeSnippet = activeCounter.isHidden
-    ? hiddenSnippet
-    : codeType === "standard"
-      ? standardCounterSnippet
-      : asyncCounterSnippet;
+    ? (codeType === "async" ? hiddenAsyncSnippet : hiddenStandardSnippet)
+    : (codeType === "async" ? visibleAsyncSnippet : visibleStandardSnippet);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(activeSnippet);
@@ -600,32 +611,30 @@ _Aasync.push(['Analycos.track_hits']);
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>Back to counters list</span>
                 </button>
-                {!activeCounter.isHidden && (
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setCodeType("standard")}
-                      className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                        codeType === "standard"
-                          ? "bg-[#1455bb] text-white shadow-xs"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                      }`}
-                    >
-                      Standard Code (Clean)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setCodeType("async")}
-                      className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                        codeType === "async"
-                          ? "bg-[#1455bb] text-white shadow-xs"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                      }`}
-                    >
-                      Async Code
-                    </button>
-                  </div>
-                )}
+                <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => setCodeType("async")}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      codeType === "async"
+                        ? "bg-[#1455bb] text-white shadow-xs"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    Histats Async (Recommended)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCodeType("standard")}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      codeType === "standard"
+                        ? "bg-[#1455bb] text-white shadow-xs"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    Standard HTML5
+                  </button>
+                </div>
               </div>
 
               {/* Counter details chip */}

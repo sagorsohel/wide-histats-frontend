@@ -141,6 +141,7 @@ export interface CampaignStat {
 export interface DetailedReferrerStat {
   rank: number;
   trend: "up" | "down" | "same";
+  domain?: string;
   referrerUrl: string;
   fullUrl?: string;
   newVisitors: number;
@@ -171,6 +172,7 @@ export interface SourcesData {
   sources: SourceStat[];
   referrers: ReferrerStat[];
   detailedReferrers?: DetailedReferrerStat[];
+  domainReferrers?: DetailedReferrerStat[];
   referrerSummary?: ReferrerSummaryComparison;
   campaigns: CampaignStat[];
 }

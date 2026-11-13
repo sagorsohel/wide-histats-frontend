@@ -57,6 +57,7 @@ export default function SourcesPage() {
   const [loading, setLoading] = useState(true);
 
   // Search & Pagination & Sorting state
+  const [urlViewMode, setUrlViewMode] = useState<"main" | "full">("main");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<SortField>("visitors");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
@@ -259,7 +260,7 @@ export default function SourcesPage() {
   // Reset pagination when search or filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, range, rowsPerPage]);
+  }, [searchQuery, range, rowsPerPage, urlViewMode]);
 
   // Handle column sorting
   const handleSort = (field: SortField) => {
@@ -271,13 +272,59 @@ export default function SourcesPage() {
     }
   };
 
-  // Filtered and sorted detailed referrers
+  // Filtered and sorted detailed referrers (supports Main Domains and Full URLs)
   const filteredReferrers = useMemo(() => {
-    let list = (data?.detailedReferrers || []) as DetailedReferrerStat[];
+    let list: DetailedReferrerStat[] = [];
+
+    if (urlViewMode === "main") {
+      if (data?.domainReferrers && data.domainReferrers.length > 0) {
+        list = data.domainReferrers;
+      } else {
+        // Fallback: Aggregate detailedReferrers by clean domain
+        const domainMap = new Map<string, DetailedReferrerStat>();
+        const rawList = (data?.detailedReferrers || []) as DetailedReferrerStat[];
+        for (const item of rawList) {
+          let dom = item.domain;
+          if (!dom) {
+            try {
+              const u = item.referrerUrl.startsWith("http")
+                ? new URL(item.referrerUrl)
+                : new URL(`https://${item.referrerUrl}`);
+              dom = u.hostname.replace(/^www\./i, "").toLowerCase();
+            } catch {
+              dom = item.referrerUrl
+                .replace(/^https?:\/\//i, "")
+                .replace(/^www\./i, "")
+                .split("/")[0]
+                .toLowerCase();
+            }
+          }
+          dom = dom || item.referrerUrl;
+          const existing = domainMap.get(dom);
+          if (existing) {
+            existing.visitors += item.visitors;
+            existing.pageviews += item.pageviews;
+            existing.newVisitors += item.newVisitors;
+          } else {
+            domainMap.set(dom, {
+              ...item,
+              domain: dom,
+              referrerUrl: dom,
+              fullUrl: `https://${dom}`,
+            });
+          }
+        }
+        list = Array.from(domainMap.values());
+      }
+    } else {
+      list = (data?.detailedReferrers || []) as DetailedReferrerStat[];
+    }
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
-      list = list.filter((r) => r.referrerUrl.toLowerCase().includes(query));
+      list = list.filter((r) =>
+        (r.fullUrl || r.referrerUrl || r.domain || "").toLowerCase().includes(query),
+      );
     }
 
     if (showNewAndLost) {
@@ -290,8 +337,8 @@ export default function SourcesPage() {
       let valB: any = b[sortField];
 
       if (sortField === "referrerUrl") {
-        valA = a.referrerUrl.toLowerCase();
-        valB = b.referrerUrl.toLowerCase();
+        valA = (urlViewMode === "main" ? a.domain || a.referrerUrl : a.fullUrl || a.referrerUrl).toLowerCase();
+        valB = (urlViewMode === "main" ? b.domain || b.referrerUrl : b.fullUrl || b.referrerUrl).toLowerCase();
         return sortDirection === "asc"
           ? valA.localeCompare(valB)
           : valB.localeCompare(valA);
@@ -303,6 +350,8 @@ export default function SourcesPage() {
     });
   }, [
     data?.detailedReferrers,
+    data?.domainReferrers,
+    urlViewMode,
     searchQuery,
     showNewAndLost,
     sortField,
@@ -478,15 +527,43 @@ export default function SourcesPage() {
                     </div>
                   </th>
 
-                  {/* Referrer url + Inline Search Box */}
-                  <th className="py-2 px-3 text-left min-w-[260px]">
-                    <div className="flex items-center justify-between gap-2">
-                      <span
-                        onClick={() => handleSort("referrerUrl")}
-                        className="cursor-pointer hover:underline"
-                      >
-                        Referrer url
-                      </span>
+                  {/* Referrer url + Inline View Toggle + Search Box */}
+                  <th className="py-2 px-3 text-left min-w-[280px]">
+                    <div className="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
+                      <div className="flex items-center gap-2.5">
+                        <span
+                          onClick={() => handleSort("referrerUrl")}
+                          className="cursor-pointer hover:underline font-bold"
+                        >
+                          Referrer url
+                        </span>
+
+                        {/* View Mode Toggle: Main Domains vs Full URLs */}
+                        <div className="inline-flex items-center rounded-lg bg-slate-200/80 p-0.5 text-[10px] font-bold">
+                          <button
+                            type="button"
+                            onClick={() => setUrlViewMode("main")}
+                            className={`px-2 py-0.5 rounded-md transition-all ${
+                              urlViewMode === "main"
+                                ? "bg-white text-[#1058D1] shadow-2xs font-extrabold"
+                                : "text-slate-600 hover:text-slate-900"
+                            }`}
+                          >
+                            Main Domains
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setUrlViewMode("full")}
+                            className={`px-2 py-0.5 rounded-md transition-all ${
+                              urlViewMode === "full"
+                                ? "bg-white text-[#1058D1] shadow-2xs font-extrabold"
+                                : "text-slate-600 hover:text-slate-900"
+                            }`}
+                          >
+                            Full URLs
+                          </button>
+                        </div>
+                      </div>
 
                       {/* Inline Search Filter Input (From Screenshot) */}
                       <div className="relative flex items-center">
@@ -495,7 +572,7 @@ export default function SourcesPage() {
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                           placeholder="Search..."
-                          className="w-32 sm:w-40 bg-white border border-slate-300 rounded-lg px-2.5 py-0.5 text-[11px] font-normal text-slate-800 focus:outline-hidden focus:border-[#1455bb] focus:ring-1 focus:ring-[#1455bb] placeholder:text-slate-400"
+                          className="w-28 sm:w-36 bg-white border border-slate-300 rounded-lg px-2.5 py-0.5 text-[11px] font-normal text-slate-800 focus:outline-hidden focus:border-[#1058D1] focus:ring-1 focus:ring-[#1058D1] placeholder:text-slate-400"
                         />
                         <Search className="w-3 h-3 text-slate-400 absolute right-2 pointer-events-none" />
                       </div>
@@ -674,11 +751,20 @@ export default function SourcesPage() {
                           <div className="flex items-center gap-2 max-w-[550px] truncate">
                             {/* External link button */}
                             <a
-                              href={ref.fullUrl || (ref.referrerUrl.startsWith("http") ? ref.referrerUrl : `https://${ref.referrerUrl}`)}
+                              href={
+                                urlViewMode === "main"
+                                  ? ref.domain
+                                    ? `https://${ref.domain}`
+                                    : ref.fullUrl || `https://${ref.referrerUrl}`
+                                  : ref.fullUrl ||
+                                    (ref.referrerUrl.startsWith("http")
+                                      ? ref.referrerUrl
+                                      : `https://${ref.referrerUrl}`)
+                              }
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-slate-400 hover:text-[#1058D1] transition-colors shrink-0"
-                              title={`Open ${ref.fullUrl || ref.referrerUrl} in new tab`}
+                              title={`Open ${urlViewMode === "main" ? ref.domain || ref.referrerUrl : ref.fullUrl || ref.referrerUrl} in new tab`}
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
                             </a>
@@ -686,20 +772,35 @@ export default function SourcesPage() {
                             {/* Favicon */}
                             <WebsiteFavicon
                               url={ref.fullUrl || ref.referrerUrl}
-                              domain={ref.referrerUrl}
+                              domain={ref.domain || ref.referrerUrl}
                               size={14}
                               className="shrink-0"
                             />
 
-                            {/* Full URL link */}
+                            {/* URL link: Main Domain or Full URL */}
                             <a
-                              href={ref.fullUrl || (ref.referrerUrl.startsWith("http") ? ref.referrerUrl : `https://${ref.referrerUrl}`)}
+                              href={
+                                urlViewMode === "main"
+                                  ? ref.domain
+                                    ? `https://${ref.domain}`
+                                    : ref.fullUrl || `https://${ref.referrerUrl}`
+                                  : ref.fullUrl ||
+                                    (ref.referrerUrl.startsWith("http")
+                                      ? ref.referrerUrl
+                                      : `https://${ref.referrerUrl}`)
+                              }
                               target="_blank"
                               rel="noopener noreferrer"
                               className="font-bold font-mono text-xs text-slate-800 hover:text-[#1058D1] hover:underline truncate"
-                              title={ref.fullUrl || ref.referrerUrl}
+                              title={
+                                urlViewMode === "main"
+                                  ? ref.domain || ref.referrerUrl
+                                  : ref.fullUrl || ref.referrerUrl
+                              }
                             >
-                              {ref.fullUrl || ref.referrerUrl}
+                              {urlViewMode === "main"
+                                ? ref.domain || ref.referrerUrl
+                                : ref.fullUrl || ref.referrerUrl}
                             </a>
                           </div>
                         </td>

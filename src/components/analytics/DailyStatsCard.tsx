@@ -51,10 +51,12 @@ export const DailyStatsCard: React.FC<DailyStatsCardProps> = ({
   );
 
   const liveCount =
-    liveOnlineCount ??
+    (liveOnlineCount && liveOnlineCount > 0 ? liveOnlineCount : undefined) ??
+    (realtimeActiveCount && realtimeActiveCount > 0 ? realtimeActiveCount : undefined) ??
+    (overview?.activeVisitors && overview.activeVisitors > 0 ? overview.activeVisitors : undefined) ??
+    (selectedWebsite?.usersOnline && selectedWebsite.usersOnline > 0 ? selectedWebsite.usersOnline : undefined) ??
     realtimeActiveCount ??
     overview?.activeVisitors ??
-    selectedWebsite?.usersOnline ??
     0;
 
   const displayTitle =
@@ -236,15 +238,18 @@ export const DailyStatsCard: React.FC<DailyStatsCardProps> = ({
                     displayItems[5].href ? (
                       <Link
                         href={displayItems[5].href}
-                        className="pl-3 border-l border-[#d4d4d4] block group hover:bg-blue-50/70 -my-1 py-1 rounded transition-colors cursor-pointer"
+                        className="pl-3 border-l border-[#d4d4d4] flex flex-col justify-center group hover:bg-[#eef8ee] -my-1 py-1 px-2 rounded transition-colors cursor-pointer"
                         title="Click to view live users online"
                       >
-                        <div className="text-[17px] sm:text-[18px] font-bold text-[#0055aa] group-hover:text-blue-700 leading-tight tracking-tight tabular-nums truncate flex items-center">
+                        <div className="text-[17px] sm:text-[18px] font-bold text-[#0055aa] group-hover:text-[#1b5e20] leading-tight tracking-tight tabular-nums truncate flex items-center">
                           {displayItems[5].value}
                         </div>
-                        <div className="text-[11px] sm:text-[11.5px] font-normal text-[#222222] group-hover:text-[#0055aa] mt-0.5 truncate leading-tight flex items-center gap-0.5">
+                        <div className="text-[11px] sm:text-[11.5px] font-normal text-[#222222] group-hover:text-[#1b5e20] mt-0.5 truncate leading-tight flex items-center gap-1">
+                          <span className="text-[8.5px] font-black uppercase tracking-wider px-1 py-0.2 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
+                            LIVE
+                          </span>
                           <span>{displayItems[5].label}</span>
-                          <ChevronRight className="w-3 h-3 text-slate-400 group-hover:text-[#0055aa] transition-transform group-hover:translate-x-0.5" />
+                          <ChevronRight className="w-3 h-3 text-slate-400 group-hover:text-emerald-700 transition-transform group-hover:translate-x-0.5" />
                         </div>
                       </Link>
                     ) : (

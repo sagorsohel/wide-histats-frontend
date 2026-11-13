@@ -14,23 +14,88 @@ export const SourcesChart: React.FC<SourcesChartProps> = ({
   sources,
   loading = false,
 }) => {
-  const totalSessions = sources.reduce((sum, s) => sum + s.sessions, 0) || 1;
+  const [mode, setMode] = React.useState<"main" | "full">("main");
+
+  const displaySources = React.useMemo(() => {
+    if (mode === "full") {
+      return sources;
+    }
+    // Aggregate by clean domain for "main" view
+    const domainMap = new Map<string, SourceStat>();
+    for (const s of sources) {
+      let dom = "";
+      const raw = s.source || "";
+      if (!raw || raw.toLowerCase() === "direct" || raw.toLowerCase() === "none") {
+        dom = "direct";
+      } else {
+        try {
+          const u = raw.startsWith("http") ? new URL(raw) : new URL(`https://${raw}`);
+          dom = u.hostname.replace(/^www\./i, "").toLowerCase();
+        } catch {
+          dom = raw.replace(/^https?:\/\//i, "").replace(/^www\./i, "").split("/")[0].toLowerCase();
+        }
+      }
+      dom = dom || "direct";
+      const existing = domainMap.get(dom);
+      if (existing) {
+        existing.sessions += s.sessions;
+        existing.visitors += s.visitors;
+      } else {
+        domainMap.set(dom, {
+          ...s,
+          source: dom,
+          fullUrl: dom === "direct" ? "direct" : `https://${dom}`,
+        });
+      }
+    }
+    return Array.from(domainMap.values()).sort((a, b) => b.sessions - a.sessions);
+  }, [sources, mode]);
+
+  const totalSessions = displaySources.reduce((sum, s) => sum + s.sessions, 0) || 1;
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-3.5 sm:p-4 flex flex-col justify-between transition-all duration-200">
       {/* Header */}
       <div>
-        <div className="flex items-center gap-2.5 mb-2.5 pb-2 border-b border-slate-100">
-          <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0 shadow-2xs">
-            <Share2 className="w-4 h-4" />
+        <div className="flex items-center justify-between gap-2 mb-2.5 pb-2 border-b border-slate-100">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0 shadow-2xs">
+              <Share2 className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight truncate">
+                Traffic Sources
+              </h3>
+              <p className="text-[11px] text-slate-500 truncate">
+                Channels and referrers driving visitors
+              </p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <h3 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight truncate">
-              Traffic Sources
-            </h3>
-            <p className="text-[11px] text-slate-500 truncate">
-              Channels and referrers driving visitors
-            </p>
+
+          {/* Toggle: Main vs Full */}
+          <div className="inline-flex items-center rounded-lg bg-slate-100 p-0.5 text-[10px] font-bold shrink-0">
+            <button
+              type="button"
+              onClick={() => setMode("main")}
+              className={`px-2 py-0.5 rounded-md transition-all ${
+                mode === "main"
+                  ? "bg-white text-[#1058D1] shadow-2xs font-extrabold"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              Main
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("full")}
+              className={`px-2 py-0.5 rounded-md transition-all ${
+                mode === "full"
+                  ? "bg-white text-[#1058D1] shadow-2xs font-extrabold"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              Full
+            </button>
           </div>
         </div>
 
@@ -49,18 +114,18 @@ export const SourcesChart: React.FC<SourcesChartProps> = ({
               </div>
             ))}
           </div>
-        ) : sources.length === 0 ? (
+        ) : displaySources.length === 0 ? (
           <div className="py-12 text-center text-xs text-slate-400">
             No traffic source data available.
           </div>
         ) : (
           <div className="space-y-1.5">
-            {sources.slice(0, 6).map((item, index) => {
+            {displaySources.slice(0, 6).map((item, index) => {
               const percentage = Math.round((item.sessions / totalSessions) * 100);
-              const rawUrl = item.fullUrl || item.url || item.source;
+              const rawUrl = mode === "main" ? item.source : item.fullUrl || item.url || item.source;
               const isDirect = !rawUrl || rawUrl.toLowerCase() === "direct" || rawUrl.toLowerCase() === "none";
               const fullUrl = isDirect ? "direct" : rawUrl.startsWith("http") ? rawUrl : `https://${rawUrl}`;
-              const displayUrl = isDirect ? "direct" : fullUrl;
+              const displayUrl = isDirect ? "direct" : mode === "main" ? item.source : fullUrl;
 
               return (
                 <div

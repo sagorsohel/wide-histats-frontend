@@ -117,6 +117,7 @@ export default function RealtimeHistatsPage() {
   }, []);
 
   const [loading, setLoading] = useState(false);
+  const [realtimeRefMode, setRealtimeRefMode] = useState<"main" | "full">("main");
   const [activeTab, setActiveTab] = useState<TabType>("summary");
   const [isPaused, setIsPaused] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -678,8 +679,18 @@ export default function RealtimeHistatsPage() {
         cleanKey = "direct";
         displayRef = "direct";
       } else {
-        cleanKey = rawRef.trim().toLowerCase();
-        displayRef = rawRef.trim();
+        if (realtimeRefMode === "main") {
+          let clean = rawRef.replace(/^https?:\/\//i, "").replace(/^www\./i, "");
+          const slashIdx = clean.indexOf("/");
+          if (slashIdx !== -1) {
+            clean = clean.slice(0, slashIdx);
+          }
+          cleanKey = clean.toLowerCase().trim();
+          displayRef = cleanKey || "direct";
+        } else {
+          cleanKey = rawRef.trim().toLowerCase();
+          displayRef = rawRef.trim();
+        }
       }
 
       const existing = aggregatedMap.get(cleanKey);
@@ -721,7 +732,7 @@ export default function RealtimeHistatsPage() {
     }
 
     return referrers;
-  }, [data?.topReferrers, onlineCount]);
+  }, [data?.topReferrers, onlineCount, realtimeRefMode]);
 
   // 100% Real-time active visitors - Sorted by highest activity (pageviews) first (#1), then latest timestamp & domain-isolated
   const displayActiveVisitors = useMemo(() => {
@@ -1215,18 +1226,25 @@ export default function RealtimeHistatsPage() {
                               )}
                               className="inline-flex items-center justify-center w-[18px] shrink-0 cursor-default"
                             >
-                              <CountryFlag code={hit.countryCode} />
+                              <CountryFlag
+                                code={hit.countryCode}
+                                countryName={hit.country}
+                                city={hit.city}
+                              />
                             </span>
                             <span
                               title={
-                                hit.city ||
-                                getCountryName(hit.countryCode, hit.country)
+                                hit.city && hit.city !== hit.countryCode
+                                  ? `${hit.city}, ${getCountryName(hit.countryCode, hit.country)}`
+                                  : getCountryName(hit.countryCode, hit.country)
                               }
                               className="hidden md:inline-block truncate flex-1 text-slate-600 cursor-default text-left"
                             >
                               {hit.city && hit.city !== hit.countryCode
                                 ? hit.city
-                                : "-"}
+                                : (hit.country && hit.country !== "Unknown"
+                                    ? hit.country
+                                    : (getCountryName(hit.countryCode) || "-"))}
                             </span>
                           </div>
 
@@ -1390,6 +1408,30 @@ export default function RealtimeHistatsPage() {
                     <span className="font-bold text-slate-800 text-[12px] tracking-tight">
                       Popular referrer
                     </span>
+                    <div className="inline-flex items-center rounded-md bg-slate-200/80 p-0.5 text-[10px] font-bold">
+                      <button
+                        type="button"
+                        onClick={() => setRealtimeRefMode("main")}
+                        className={`px-1.5 py-0.5 rounded transition-all ${
+                          realtimeRefMode === "main"
+                            ? "bg-white text-[#1058D1] shadow-2xs font-extrabold"
+                            : "text-slate-500 hover:text-slate-800"
+                        }`}
+                      >
+                        Main
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRealtimeRefMode("full")}
+                        className={`px-1.5 py-0.5 rounded transition-all ${
+                          realtimeRefMode === "full"
+                            ? "bg-white text-[#1058D1] shadow-2xs font-extrabold"
+                            : "text-slate-500 hover:text-slate-800"
+                        }`}
+                      >
+                        Full
+                      </button>
+                    </div>
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-[#1455bb] border border-slate-300/70 shadow-2xs">
                       Total: {displayReferrers.length}
                     </span>
@@ -1535,7 +1577,11 @@ export default function RealtimeHistatsPage() {
                                 </div>
 
                                 <div className="flex items-center gap-2 text-slate-500">
-                                  <CountryFlag code={vis.countryCode} />
+                                  <CountryFlag
+                                    code={vis.countryCode}
+                                    countryName={vis.country}
+                                    city={vis.city}
+                                  />
                                   <span
                                     className="inline-flex items-center"
                                     title={`Browser: ${vis.browser || "Browser"}`}
@@ -1680,14 +1726,17 @@ export default function RealtimeHistatsPage() {
 
                           {/* Country Flag & Location */}
                           <div className="flex items-center gap-1.5 text-slate-700 text-xs shrink-0">
-                            <CountryFlag code={hit.countryCode} />
+                            <CountryFlag
+                              code={hit.countryCode}
+                              countryName={hit.country}
+                              city={hit.city}
+                            />
                             <span className="font-medium hidden sm:inline truncate max-w-[140px]">
                               {hit.city && hit.city !== hit.countryCode
                                 ? hit.city
-                                : getCountryName(
-                                    hit.countryCode,
-                                    hit.country || "-",
-                                  )}
+                                : (hit.country && hit.country !== "Unknown"
+                                    ? hit.country
+                                    : getCountryName(hit.countryCode, "-"))}
                             </span>
                           </div>
 
@@ -1829,11 +1878,17 @@ export default function RealtimeHistatsPage() {
                           </td>
                           <td className="py-2 px-3">
                             <div className="flex items-center gap-1.5">
-                              <CountryFlag code={h.countryCode} />
+                              <CountryFlag
+                                code={h.countryCode}
+                                countryName={h.country}
+                                city={h.city}
+                              />
                               <span>
                                 {h.city && h.city !== h.countryCode
                                   ? `${h.city}, ${getCountryName(h.countryCode, h.country)}`
-                                  : getCountryName(h.countryCode, h.country)}
+                                  : (h.country && h.country !== "Unknown"
+                                      ? h.country
+                                      : getCountryName(h.countryCode, "-"))}
                               </span>
                             </div>
                           </td>
@@ -1982,11 +2037,17 @@ export default function RealtimeHistatsPage() {
                           Pageviews
                         </div>
                         <div className="text-slate-500 text-[11px] flex items-center justify-end gap-1.5 mt-0.5">
-                          <CountryFlag code={vis.countryCode} />
+                          <CountryFlag
+                            code={vis.countryCode}
+                            countryName={vis.country}
+                            city={vis.city}
+                          />
                           <span>
                             {vis.city && vis.city !== vis.countryCode
                               ? vis.city
-                              : getCountryName(vis.countryCode, vis.country)}
+                              : (vis.country && vis.country !== "Unknown"
+                                  ? vis.country
+                                  : getCountryName(vis.countryCode, "-"))}
                           </span>
                         </div>
                       </div>
@@ -2082,10 +2143,36 @@ export default function RealtimeHistatsPage() {
         {/* Tab: Popular Referrers */}
         {activeTab === "referrers" && (
           <div className="bg-[#eaedf2] border border-slate-300/80 rounded-2xl shadow-xs p-4 sm:p-5">
-            <div className="flex items-center justify-between mb-3.5">
-              <h3 className="font-bold text-slate-900 text-sm tracking-tight">
-                Popular Referring Sources
-              </h3>
+            <div className="flex items-center justify-between mb-3.5 gap-2">
+              <div className="flex items-center gap-3">
+                <h3 className="font-bold text-slate-900 text-sm tracking-tight">
+                  Popular Referring Sources
+                </h3>
+                <div className="inline-flex items-center rounded-lg bg-slate-200/80 p-0.5 text-xs font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setRealtimeRefMode("main")}
+                    className={`px-2.5 py-0.5 rounded-md transition-all ${
+                      realtimeRefMode === "main"
+                        ? "bg-white text-[#1058D1] shadow-2xs font-extrabold"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    Main Domains
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRealtimeRefMode("full")}
+                    className={`px-2.5 py-0.5 rounded-md transition-all ${
+                      realtimeRefMode === "full"
+                        ? "bg-white text-[#1058D1] shadow-2xs font-extrabold"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    Full URLs
+                  </button>
+                </div>
+              </div>
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-white text-[#1455bb] border border-slate-300/70 shadow-2xs">
                 Total Referrers: {displayReferrers.length}
               </span>

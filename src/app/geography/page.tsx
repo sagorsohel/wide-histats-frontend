@@ -456,14 +456,6 @@ export default function GeographyPage() {
               </div>
             )}
           </div>
-
-          {/* Footer Info */}
-          <div className="mt-2.5 pt-2 border-t border-slate-100/80 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400">
-            <span>Urban centers &amp; regional traffic</span>
-            <span className="font-semibold text-slate-500">
-              {formatCommas(citiesTotalVisitors)} visits in top metros
-            </span>
-          </div>
         </div>
 
         {/* Visitors by Country Box (RIGHT SIDE) */}
@@ -548,12 +540,6 @@ export default function GeographyPage() {
           </div>
 
           {/* Footer Info */}
-          <div className="mt-2.5 pt-2 border-t border-slate-100/80 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400">
-            <span>Global territory distribution</span>
-            <span className="font-semibold text-slate-500">
-              {formatCommas(totalVisitors)} international visitors
-            </span>
-          </div>
         </div>
       </div>
 

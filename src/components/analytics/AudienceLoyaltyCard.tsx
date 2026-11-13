@@ -39,13 +39,13 @@ export const AudienceLoyaltyCard: React.FC<AudienceLoyaltyCardProps> = ({
   const newPct = !isNaN(computedNewPct) && computedNewPct > 0 ? computedNewPct : (newVisitorsPct || 94.2);
   const retPct = !isNaN(computedRetPct) && computedRetPct >= 0 ? computedRetPct : (returningVisitorsPct || 5.8);
 
-  // Minimal 2-color palette: Blue (#2563eb) for New, Clean Slate (#94a3b8) for Returning
+  // Minimal 2-color palette: Blue (#1058D1) for New, Clean Slate (#94a3b8) for Returning
   const chartData = useMemo(() => [
     {
       name: "First-Time Visitors",
       value: firstTime || Math.round(safeTotal * (newPct / 100)),
       pct: newPct.toFixed(1),
-      color: "#2563eb",
+      color: "#1058D1",
     },
     {
       name: "Returning Visitors",
@@ -149,7 +149,7 @@ export const AudienceLoyaltyCard: React.FC<AudienceLoyaltyCardProps> = ({
             {/* 1. First-Time Visitors */}
             <div className="flex items-center justify-between py-1 px-2 rounded-lg hover:bg-slate-50 transition-colors">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#2563eb] shrink-0" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#1058D1] shrink-0" />
                 <div className="min-w-0">
                   <span className="font-bold text-slate-900 text-xs sm:text-sm block leading-tight">
                     First-Time Visitors (New)
@@ -197,7 +197,7 @@ export const AudienceLoyaltyCard: React.FC<AudienceLoyaltyCardProps> = ({
             {/* Subtle Dual Segment Progress Bar */}
             <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden flex mt-1">
               <div
-                className="bg-[#2563eb] h-full transition-all duration-700"
+                className="bg-[#1058D1] h-full transition-all duration-700"
                 style={{ width: `${newPct}%` }}
               />
               <div
@@ -212,7 +212,7 @@ export const AudienceLoyaltyCard: React.FC<AudienceLoyaltyCardProps> = ({
       {/* Bottom Insights Footer */}
       <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 flex-wrap gap-2">
         <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-[#2563eb] inline-block" />
+          <span className="w-2 h-2 rounded-full bg-[#1058D1] inline-block" />
           <span>New: {newPct}%</span>
           <span className="text-slate-300">•</span>
           <span className="w-2 h-2 rounded-full bg-[#94a3b8] inline-block" />

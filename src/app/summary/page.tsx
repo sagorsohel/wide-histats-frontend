@@ -456,33 +456,33 @@ export default function SummaryPage() {
             {/* Header */}
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 shrink-0">
               <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-3.5 rounded-full bg-gradient-to-b from-[#1455bb] to-blue-400 shadow-xs" />
-                <h3 className="text-xs font-black uppercase tracking-wider text-[#1455bb]">
+                <span className="w-1.5 h-3.5 rounded-full bg-[#1058D1] shadow-xs" />
+                <h3 className="text-xs font-black uppercase tracking-wider text-[#1058D1]">
                   Lifetime Totals
                 </h3>
               </div>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-100/90 text-[#1455bb] border border-blue-200/90 shadow-2xs">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#1058D1]/10 text-[#1058D1] border border-[#1058D1]/20 shadow-2xs">
                 Since Installed
               </span>
             </div>
 
-            {/* 3 Dedicated Stats Cards */}
+            {/* 3 Dedicated Stats Cards - Unified with #1058D1 */}
             <div className="space-y-2 flex-1 flex flex-col justify-between">
               {/* Card 1: All-Time Users */}
-              <div className="rounded-xl px-3 py-2 bg-gradient-to-br from-blue-50/80 via-white to-blue-50/30 border border-blue-200/70 shadow-2xs hover:shadow-xs transition-all group flex-1 flex flex-col justify-between">
+              <div className="rounded-xl px-3 py-2 bg-slate-50/70 border border-slate-200/80 shadow-2xs hover:shadow-xs transition-all group flex-1 flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-900/80">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-700">
                     All-Time Total Users
                   </span>
-                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-[#1455bb] text-white flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
+                  <div className="w-6 h-6 rounded-lg bg-[#1058D1] text-white flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
                     <Users className="w-3.5 h-3.5" />
                   </div>
                 </div>
                 <div className="mt-1 flex items-baseline justify-between">
                   {loading && !overview ? (
-                    <div className="h-6 w-16 bg-blue-200/50 rounded-lg animate-pulse" />
+                    <div className="h-6 w-16 bg-slate-200/50 rounded-lg animate-pulse" />
                   ) : (
-                    <span className="text-xl sm:text-2xl font-black text-[#1455bb] tracking-tight tabular-nums">
+                    <span className="text-xl sm:text-2xl font-black text-[#1058D1] tracking-tight tabular-nums">
                       {formatNumber(
                         overview?.allTimeVisitors ||
                           overview?.uniqueVisitors ||
@@ -497,20 +497,20 @@ export default function SummaryPage() {
               </div>
 
               {/* Card 2: All-Time Views */}
-              <div className="rounded-xl px-3 py-2 bg-gradient-to-br from-indigo-50/80 via-white to-indigo-50/30 border border-indigo-200/70 shadow-2xs hover:shadow-xs transition-all group flex-1 flex flex-col justify-between">
+              <div className="rounded-xl px-3 py-2 bg-slate-50/70 border border-slate-200/80 shadow-2xs hover:shadow-xs transition-all group flex-1 flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-900/80">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-700">
                     All-Time Views
                   </span>
-                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-500 to-[#6366f1] text-white flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
+                  <div className="w-6 h-6 rounded-lg bg-[#1058D1] text-white flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
                     <Eye className="w-3.5 h-3.5" />
                   </div>
                 </div>
                 <div className="mt-1 flex items-baseline justify-between">
                   {loading && !overview ? (
-                    <div className="h-6 w-16 bg-indigo-200/50 rounded-lg animate-pulse" />
+                    <div className="h-6 w-16 bg-slate-200/50 rounded-lg animate-pulse" />
                   ) : (
-                    <span className="text-xl sm:text-2xl font-black text-indigo-700 tracking-tight tabular-nums">
+                    <span className="text-xl sm:text-2xl font-black text-[#1058D1] tracking-tight tabular-nums">
                       {formatNumber(
                         overview?.allTimePageviews ||
                           overview?.totalPageviews ||
@@ -525,20 +525,20 @@ export default function SummaryPage() {
               </div>
 
               {/* Card 3: All-Time Visits */}
-              <div className="rounded-xl px-3 py-2 bg-gradient-to-br from-sky-50/80 via-white to-sky-50/30 border border-sky-200/70 shadow-2xs hover:shadow-xs transition-all group flex-1 flex flex-col justify-between">
+              <div className="rounded-xl px-3 py-2 bg-slate-50/70 border border-slate-200/80 shadow-2xs hover:shadow-xs transition-all group flex-1 flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-sky-900/80">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-700">
                     All-Time Visits
                   </span>
-                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-sky-500 to-[#0284c7] text-white flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
+                  <div className="w-6 h-6 rounded-lg bg-[#1058D1] text-white flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
                     <Activity className="w-3.5 h-3.5" />
                   </div>
                 </div>
                 <div className="mt-1 flex items-baseline justify-between">
                   {loading && !overview ? (
-                    <div className="h-6 w-16 bg-sky-200/50 rounded-lg animate-pulse" />
+                    <div className="h-6 w-16 bg-slate-200/50 rounded-lg animate-pulse" />
                   ) : (
-                    <span className="text-xl sm:text-2xl font-black text-sky-700 tracking-tight tabular-nums">
+                    <span className="text-xl sm:text-2xl font-black text-[#1058D1] tracking-tight tabular-nums">
                       {formatNumber(
                         overview?.allTimeSessions ||
                           overview?.totalSessions ||

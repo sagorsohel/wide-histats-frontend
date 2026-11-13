@@ -238,11 +238,17 @@ export default function DevicesReportPage() {
     return () => clearInterval(interval);
   }, [loadData]);
 
-  const totalDeviceSessions =
-    devices.reduce((sum, d) => sum + d.sessions, 0) || 1;
-  const totalBrowserSessions =
-    browsers.reduce((sum, b) => sum + b.sessions, 0) || 1;
-  const totalOsSessions = osList.reduce((sum, o) => sum + o.sessions, 0) || 1;
+  const rawDeviceSum = devices.reduce((sum, d) => sum + d.sessions, 0);
+  const totalDeviceSessions = rawDeviceSum;
+  const safeDeviceDenominator = rawDeviceSum || 1;
+
+  const rawBrowserSum = browsers.reduce((sum, b) => sum + b.sessions, 0);
+  const totalBrowserSessions = rawBrowserSum;
+  const safeBrowserDenominator = rawBrowserSum || 1;
+
+  const rawOsSum = osList.reduce((sum, o) => sum + o.sessions, 0);
+  const totalOsSessions = rawOsSum;
+  const safeOsDenominator = rawOsSum || 1;
 
   const desktopItem = devices.find((d) => d.device.toLowerCase() === "desktop");
   const mobileItem = devices.find((d) => d.device.toLowerCase() === "mobile");
@@ -252,18 +258,18 @@ export default function DevicesReportPage() {
   const mobileSessions = mobileItem ? mobileItem.sessions : 0;
   const tabletSessions = tabletItem ? tabletItem.sessions : 0;
 
-  const desktopPct = Math.round((desktopSessions / totalDeviceSessions) * 100);
-  const mobilePct = Math.round((mobileSessions / totalDeviceSessions) * 100);
-  const tabletPct = Math.round((tabletSessions / totalDeviceSessions) * 100);
+  const desktopPct = rawDeviceSum > 0 ? Math.round((desktopSessions / safeDeviceDenominator) * 100) : 0;
+  const mobilePct = rawDeviceSum > 0 ? Math.round((mobileSessions / safeDeviceDenominator) * 100) : 0;
+  const tabletPct = rawDeviceSum > 0 ? Math.round((tabletSessions / safeDeviceDenominator) * 100) : 0;
 
   const topBrowser = browsers[0] || null;
-  const topBrowserPct = topBrowser
-    ? Math.round((topBrowser.sessions / totalBrowserSessions) * 100)
+  const topBrowserPct = (topBrowser && rawBrowserSum > 0)
+    ? Math.round((topBrowser.sessions / safeBrowserDenominator) * 100)
     : 0;
 
   const topOs = osList[0] || null;
-  const topOsPct = topOs
-    ? Math.round((topOs.sessions / totalOsSessions) * 100)
+  const topOsPct = (topOs && rawOsSum > 0)
+    ? Math.round((topOs.sessions / safeOsDenominator) * 100)
     : 0;
 
   const deviceStatItems = [

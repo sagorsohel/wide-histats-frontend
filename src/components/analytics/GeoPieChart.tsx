@@ -126,7 +126,7 @@ export const GeoPieChart: React.FC<GeoPieChartProps> = ({
       </div>
 
       {/* 2. Visual Country Distribution Legend */}
-      <div className="flex-1 w-full grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+      <div className="flex-1 w-full grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
         {chartData.map((item, idx) => (
           <div
             key={idx}
@@ -137,12 +137,12 @@ export const GeoPieChart: React.FC<GeoPieChartProps> = ({
                 className="w-2 h-2 rounded-full shrink-0"
                 style={{ backgroundColor: item.color }}
               />
-              <span className="truncate text-[11px] font-medium text-slate-700 max-w-[95px]">
+              <span className="truncate text-[11px] font-medium text-slate-700 max-w-[110px]">
                 {item.name}
               </span>
             </div>
-            <span className="text-[10.5px] font-mono font-bold text-slate-900 shrink-0">
-              {item.pct}%
+            <span className="text-[11px] font-mono font-bold text-slate-900 shrink-0 tabular-nums">
+              {item.value?.toLocaleString()}
             </span>
           </div>
         ))}

@@ -85,25 +85,19 @@ export const Header: React.FC = () => {
     }
   };
 
-  // 8 Navigation Tabs using exact original names with modern pill bar design
+  // Navigation Tabs re-ordered per user layout:
+  // Overview | User Online | Ref Site | Traffic Content | Browser | Geo | Setting
   const navTabs = [
     {
       id: "summary",
-      label: "Overview ",
+      label: "Overview",
       href: "/summary",
       icon: LayoutGrid,
-      matches: ["/summary", "/summery"],
-    },
-    {
-      id: "traffic-stats",
-      label: "Traffic Stats",
-      href: "/traffic-stats",
-      icon: BarChart2,
-      matches: ["/traffic-stats", "/traffic"],
+      matches: ["/summary", "/summery", "/traffic-stats", "/traffic"],
     },
     {
       id: "realtime",
-      label: "Users Online",
+      label: "User Online",
       href: "/realtime",
       icon: Activity,
       matches: ["/realtime"],
@@ -111,14 +105,21 @@ export const Header: React.FC = () => {
     },
     {
       id: "sources",
-      label: "Referring Sites",
+      label: "Referring Site",
       href: "/sources",
       icon: Compass,
       matches: ["/sources"],
     },
     {
+      id: "pages",
+      label: "Traffic Content",
+      href: "/pages",
+      icon: Layers,
+      matches: ["/pages"],
+    },
+    {
       id: "devices",
-      label: "Browsers & OS",
+      label: "Browser",
       href: "/devices",
       icon: Smartphone,
       matches: ["/devices"],
@@ -131,15 +132,8 @@ export const Header: React.FC = () => {
       matches: ["/geography"],
     },
     {
-      id: "pages",
-      label: "Traffic by URL",
-      href: "/pages",
-      icon: Layers,
-      matches: ["/pages"],
-    },
-    {
       id: "settings",
-      label: "Settings",
+      label: "Setting",
       href: "/settings",
       icon: Settings,
       matches: ["/settings"],

@@ -105,8 +105,8 @@ export const DailyStatsCard: React.FC<DailyStatsCardProps> = ({
   return (
     <div className="rounded-[4px] border border-[#b0b0b0] overflow-hidden shadow-2xs w-full select-none bg-white font-sans text-slate-800">
       {/* Top Glossy Gradient Blue Banner: Exact text size matching screenshot */}
-      <div className="bg-gradient-to-b from-[#4a89c8] via-[#3575b5] to-[#2563a3] border-b border-[#1b5087] px-3.5 py-1.5 flex items-center justify-end text-white">
-        {/* <div className="flex items-center gap-2">
+      <div className="bg-[#1058d1] px-3.5 py-1.5 flex items-center justify-between text-white">
+        <div className="flex items-center gap-2">
           <span className="text-[17px] sm:text-[18px] font-bold text-white tracking-normal font-sans drop-shadow-xs">
             {displayTitle}
           </span>
@@ -115,8 +115,8 @@ export const DailyStatsCard: React.FC<DailyStatsCardProps> = ({
               {domain}
             </span>
           )}
-        </div> */}
-        <div className="text-[17px]  sm:text-[18px] font-bold text-white tracking-normal font-sans drop-shadow-xs">
+        </div>
+        <div className="text-[17px] sm:text-[18px] font-bold text-white tracking-normal font-sans drop-shadow-xs">
           {displayDateText}
         </div>
       </div>
@@ -207,9 +207,9 @@ export const DailyStatsCard: React.FC<DailyStatsCardProps> = ({
             )}
           </div>
 
-          {/* Right Calendar Section: Exact 222px width, strictly 127px height */}
+          {/* Right Calendar Section: Exact 208px width, strictly 127px height */}
           {calendar && (
-            <div className="shrink-0 w-full sm:w-[222px] h-[127px] flex justify-center lg:justify-end overflow-hidden">
+            <div className="shrink-0 w-full sm:w-[208px] h-[127px] flex justify-center lg:justify-end overflow-hidden">
               {calendar}
             </div>
           )}

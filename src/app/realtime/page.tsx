@@ -2387,6 +2387,38 @@ export default function RealtimeHistatsPage() {
         {/* Tab: Geolocation */}
         {activeTab === "geo" && (
           <div className="space-y-4 sm:space-y-5 w-full">
+            {/* ONLY ONE FULL-WIDTH COUNTRY MAP */}
+            <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden flex flex-col">
+              <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between shrink-0">
+                <span className="font-bold text-slate-800 text-[12px] tracking-tight">
+                  Live Country Telemetry Map
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-[#1455bb] border border-slate-300/70 shadow-2xs">
+                  Total: {totalCountriesCount}
+                </span>
+              </div>
+
+              <div className="p-2">
+                <RealtimeGeoMap
+                  countryData={
+                    data?.topCountries && data.topCountries.length > 0
+                      ? data.topCountries
+                      : []
+                  }
+                  height="420px"
+                  mode="country"
+                />
+              </div>
+
+              <div className="px-3 py-1.5 border-t border-slate-200/80 flex items-center justify-between text-[11px] text-slate-500 bg-slate-50/50">
+                <span>Active global live map</span>
+                <span className="font-semibold text-slate-700">
+                  {data?.topCountries?.reduce((acc, c) => acc + c.count, 0) ||
+                    0}{" "}
+                  active visitors online
+                </span>
+              </div>
+            </div>
             {/* Side-by-Side Ranking Lists */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 items-stretch w-full">
               {/* LEFT SIDE: ALL CITIES ONLINE */}
@@ -2562,39 +2594,6 @@ export default function RealtimeHistatsPage() {
                     active globally
                   </span>
                 </div>
-              </div>
-            </div>
-
-            {/* ONLY ONE FULL-WIDTH COUNTRY MAP */}
-            <div className="bg-white border border-slate-200/90 rounded-xl shadow-xs overflow-hidden flex flex-col">
-              <div className="bg-gradient-to-r from-slate-50 via-slate-50 to-slate-100/80 px-3.5 py-2 border-b border-slate-200/80 flex items-center justify-between shrink-0">
-                <span className="font-bold text-slate-800 text-[12px] tracking-tight">
-                  Live Country Telemetry Map
-                </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-[#1455bb] border border-slate-300/70 shadow-2xs">
-                  Total: {totalCountriesCount}
-                </span>
-              </div>
-
-              <div className="p-2">
-                <RealtimeGeoMap
-                  countryData={
-                    data?.topCountries && data.topCountries.length > 0
-                      ? data.topCountries
-                      : []
-                  }
-                  height="420px"
-                  mode="country"
-                />
-              </div>
-
-              <div className="px-3 py-1.5 border-t border-slate-200/80 flex items-center justify-between text-[11px] text-slate-500 bg-slate-50/50">
-                <span>Active global live map</span>
-                <span className="font-semibold text-slate-700">
-                  {data?.topCountries?.reduce((acc, c) => acc + c.count, 0) ||
-                    0}{" "}
-                  active visitors online
-                </span>
               </div>
             </div>
           </div>

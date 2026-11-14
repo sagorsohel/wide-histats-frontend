@@ -414,6 +414,23 @@ export default function RealtimeHistatsPage() {
     [baseWebsiteUrl],
   );
 
+  const formatVisitorIp = useCallback((vis: any) => {
+    if (vis?.ip && !vis.ip.includes("-") && vis.ip.length >= 7) {
+      return vis.ip;
+    }
+    const key = vis?.visitorKey || vis?.sessionKey || "guest-node";
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) {
+      hash = (hash << 5) - hash + key.charCodeAt(i);
+      hash |= 0;
+    }
+    const a = 100 + (Math.abs(hash) % 120);
+    const b = (Math.abs(hash >> 8) % 250) + 1;
+    const c = (Math.abs(hash >> 16) % 250) + 1;
+    const d = (Math.abs(hash >> 24) % 250) + 1;
+    return `${a}.${b}.${c}.${d}`;
+  }, []);
+
   // 100% Real-time hits stream - Guaranteed Descending (Latest visitor ALWAYS on top) & strictly domain-isolated
   const displayHits = useMemo(() => {
     if (!selectedWebsite?.id) return [];
@@ -724,7 +741,7 @@ export default function RealtimeHistatsPage() {
     return referrers;
   }, [data?.topReferrers, onlineCount]);
 
-  // 100% Real-time active visitors - Sorted by highest activity (pageviews) first (#1), then latest timestamp & domain-isolated
+  // 100% Real-time active visitors - Grouped by IP so multiple pages by the same IP are listed underneath, not as separate cards!
   const displayActiveVisitors = useMemo(() => {
     if (!data?.activeVisitors || !Array.isArray(data.activeVisitors)) return [];
     let list = [...data.activeVisitors];
@@ -760,13 +777,110 @@ export default function RealtimeHistatsPage() {
       });
     }
 
-    return list.sort((a: any, b: any) => {
-      const countA = Number(
-        a.pageviewsCount ?? a.hitsCount ?? a.count ?? a.pageviews ?? 1,
+    // AGGREGATE BY IP: "akoi ip hole niche dekhao kon kon page browse kortese alada alada kore noi"
+    const ipMap = new Map<string, any>();
+
+    for (const vis of (list as any[])) {
+      const ip = formatVisitorIp(vis);
+      const pageTitle =
+        vis.pageTitle || vis.currentPath || vis.path || "Untitled Page";
+      const pagePath = vis.currentPath || vis.path || "/";
+      const pageUrl = vis.pageUrl || vis.currentPath || pagePath;
+      const count = Number(
+        vis.pageviewsCount ?? vis.hitsCount ?? vis.count ?? vis.pageviews ?? 1,
       );
-      const countB = Number(
-        b.pageviewsCount ?? b.hitsCount ?? b.count ?? b.pageviews ?? 1,
-      );
+
+      const existing = ipMap.get(ip);
+      if (existing) {
+        // Sum total pageviews for this IP
+        existing.pageviewsCount = (existing.pageviewsCount || 0) + count;
+
+        // Check if page already exists in browsingPages
+        const foundPage = existing.browsingPages.find(
+          (p: any) =>
+            p.path === pagePath ||
+            (p.title &&
+              pageTitle &&
+              p.title.toLowerCase() === pageTitle.toLowerCase()) ||
+            (p.url &&
+              pageUrl &&
+              p.url.toLowerCase() === pageUrl.toLowerCase()),
+        );
+        if (foundPage) {
+          foundPage.count = (foundPage.count || 0) + count;
+        } else {
+          existing.browsingPages.push({
+            title: pageTitle,
+            url: pageUrl,
+            path: pagePath,
+            count,
+          });
+        }
+
+        // Keep most recent metadata
+        const curTime = new Date(existing.lastSeenAt || 0).getTime();
+        const newTime = new Date(vis.lastSeenAt || 0).getTime();
+        if (newTime > curTime) {
+          existing.lastSeenAt = vis.lastSeenAt;
+          existing.pageTitle = pageTitle;
+          existing.pageUrl = pageUrl;
+          existing.currentPath = pagePath;
+          if (vis.browser) existing.browser = vis.browser;
+          if (vis.os) existing.os = vis.os;
+          if (vis.deviceType) existing.deviceType = vis.deviceType;
+        }
+      } else {
+        ipMap.set(ip, {
+          ...vis,
+          ip,
+          pageviewsCount: count,
+          browsingPages: [
+            {
+              title: pageTitle,
+              url: pageUrl,
+              path: pagePath,
+              count,
+            },
+          ],
+        });
+      }
+    }
+
+    // Also enrich from rawRecentHits if available (to capture real-time hits for this IP)
+    if (rawRecentHits && Array.isArray(rawRecentHits)) {
+      for (const hit of rawRecentHits) {
+        if (!hit) continue;
+        const hitIp = formatVisitorIp(hit);
+        const existing = ipMap.get(hitIp);
+        if (existing) {
+          const hitTitle = hit.title || hit.path || "Untitled Page";
+          const hitPath = hit.path || "/";
+          const hitUrl = hit.url || hit.path || "/";
+          const found = existing.browsingPages.find(
+            (p: any) =>
+              p.path === hitPath ||
+              (p.title &&
+                hitTitle &&
+                p.title.toLowerCase() === hitTitle.toLowerCase()),
+          );
+          if (!found) {
+            existing.browsingPages.push({
+              title: hitTitle,
+              url: hitUrl,
+              path: hitPath,
+              count: 1,
+            });
+            existing.pageviewsCount = (existing.pageviewsCount || 0) + 1;
+          }
+        }
+      }
+    }
+
+    const aggregatedList = Array.from(ipMap.values());
+
+    return aggregatedList.sort((a: any, b: any) => {
+      const countA = Number(a.pageviewsCount || 1);
+      const countB = Number(b.pageviewsCount || 1);
       if (countB !== countA) {
         return countB - countA; // Highest pageviews on top (#1)
       }
@@ -774,7 +888,7 @@ export default function RealtimeHistatsPage() {
       const timeB = b.lastSeenAt ? new Date(b.lastSeenAt).getTime() : 0;
       return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
     });
-  }, [data, selectedWebsite?.domain]);
+  }, [data, selectedWebsite?.domain, formatVisitorIp, rawRecentHits]);
 
   const todayVisitorsCount = useMemo(() => {
     if (data?.todayVisitors !== undefined && data.todayVisitors > 0)
@@ -903,23 +1017,6 @@ export default function RealtimeHistatsPage() {
     return <BrowserIcon browser={browser} os={os} size={15} />;
   };
 
-  const formatVisitorIp = useCallback((vis: any) => {
-    if (vis?.ip && !vis.ip.includes("-") && vis.ip.length >= 7) {
-      return vis.ip;
-    }
-    const key = vis?.visitorKey || vis?.sessionKey || "guest-node";
-    let hash = 0;
-    for (let i = 0; i < key.length; i++) {
-      hash = (hash << 5) - hash + key.charCodeAt(i);
-      hash |= 0;
-    }
-    const a = 100 + (Math.abs(hash) % 120);
-    const b = (Math.abs(hash >> 8) % 250) + 1;
-    const c = (Math.abs(hash >> 16) % 250) + 1;
-    const d = (Math.abs(hash >> 24) % 250) + 1;
-    return `${a}.${b}.${c}.${d}`;
-  }, []);
-
   // Filtered hits
   const filteredHits = useMemo(() => {
     if (!searchQuery.trim()) return displayHits;
@@ -962,13 +1059,20 @@ export default function RealtimeHistatsPage() {
     const q = searchQuery.toLowerCase();
     return displayActiveVisitors.filter(
       (v: any) =>
+        v.ip?.toLowerCase().includes(q) ||
         v.pageTitle?.toLowerCase().includes(q) ||
         v.pageUrl?.toLowerCase().includes(q) ||
         v.currentPath?.toLowerCase().includes(q) ||
         (v.country || "").toLowerCase().includes(q) ||
         (v.city || "").toLowerCase().includes(q) ||
-        (v.ip || "").toLowerCase().includes(q) ||
-        (v.browser || "").toLowerCase().includes(q),
+        (v.browser || "").toLowerCase().includes(q) ||
+        (v.browsingPages &&
+          v.browsingPages.some(
+            (p: any) =>
+              (p.title || "").toLowerCase().includes(q) ||
+              (p.path || "").toLowerCase().includes(q) ||
+              (p.url || "").toLowerCase().includes(q),
+          )),
     );
   }, [displayActiveVisitors, searchQuery]);
 
@@ -1639,34 +1743,76 @@ export default function RealtimeHistatsPage() {
                                 </div>
                               </div>
 
-                              {/* Second line: visited path */}
-                              <div className="flex items-center gap-1 text-[10px] text-slate-500 truncate pl-6">
-                                <WebsiteFavicon
-                                  url={vis.pageUrl}
-                                  domain={selectedWebsite?.domain}
-                                  size={12}
-                                />
-                                <a
-                                  href={getFullUrl(
-                                    vis.pageUrl,
-                                    vis.currentPath,
-                                  )}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  title={getFullUrl(
-                                    vis.pageUrl,
-                                    vis.currentPath,
-                                  )}
-                                  className="truncate text-slate-600 hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
-                                >
-                                  <span className="group-hover:hidden truncate block">
-                                    {vis.pageTitle || vis.currentPath}
-                                  </span>
-                                  <span className="hidden group-hover:block truncate font-mono text-[#1455bb]">
-                                    {getFullUrl(vis.pageUrl, vis.currentPath)}
-                                  </span>
-                                </a>
-                              </div>
+                              {/* Second line: visited path(s) */}
+                              {vis.browsingPages && vis.browsingPages.length > 1 ? (
+                                <div className="space-y-0.5 pl-6 pt-0.5">
+                                  {vis.browsingPages.map((page: any, pIdx: number) => {
+                                    const pageUrl = getFullUrl(page.url, page.path);
+                                    return (
+                                      <div
+                                        key={pIdx}
+                                        className="flex items-center gap-1.5 text-[10px] text-slate-500 truncate"
+                                      >
+                                        <span className="text-slate-400 shrink-0 font-mono">
+                                          {pIdx === 0 ? "•" : "↳"}
+                                        </span>
+                                        <WebsiteFavicon
+                                          url={page.url}
+                                          domain={selectedWebsite?.domain}
+                                          size={12}
+                                        />
+                                        <a
+                                          href={pageUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          title={pageUrl}
+                                          className="truncate text-slate-600 hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
+                                        >
+                                          <span className="group-hover:hidden truncate block">
+                                            {page.title || page.path}
+                                          </span>
+                                          <span className="hidden group-hover:block truncate font-mono text-[#1455bb]">
+                                            {pageUrl}
+                                          </span>
+                                        </a>
+                                        {page.count > 1 && (
+                                          <span className="text-[9px] text-[#1455bb] font-bold shrink-0">
+                                            ({page.count})
+                                          </span>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-1 text-[10px] text-slate-500 truncate pl-6">
+                                  <WebsiteFavicon
+                                    url={vis.pageUrl}
+                                    domain={selectedWebsite?.domain}
+                                    size={12}
+                                  />
+                                  <a
+                                    href={getFullUrl(
+                                      vis.pageUrl,
+                                      vis.currentPath,
+                                    )}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title={getFullUrl(
+                                      vis.pageUrl,
+                                      vis.currentPath,
+                                    )}
+                                    className="truncate text-slate-600 hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
+                                  >
+                                    <span className="group-hover:hidden truncate block">
+                                      {vis.pageTitle || vis.currentPath}
+                                    </span>
+                                    <span className="hidden group-hover:block truncate font-mono text-[#1455bb]">
+                                      {getFullUrl(vis.pageUrl, vis.currentPath)}
+                                    </span>
+                                  </a>
+                                </div>
+                              )}
                             </div>
                           );
                         })
@@ -1918,16 +2064,16 @@ export default function RealtimeHistatsPage() {
                       style={{
                         backgroundColor: isZebra ? "#00000017" : "#ffffff",
                       }}
-                      className="p-3 rounded-xl border border-slate-200/60 shadow-2xs hover:brightness-95 transition-all flex items-center justify-between gap-3 text-xs"
+                      className="p-3 rounded-xl border border-slate-200/60 shadow-2xs hover:brightness-95 transition-all flex items-start justify-between gap-3 text-xs"
                     >
-                      {/* Left: #1 Circle Badge, IP & Device info, Browsing page */}
-                      <div className="flex items-center gap-3 min-w-0">
+                      {/* Left: #1 Circle Badge, IP & Device info, Browsing page(s) */}
+                      <div className="flex items-start gap-3 min-w-0">
                         {/* Circle #1, #2 Badge */}
-                        <div className="w-8 h-8 rounded-full bg-blue-100/90 text-[#1455bb] font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                        <div className="w-8 h-8 rounded-full bg-blue-100/90 text-[#1455bb] font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
                           #{idx + 1}
                         </div>
 
-                        <div className="space-y-1 min-w-0">
+                        <div className="space-y-1.5 min-w-0">
                           {/* Line 1: [i] badge, IP, OS, Browser, Active pill */}
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-[#7cb342] text-white font-black text-[10px] shrink-0 shadow-2xs select-none">
@@ -1955,33 +2101,72 @@ export default function RealtimeHistatsPage() {
                             </span>
                           </div>
 
-                          {/* Line 2: Browsing: Page title */}
-                          <div className="flex items-center gap-1 text-slate-500 text-xs truncate max-w-[600px] lg:max-w-[750px]">
-                            <span className="shrink-0 text-slate-400">
-                              Browsing:
-                            </span>
-                            <a
-                              href={pageUrl}
-                              onClick={(e) =>
-                                handleUrlClick(
-                                  e,
-                                  pageUrl,
-                                  vis.pageTitle || vis.currentPath,
-                                )
-                              }
-                              title={pageUrl}
-                              className="font-medium text-slate-700 hover:text-[#1455bb] hover:underline truncate"
-                            >
-                              {vis.pageTitle ||
-                                vis.currentPath ||
-                                "Untitled Page"}
-                            </a>
-                          </div>
+                          {/* Line 2+: Browsing pages for this IP */}
+                          {vis.browsingPages && vis.browsingPages.length > 1 ? (
+                            <div className="space-y-1 pt-0.5">
+                              {vis.browsingPages.map((page: any, pIdx: number) => {
+                                const currentUrl = getFullUrl(page.url, page.path);
+                                return (
+                                  <div
+                                    key={pIdx}
+                                    className="flex items-center gap-1.5 text-xs text-slate-600 truncate max-w-[550px] lg:max-w-[720px]"
+                                  >
+                                    <span className="shrink-0 text-slate-400 font-normal">
+                                      {pIdx === 0 ? "Browsing:" : (
+                                        <span className="text-[#1455bb] font-mono font-bold pl-3">↳</span>
+                                      )}
+                                    </span>
+                                    <a
+                                      href={currentUrl}
+                                      onClick={(e) =>
+                                        handleUrlClick(
+                                          e,
+                                          currentUrl,
+                                          page.title || page.path,
+                                        )
+                                      }
+                                      title={currentUrl}
+                                      className="font-medium text-slate-700 hover:text-[#1455bb] hover:underline truncate"
+                                    >
+                                      {page.title || page.path || "Untitled Page"}
+                                    </a>
+                                    {page.count > 1 && (
+                                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-50 text-[#1455bb] font-bold shrink-0">
+                                        {page.count} views
+                                      </span>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1 text-slate-500 text-xs truncate max-w-[600px] lg:max-w-[750px]">
+                              <span className="shrink-0 text-slate-400">
+                                Browsing:
+                              </span>
+                              <a
+                                href={pageUrl}
+                                onClick={(e) =>
+                                  handleUrlClick(
+                                    e,
+                                    pageUrl,
+                                    vis.pageTitle || vis.currentPath,
+                                  )
+                                }
+                                title={pageUrl}
+                                className="font-medium text-slate-700 hover:text-[#1455bb] hover:underline truncate"
+                              >
+                                {vis.pageTitle ||
+                                  vis.currentPath ||
+                                  "Untitled Page"}
+                              </a>
+                            </div>
+                          )}
                         </div>
                       </div>
 
                       {/* Right: Pageviews Count on top, Flag + City below */}
-                      <div className="text-right shrink-0 space-y-0.5">
+                      <div className="text-right shrink-0 space-y-0.5 self-start pt-0.5">
                         <div className="text-[#1455bb] font-bold text-sm sm:text-base">
                           {pageviews} Pageviews
                         </div>

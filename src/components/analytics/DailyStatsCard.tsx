@@ -43,18 +43,23 @@ export const DailyStatsCard: React.FC<DailyStatsCardProps> = ({
   liveOnlineCount,
 }) => {
   const { selectedWebsite } = useWebsite();
-  const realtimeActiveCount = useAppSelector(
-    (state) =>
-      selectedWebsite?.id
-        ? state.realtime.byWebsite[selectedWebsite.id]?.data?.activeCount
-        : undefined,
+  const realtimeActiveCount = useAppSelector((state) =>
+    selectedWebsite?.id
+      ? state.realtime.byWebsite[selectedWebsite.id]?.data?.activeCount
+      : undefined,
   );
 
   const liveCount =
     (liveOnlineCount && liveOnlineCount > 0 ? liveOnlineCount : undefined) ??
-    (realtimeActiveCount && realtimeActiveCount > 0 ? realtimeActiveCount : undefined) ??
-    (overview?.activeVisitors && overview.activeVisitors > 0 ? overview.activeVisitors : undefined) ??
-    (selectedWebsite?.usersOnline && selectedWebsite.usersOnline > 0 ? selectedWebsite.usersOnline : undefined) ??
+    (realtimeActiveCount && realtimeActiveCount > 0
+      ? realtimeActiveCount
+      : undefined) ??
+    (overview?.activeVisitors && overview.activeVisitors > 0
+      ? overview.activeVisitors
+      : undefined) ??
+    (selectedWebsite?.usersOnline && selectedWebsite.usersOnline > 0
+      ? selectedWebsite.usersOnline
+      : undefined) ??
     realtimeActiveCount ??
     overview?.activeVisitors ??
     0;
@@ -152,7 +157,7 @@ export const DailyStatsCard: React.FC<DailyStatsCardProps> = ({
   const displayItems: StatItem[] = baseItems;
 
   return (
-    <div className="rounded-[4px] border border-[#b0b0b0] shadow-2xs w-full select-none bg-white font-sans text-slate-800">
+    <div className="rounded-[4px] border border-[#b0b0b0] shadow-[inset_1px_0px_20px_8px_#a1a1aabf] w-full select-none bg-white font-sans text-slate-800">
       <div className="flex flex-col lg:flex-row items-stretch justify-between">
         {/* Left Stats Section: Header bar extends only up to before the calendar */}
         <div className="flex-1 w-full lg:border-r border-[#d4d4d4] flex flex-col justify-between">

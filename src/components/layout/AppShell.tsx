@@ -5,6 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { useAuth } from "@/context/AuthContext";
+import { useWebsite } from "@/context/WebsiteContext";
+import { isPagePublic } from "@/lib/utils";
 
 // Routes reachable without signing in. Everything else in the dashboard shell is protected.
 const PUBLIC_PATHS = ["/login", "/register"];
@@ -18,15 +20,57 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
   const pathname = usePathname() || "/";
   const router = useRouter();
   const { user, initialized } = useAuth();
+  const { selectedWebsite } = useWebsite();
   const isLandingPage = pathname === "/";
-  const isProtected = !isLandingPage && !isPublicPath(pathname);
+  const isAlwaysPublic = isPublicPath(pathname);
+  const isAllowedPublicly = !user && isPagePublic(pathname, selectedWebsite);
+  const isProtected = !isLandingPage && !isAlwaysPublic && !isAllowedPublicly;
 
   useEffect(() => {
     if (isProtected && initialized && !user) {
-      const next = typeof window !== "undefined" ? window.location.pathname + window.location.search : pathname;
+      // 1. Administrative routes (settings, websites, control-panel, profile) are NEVER public.
+      // Redirect to login immediately without waiting.
+      const cleanPath =
+        pathname.replace(/^\/+|\/+$/g, "").split("/")[0] || "";
+      const isManagement = [
+        "settings",
+        "websites",
+        "control-panel",
+        "profile",
+      ].includes(cleanPath);
+
+      if (isManagement) {
+        const next =
+          typeof window !== "undefined"
+            ? window.location.pathname + window.location.search
+            : pathname;
+        router.replace(`/login?next=${encodeURIComponent(next)}`);
+        return;
+      }
+
+      // 2. For public analytics pages with ?id=, wait up to 1.5s for website context to settle
+      const hasIdParam =
+        typeof window !== "undefined" &&
+        new URLSearchParams(window.location.search).has("id");
+
+      if (hasIdParam && !selectedWebsite) {
+        const timer = setTimeout(() => {
+          const next =
+            typeof window !== "undefined"
+              ? window.location.pathname + window.location.search
+              : pathname;
+          router.replace(`/login?next=${encodeURIComponent(next)}`);
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+
+      const next =
+        typeof window !== "undefined"
+          ? window.location.pathname + window.location.search
+          : pathname;
       router.replace(`/login?next=${encodeURIComponent(next)}`);
     }
-  }, [isProtected, initialized, user, router, pathname]);
+  }, [isProtected, initialized, user, router, pathname, selectedWebsite]);
 
   // For landing page (/): full-width layout with natural scrolling
   if (isLandingPage) {
@@ -37,8 +81,9 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
     );
   }
 
-  // Protected page while the session is unknown or missing: don't render data pages.
-  const blocked = isProtected && (!initialized || !user);
+  // Protected page while the session or public permission is unknown or missing
+  const blocked =
+    isProtected && (!initialized || (!user && !isAllowedPublicly));
 
   // Dashboard shell: 1140px boxed container, two-tier header, footer at bottom
   return (

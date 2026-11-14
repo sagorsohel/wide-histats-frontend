@@ -85,3 +85,45 @@ export function getSite7DigitId(site?: {
   if (digits && digits.length >= 7) return digits;
   return site.id || "";
 }
+
+/**
+ * Checks if a specific dashboard pathname is allowed to be publicly accessed
+ * without logging in, based on the website's `isPublic` and `publicPages` settings.
+ */
+export function isPagePublic(
+  pathname: string,
+  site?: { isPublic?: boolean; publicPages?: string } | null
+): boolean {
+  if (!site) return false;
+
+  // Extract section name: "/summary/" -> "summary", "/traffic-stats" -> "traffic-stats"
+  const clean = pathname.replace(/^\/+|\/+$/g, "").split("/")[0] || "";
+
+  // Administrative / Account routes are strictly private
+  const STRICT_PRIVATE = ["settings", "websites", "control-panel", "profile"];
+  if (STRICT_PRIVATE.includes(clean)) return false;
+
+  const isPublic = Boolean(site.isPublic);
+  const publicPages = (site.publicPages || "").toLowerCase().trim();
+
+  // If website is explicitly marked public and no restrictive list or "all"
+  if (isPublic && (!publicPages || publicPages === "all" || publicPages === "*")) {
+    return true;
+  }
+
+  // If publicPages specifies "all" or "*"
+  if (publicPages === "all" || publicPages === "*") {
+    return true;
+  }
+
+  // If publicPages is empty or "none"
+  if (!publicPages || publicPages === "none") {
+    return false;
+  }
+
+  const allowedList = publicPages
+    .split(",")
+    .map((s) => s.trim().replace(/^["'\[]+|["'\]]+$/g, "").toLowerCase());
+
+  return allowedList.includes(clean);
+}

@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from "@/store";
 import {
   fetchWebsites,
   createNewWebsite,
+  setWebsites,
   setSelectedWebsite as setSelectedWebsiteAction,
   openTrackingModal as openTrackingModalAction,
   closeTrackingModal as closeTrackingModalAction,
@@ -13,6 +14,7 @@ import {
 import { useAuth } from "./AuthContext";
 import { subscribeToWebsite, unsubscribeFromWebsite } from "@/lib/socket";
 import { useTabFocus } from "@/hooks/useTabFocus";
+import { api } from "@/lib/api";
 
 const SELECTED_KEY = "histat_selected_website";
 const WEBSITES_REFRESH_MS = 60_000;
@@ -78,6 +80,63 @@ export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (userId) dispatch(fetchWebsites());
   }, [userId, dispatch]);
 
+  // Load public website if visitor is unauthenticated but has an ID (e.g. from ?id= or storage)
+  useEffect(() => {
+    if (userId) return;
+    let targetId: string | null = null;
+    if (typeof window !== "undefined") {
+      targetId = new URLSearchParams(window.location.search).get("id");
+      if (!targetId) {
+        try {
+          const raw = localStorage.getItem(SELECTED_KEY);
+          const stored = raw ? (JSON.parse(raw) as Website) : null;
+          targetId = stored?.trackingId || stored?.id || null;
+        } catch {}
+      }
+    }
+    if (!targetId) return;
+
+    api
+      .get<Website>(`/api/v1/websites/public/${encodeURIComponent(targetId)}`)
+      .then((res) => {
+        if (res.success && res.data) {
+          dispatch(setWebsites([res.data]));
+          dispatch(setSelectedWebsiteAction(res.data));
+        } else {
+          // Fallback context so public visitor can query public analytics with targetId
+          const fallbackSite: Website = {
+            id: targetId,
+            name: "Website Analytics",
+            domain: "",
+            trackingId: targetId,
+            displayId: targetId,
+            isPublic: true,
+            publicPages: "all",
+            status: "active",
+            createdAt: new Date().toISOString(),
+          };
+          dispatch(setWebsites([fallbackSite]));
+          dispatch(setSelectedWebsiteAction(fallbackSite));
+        }
+      })
+      .catch(() => {
+        // Fallback context if remote public endpoint is not yet redeployed
+        const fallbackSite: Website = {
+          id: targetId,
+          name: "Website Analytics",
+          domain: "",
+          trackingId: targetId,
+          displayId: targetId,
+          isPublic: true,
+          publicPages: "all",
+          status: "active",
+          createdAt: new Date().toISOString(),
+        };
+        dispatch(setWebsites([fallbackSite]));
+        dispatch(setSelectedWebsiteAction(fallbackSite));
+      });
+  }, [userId, dispatch]);
+
   // Light background refresh of the website list, only while signed in and visible.
   useEffect(() => {
     if (!userId) return;
@@ -98,12 +157,12 @@ export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // The single place that manages the realtime room subscription.
   useEffect(() => {
     const id = selectedWebsite?.id;
-    if (!id || !userId) return;
+    if (!id) return;
     subscribeToWebsite(id);
     return () => {
       unsubscribeFromWebsite(id);
     };
-  }, [selectedWebsite?.id, userId]);
+  }, [selectedWebsite?.id]);
 
   const setSelectedWebsite = useCallback(
     (website: Website) => {

@@ -25,7 +25,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
     <div className="desktop-app-container w-[1140px] min-w-[1140px] max-w-[1140px] mx-auto h-auto min-h-0 flex flex-col bg-white   shadow-[0_10px_31px_rgb(1,45,121)] relative rounded-b-xl overflow-hidden">
       <Header />
       <div className="desktop-content-row flex-none border-none flex flex-col items-stretch w-full bg-[#F1F5F9]">
-        <main className="desktop-main-scroll flex-none min-w-0 border-none border-black  px-2 py-2.5 lg:p-4 pb-4 bg-[linear-gradient(180deg,#1058d11f,#1058d1)]">
+        <main className="desktop-main-scroll flex-none min-w-0 border-0 border-black  px-2 py-2.5 lg:p-4 pb-4 bg-[linear-gradient(180deg,#1058d11f,#1058d1)]">
           <div className="w-full">{children}</div>
         </main>
       </div>

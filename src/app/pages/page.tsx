@@ -471,7 +471,7 @@ export default function PagesReportPage() {
                             target="_blank"
                             rel="noopener noreferrer"
                             title={fullLink}
-                            className="font-bold text-slate-900 truncate hover:text-[#1455bb] hover:underline font-mono text-xs sm:text-[13px] block"
+                            className="font-normal text-slate-900 truncate hover:text-[#1455bb] hover:underline font-mono text-xs sm:text-[13px] block"
                           >
                             {fullLink}
                           </a>
@@ -562,7 +562,7 @@ export default function PagesReportPage() {
                         <div className="min-w-0 flex-1">
                           <span
                             title={item.title}
-                            className="font-bold text-slate-900 truncate text-xs sm:text-[13px] block"
+                            className="font-normal text-slate-900 truncate text-xs sm:text-[13px] block"
                           >
                             {item.title}
                           </span>

@@ -79,7 +79,8 @@ export default function RealtimeHistatsPage() {
 
   // Auto-switch website if ?id= or ?websiteId= is passed in URL
   useEffect(() => {
-    if (typeof window === "undefined" || !websites || websites.length === 0) return;
+    if (typeof window === "undefined" || !websites || websites.length === 0)
+      return;
     const params = new URLSearchParams(window.location.search);
     const idFromUrl = params.get("id") || params.get("websiteId");
     if (!idFromUrl) return;
@@ -780,7 +781,7 @@ export default function RealtimeHistatsPage() {
     // AGGREGATE BY IP: "akoi ip hole niche dekhao kon kon page browse kortese alada alada kore noi"
     const ipMap = new Map<string, any>();
 
-    for (const vis of (list as any[])) {
+    for (const vis of list as any[]) {
       const ip = formatVisitorIp(vis);
       const pageTitle =
         vis.pageTitle || vis.currentPath || vis.path || "Untitled Page";
@@ -802,9 +803,7 @@ export default function RealtimeHistatsPage() {
             (p.title &&
               pageTitle &&
               p.title.toLowerCase() === pageTitle.toLowerCase()) ||
-            (p.url &&
-              pageUrl &&
-              p.url.toLowerCase() === pageUrl.toLowerCase()),
+            (p.url && pageUrl && p.url.toLowerCase() === pageUrl.toLowerCase()),
         );
         if (foundPage) {
           foundPage.count = (foundPage.count || 0) + count;
@@ -958,10 +957,7 @@ export default function RealtimeHistatsPage() {
       });
     }
 
-    if (
-      data?.recentPageviews &&
-      Array.isArray(data.recentPageviews)
-    ) {
+    if (data?.recentPageviews && Array.isArray(data.recentPageviews)) {
       data.recentPageviews.forEach((p) => {
         const cityName =
           p.city && p.city !== "-" && p.city.trim() ? p.city.trim() : "";
@@ -1048,9 +1044,7 @@ export default function RealtimeHistatsPage() {
   const filteredReferrers = useMemo(() => {
     if (!searchQuery.trim()) return displayReferrers;
     const q = searchQuery.toLowerCase();
-    return displayReferrers.filter((r) =>
-      r.referrer.toLowerCase().includes(q),
-    );
+    return displayReferrers.filter((r) => r.referrer.toLowerCase().includes(q));
   }, [displayReferrers, searchQuery]);
 
   // Filtered visitors for search
@@ -1377,9 +1371,9 @@ export default function RealtimeHistatsPage() {
                             >
                               {hit.city && hit.city !== hit.countryCode
                                 ? hit.city
-                                : (hit.country && hit.country !== "Unknown"
-                                    ? hit.country
-                                    : (getCountryName(hit.countryCode) || "-"))}
+                                : hit.country && hit.country !== "Unknown"
+                                  ? hit.country
+                                  : getCountryName(hit.countryCode) || "-"}
                             </span>
                           </div>
 
@@ -1464,9 +1458,7 @@ export default function RealtimeHistatsPage() {
                         <div
                           key={idx}
                           style={{
-                            backgroundColor: isZebra
-                              ? "#00000017"
-                              : "#ffffff",
+                            backgroundColor: isZebra ? "#00000017" : "#ffffff",
                           }}
                           className="px-3 py-0 flex items-center gap-2 hover:brightness-95 text-[11px] transition-colors min-h-[30px] h-[30px]"
                         >
@@ -1607,9 +1599,7 @@ export default function RealtimeHistatsPage() {
                         <div
                           key={idx}
                           style={{
-                            backgroundColor: isZebra
-                              ? "#00000017"
-                              : "#ffffff",
+                            backgroundColor: isZebra ? "#00000017" : "#ffffff",
                           }}
                           className="px-3 py-0 flex items-center gap-2 hover:brightness-95 text-[11px] transition-colors min-h-[30px] h-[30px]"
                         >
@@ -1671,83 +1661,88 @@ export default function RealtimeHistatsPage() {
                 </div>
 
                 <div className="divide-y divide-slate-100 overflow-y-auto flex-1 min-h-0 scroll-smooth">
-                    {loading && displayActiveVisitors.length === 0 ? (
-                      [1, 2, 3, 4, 5].map((i) => (
-                        <div
-                          key={i}
-                          className="px-3 py-2 space-y-1.5 animate-pulse"
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2">
-                              <div className="w-5 h-3.5 bg-slate-200 rounded" />
-                              <div className="w-24 h-3.5 bg-slate-200 rounded" />
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="w-4 h-3 bg-slate-200 rounded" />
-                              <div className="w-3 h-3 bg-slate-200 rounded" />
-                            </div>
+                  {loading && displayActiveVisitors.length === 0 ? (
+                    [1, 2, 3, 4, 5].map((i) => (
+                      <div
+                        key={i}
+                        className="px-3 py-2 space-y-1.5 animate-pulse"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-5 h-3.5 bg-slate-200 rounded" />
+                            <div className="w-24 h-3.5 bg-slate-200 rounded" />
                           </div>
-                          <div className="pl-6">
-                            <div className="h-3 w-44 bg-slate-100 rounded" />
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-3 bg-slate-200 rounded" />
+                            <div className="w-3 h-3 bg-slate-200 rounded" />
                           </div>
                         </div>
-                      ))
-                    ) : displayActiveVisitors.length === 0 ? (
-                      <div className="px-3 py-4 text-center text-slate-400 text-[11px]">
-                        No active visitors online right now
+                        <div className="pl-6">
+                          <div className="h-3 w-44 bg-slate-100 rounded" />
+                        </div>
                       </div>
-                    ) : (
-                      displayActiveVisitors
-                        .slice(0, 25)
-                        .map((vis: any, idx: number) => {
-                          const isZebra = idx % 2 === 0;
-                          return (
-                            <div
-                              key={idx}
-                              style={{
-                                backgroundColor: isZebra
-                                  ? "#00000017"
-                                  : "#ffffff",
-                              }}
-                              className="px-3 py-1.5 hover:brightness-95 text-[11px] space-y-0.5 transition-colors"
-                            >
-                              <div className="flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-bold text-[#1455bb] min-w-[20px] text-right">
-                                    {vis.pageviewsCount ??
-                                      vis.hitsCount ??
-                                      vis.count ??
-                                      1}
+                    ))
+                  ) : displayActiveVisitors.length === 0 ? (
+                    <div className="px-3 py-4 text-center text-slate-400 text-[11px]">
+                      No active visitors online right now
+                    </div>
+                  ) : (
+                    displayActiveVisitors
+                      .slice(0, 25)
+                      .map((vis: any, idx: number) => {
+                        const isZebra = idx % 2 === 0;
+                        return (
+                          <div
+                            key={idx}
+                            style={{
+                              backgroundColor: isZebra
+                                ? "#00000017"
+                                : "#ffffff",
+                            }}
+                            className="px-3 py-1.5 hover:brightness-95 text-[11px] space-y-0.5 transition-colors"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-[#1455bb] min-w-[20px] text-right">
+                                  {vis.pageviewsCount ??
+                                    vis.hitsCount ??
+                                    vis.count ??
+                                    1}
+                                </span>
+                                <div className="flex items-center gap-1.5 font-mono text-slate-800 font-semibold">
+                                  <span className="text-emerald-600 font-bold">
+                                    👤
                                   </span>
-                                  <div className="flex items-center gap-1.5 font-mono text-slate-800 font-semibold">
-                                    <span className="text-emerald-600 font-bold">
-                                      👤
-                                    </span>
-                                    <span>{formatVisitorIp(vis)}</span>
-                                  </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 text-slate-500">
-                                  <CountryFlag
-                                    code={vis.countryCode}
-                                    countryName={vis.country}
-                                    city={vis.city}
-                                  />
-                                  <span
-                                    className="inline-flex items-center"
-                                    title={`Browser: ${vis.browser || "Browser"}`}
-                                  >
-                                    {getBrowserIcon(vis.browser, vis.os)}
-                                  </span>
-                                  {getDeviceIcon(vis.deviceType, vis.os)}
+                                  <span>{formatVisitorIp(vis)}</span>
                                 </div>
                               </div>
 
-                              {/* Second line: visited path(s) */}
-                              {vis.browsingPages && vis.browsingPages.length > 1 ? (
-                                <div className="space-y-0.5 pl-6 pt-0.5">
-                                  {vis.browsingPages.map((page: any, pIdx: number) => {
-                                    const pageUrl = getFullUrl(page.url, page.path);
+                              <div className="flex items-center gap-2 text-slate-500">
+                                <CountryFlag
+                                  code={vis.countryCode}
+                                  countryName={vis.country}
+                                  city={vis.city}
+                                />
+                                <span
+                                  className="inline-flex items-center"
+                                  title={`Browser: ${vis.browser || "Browser"}`}
+                                >
+                                  {getBrowserIcon(vis.browser, vis.os)}
+                                </span>
+                                {getDeviceIcon(vis.deviceType, vis.os)}
+                              </div>
+                            </div>
+
+                            {/* Second line: visited path(s) */}
+                            {vis.browsingPages &&
+                            vis.browsingPages.length > 1 ? (
+                              <div className="space-y-0.5 pl-6 pt-0.5">
+                                {vis.browsingPages.map(
+                                  (page: any, pIdx: number) => {
+                                    const pageUrl = getFullUrl(
+                                      page.url,
+                                      page.path,
+                                    );
                                     return (
                                       <div
                                         key={pIdx}
@@ -1782,90 +1777,55 @@ export default function RealtimeHistatsPage() {
                                         )}
                                       </div>
                                     );
-                                  })}
-                                </div>
-                              ) : (
-                                <div className="flex items-center gap-1 text-[10px] text-slate-500 truncate pl-6">
-                                  <WebsiteFavicon
-                                    url={vis.pageUrl}
-                                    domain={selectedWebsite?.domain}
-                                    size={12}
-                                  />
-                                  <a
-                                    href={getFullUrl(
-                                      vis.pageUrl,
-                                      vis.currentPath,
-                                    )}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    title={getFullUrl(
-                                      vis.pageUrl,
-                                      vis.currentPath,
-                                    )}
-                                    className="truncate text-slate-600 hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
-                                  >
-                                    <span className="group-hover:hidden truncate block">
-                                      {vis.pageTitle || vis.currentPath}
-                                    </span>
-                                    <span className="hidden group-hover:block truncate font-mono text-[#1455bb]">
-                                      {getFullUrl(vis.pageUrl, vis.currentPath)}
-                                    </span>
-                                  </a>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })
-                    )}
-                  </div>
+                                  },
+                                )}
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1 text-[10px] text-slate-500 truncate pl-6">
+                                <WebsiteFavicon
+                                  url={vis.pageUrl}
+                                  domain={selectedWebsite?.domain}
+                                  size={12}
+                                />
+                                <a
+                                  href={getFullUrl(
+                                    vis.pageUrl,
+                                    vis.currentPath,
+                                  )}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  title={getFullUrl(
+                                    vis.pageUrl,
+                                    vis.currentPath,
+                                  )}
+                                  className="truncate text-slate-600 hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
+                                >
+                                  <span className="group-hover:hidden truncate block">
+                                    {vis.pageTitle || vis.currentPath}
+                                  </span>
+                                  <span className="hidden group-hover:block truncate font-mono text-[#1455bb]">
+                                    {getFullUrl(vis.pageUrl, vis.currentPath)}
+                                  </span>
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
+                  )}
                 </div>
               </div>
             </div>
+          </div>
         )}
 
         {/* Tab: Recent */}
         {activeTab === "recent" && (
           <div className="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden p-4 sm:p-5 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="space-y-1">
-                <div className="flex items-center gap-3">
-                  <h2 className="font-bold text-slate-900 text-base sm:text-lg tracking-tight">
-                    Full Recent Hits Stream (Real IP & Device Telemetry)
-                  </h2>
-                  <span className="px-3 py-0.5 rounded-full text-xs font-bold bg-white text-[#1455bb] border border-blue-200 shadow-2xs">
-                    Total Hits: {filteredHits.length}
-                  </span>
-                </div>
-                <p className="text-slate-500 text-xs">
-                  Live incoming client requests with verified client IP addresses and visitor platform
-                </p>
-              </div>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search IP, URL, title, country..."
-                  className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs text-slate-700 bg-white shadow-2xs outline-none focus:ring-1 focus:ring-[#1455bb] w-full sm:w-72"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            </div>
-
             <div className="border border-slate-200/80 rounded-xl overflow-hidden divide-y divide-slate-100/80 max-h-[550px] overflow-y-auto scroll-smooth">
               {loading && filteredHits.length === 0 ? (
                 [1, 2, 3, 4, 5, 6].map((i) => (
-                  <div
-                    key={i}
-                    className="p-3 space-y-2 animate-pulse"
-                  >
+                  <div key={i} className="p-3 space-y-2 animate-pulse">
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-3 bg-slate-200 rounded" />
@@ -1936,8 +1896,8 @@ export default function RealtimeHistatsPage() {
                               hit.city !== "-"
                                 ? hit.city
                                 : hit.country && hit.country !== "Unknown"
-                                ? hit.country
-                                : "-"}
+                                  ? hit.country
+                                  : "-"}
                             </span>
                           </div>
                         </div>
@@ -1974,11 +1934,7 @@ export default function RealtimeHistatsPage() {
                         <a
                           href={hitUrl}
                           onClick={(e) =>
-                            handleUrlClick(
-                              e,
-                              hitUrl,
-                              hit.title || hit.path,
-                            )
+                            handleUrlClick(e, hitUrl, hit.title || hit.path)
                           }
                           title={hitUrl}
                           className="text-[#1455bb] hover:underline font-bold text-xs truncate max-w-[850px]"
@@ -2016,15 +1972,6 @@ export default function RealtimeHistatsPage() {
         {/* Tab: Most Active Visitors */}
         {activeTab === "visitors" && (
           <div className="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden p-4 sm:p-5 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <h2 className="font-bold text-slate-900 text-base sm:text-lg tracking-tight">
-                Most Active Visitors (Online)
-              </h2>
-              <span className="px-3 py-0.5 rounded-full text-xs font-bold bg-white text-[#1455bb] border border-blue-200 shadow-2xs self-start sm:self-auto">
-                Total Visitors: {filteredVisitors.length}
-              </span>
-            </div>
-
             <div className="space-y-2 max-h-[550px] overflow-y-auto pr-1 scroll-smooth">
               {loading && filteredVisitors.length === 0 ? (
                 [1, 2, 3, 4, 5].map((i) => (
@@ -2089,7 +2036,9 @@ export default function RealtimeHistatsPage() {
                                 size={15}
                               />
                             </span>
-                            <span title={`Browser: ${vis.browser || "Browser"}`}>
+                            <span
+                              title={`Browser: ${vis.browser || "Browser"}`}
+                            >
                               <BrowserIcon
                                 browser={vis.browser}
                                 os={vis.os}
@@ -2104,40 +2053,51 @@ export default function RealtimeHistatsPage() {
                           {/* Line 2+: Browsing pages for this IP */}
                           {vis.browsingPages && vis.browsingPages.length > 1 ? (
                             <div className="space-y-1 pt-0.5">
-                              {vis.browsingPages.map((page: any, pIdx: number) => {
-                                const currentUrl = getFullUrl(page.url, page.path);
-                                return (
-                                  <div
-                                    key={pIdx}
-                                    className="flex items-center gap-1.5 text-xs text-slate-600 truncate max-w-[550px] lg:max-w-[720px]"
-                                  >
-                                    <span className="shrink-0 text-slate-400 font-normal">
-                                      {pIdx === 0 ? "Browsing:" : (
-                                        <span className="text-[#1455bb] font-mono font-bold pl-3">↳</span>
-                                      )}
-                                    </span>
-                                    <a
-                                      href={currentUrl}
-                                      onClick={(e) =>
-                                        handleUrlClick(
-                                          e,
-                                          currentUrl,
-                                          page.title || page.path,
-                                        )
-                                      }
-                                      title={currentUrl}
-                                      className="font-medium text-slate-700 hover:text-[#1455bb] hover:underline truncate"
+                              {vis.browsingPages.map(
+                                (page: any, pIdx: number) => {
+                                  const currentUrl = getFullUrl(
+                                    page.url,
+                                    page.path,
+                                  );
+                                  return (
+                                    <div
+                                      key={pIdx}
+                                      className="flex items-center gap-1.5 text-xs text-slate-600 truncate max-w-[550px] lg:max-w-[720px]"
                                     >
-                                      {page.title || page.path || "Untitled Page"}
-                                    </a>
-                                    {page.count > 1 && (
-                                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-50 text-[#1455bb] font-bold shrink-0">
-                                        {page.count} views
+                                      <span className="shrink-0 text-slate-400 font-normal">
+                                        {pIdx === 0 ? (
+                                          "Browsing:"
+                                        ) : (
+                                          <span className="text-[#1455bb] font-mono font-bold pl-3">
+                                            ↳
+                                          </span>
+                                        )}
                                       </span>
-                                    )}
-                                  </div>
-                                );
-                              })}
+                                      <a
+                                        href={currentUrl}
+                                        onClick={(e) =>
+                                          handleUrlClick(
+                                            e,
+                                            currentUrl,
+                                            page.title || page.path,
+                                          )
+                                        }
+                                        title={currentUrl}
+                                        className="font-medium text-slate-700 hover:text-[#1455bb] hover:underline truncate"
+                                      >
+                                        {page.title ||
+                                          page.path ||
+                                          "Untitled Page"}
+                                      </a>
+                                      {page.count > 1 && (
+                                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-50 text-[#1455bb] font-bold shrink-0">
+                                          {page.count} views
+                                        </span>
+                                      )}
+                                    </div>
+                                  );
+                                },
+                              )}
                             </div>
                           ) : (
                             <div className="flex items-center gap-1 text-slate-500 text-xs truncate max-w-[600px] lg:max-w-[750px]">
@@ -2182,8 +2142,8 @@ export default function RealtimeHistatsPage() {
                             vis.city !== "-"
                               ? vis.city
                               : vis.country && vis.country !== "Unknown"
-                              ? vis.country
-                              : "-"}
+                                ? vis.country
+                                : "-"}
                           </span>
                         </div>
                       </div>
@@ -2278,11 +2238,7 @@ export default function RealtimeHistatsPage() {
                         <div
                           className="shrink-0 cursor-pointer"
                           onClick={(e) =>
-                            handleUrlClick(
-                              e,
-                              pageUrl,
-                              page.title || page.path,
-                            )
+                            handleUrlClick(e, pageUrl, page.title || page.path)
                           }
                           title={pageUrl}
                         >
@@ -2296,11 +2252,7 @@ export default function RealtimeHistatsPage() {
                         <a
                           href={pageUrl}
                           onClick={(e) =>
-                            handleUrlClick(
-                              e,
-                              pageUrl,
-                              page.title || page.path,
-                            )
+                            handleUrlClick(e, pageUrl, page.title || page.path)
                           }
                           title={pageUrl}
                           className="truncate text-slate-800 font-normal hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
@@ -2405,10 +2357,7 @@ export default function RealtimeHistatsPage() {
                         <span>{ref.count}</span>
                       </div>
                       <div className="flex-1 flex items-center gap-1.5 truncate min-w-0">
-                        <ReferrerBrandIcon
-                          referrer={ref.referrer}
-                          size={14}
-                        />
+                        <ReferrerBrandIcon referrer={ref.referrer} size={14} />
                         {isUrl ? (
                           <a
                             href={ref.referrer}
@@ -2484,7 +2433,9 @@ export default function RealtimeHistatsPage() {
                           <div
                             key={i}
                             style={{
-                              backgroundColor: isZebra ? "#00000017" : "#ffffff",
+                              backgroundColor: isZebra
+                                ? "#00000017"
+                                : "#ffffff",
                             }}
                             className="px-3 py-0 flex items-center justify-between text-[11px] min-h-[30px] h-[30px] hover:brightness-95 transition-colors"
                           >
@@ -2498,7 +2449,8 @@ export default function RealtimeHistatsPage() {
                                 />
                               </span>
                               <span className="font-normal text-slate-800 text-[11px] truncate">
-                                {c.city}{c.country ? `, ${c.country}` : ""}
+                                {c.city}
+                                {c.country ? `, ${c.country}` : ""}
                               </span>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
@@ -2520,7 +2472,8 @@ export default function RealtimeHistatsPage() {
                 <div className="px-3 py-1.5 border-t border-slate-200/80 flex items-center justify-between text-[11px] text-slate-500 bg-slate-50/50">
                   <span>Metropolitan breakdown</span>
                   <span className="font-semibold text-slate-700">
-                    {liveCitiesData.reduce((acc, c) => acc + c.count, 0)} active in metros
+                    {liveCitiesData.reduce((acc, c) => acc + c.count, 0)} active
+                    in metros
                   </span>
                 </div>
               </div>
@@ -2553,7 +2506,8 @@ export default function RealtimeHistatsPage() {
                           <div className="h-3.5 w-12 bg-slate-200 rounded" />
                         </div>
                       ))
-                    ) : !data?.topCountries || data.topCountries.length === 0 ? (
+                    ) : !data?.topCountries ||
+                      data.topCountries.length === 0 ? (
                       <div className="py-8 text-center text-[11px] text-slate-400">
                         No country telemetry recorded yet.
                       </div>
@@ -2570,7 +2524,9 @@ export default function RealtimeHistatsPage() {
                           <div
                             key={i}
                             style={{
-                              backgroundColor: isZebra ? "#00000017" : "#ffffff",
+                              backgroundColor: isZebra
+                                ? "#00000017"
+                                : "#ffffff",
                             }}
                             className="px-3 py-0 flex items-center justify-between text-[11px] min-h-[30px] h-[30px] hover:brightness-95 transition-colors"
                           >
@@ -2601,7 +2557,9 @@ export default function RealtimeHistatsPage() {
                 <div className="px-3 py-1.5 border-t border-slate-200/80 flex items-center justify-between text-[11px] text-slate-500 bg-slate-50/50">
                   <span>International reach</span>
                   <span className="font-semibold text-slate-700">
-                    {data?.topCountries?.reduce((acc, c) => acc + c.count, 0) || 0} active globally
+                    {data?.topCountries?.reduce((acc, c) => acc + c.count, 0) ||
+                      0}{" "}
+                    active globally
                   </span>
                 </div>
               </div>
@@ -2633,7 +2591,9 @@ export default function RealtimeHistatsPage() {
               <div className="px-3 py-1.5 border-t border-slate-200/80 flex items-center justify-between text-[11px] text-slate-500 bg-slate-50/50">
                 <span>Active global live map</span>
                 <span className="font-semibold text-slate-700">
-                  {data?.topCountries?.reduce((acc, c) => acc + c.count, 0) || 0} active visitors online
+                  {data?.topCountries?.reduce((acc, c) => acc + c.count, 0) ||
+                    0}{" "}
+                  active visitors online
                 </span>
               </div>
             </div>

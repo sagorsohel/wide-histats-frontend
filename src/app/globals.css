@@ -74,8 +74,7 @@ body {
     display: flex !important;
     flex-direction: column !important;
     background-color: #ffffff !important;
-    border: 1px solid #cbd5e1 !important;
-    border-top: none !important;
+    border: none !important;
     border-bottom-left-radius: 0.75rem !important;
     border-bottom-right-radius: 0.75rem !important;
     margin: 0 auto !important;
@@ -92,7 +91,6 @@ body {
     flex-direction: column !important;
     align-items: stretch !important;
     width: 100% !important;
-    background-color: #f1f4f8 !important;
   }
 
   .desktop-sticky-sidebar {
@@ -109,7 +107,6 @@ body {
     overflow: visible !important;
     overflow-y: visible !important;
     overflow-x: visible !important;
-    background-color: #f1f4f8 !important;
     padding-bottom: 1rem !important;
   }
 
@@ -180,8 +177,7 @@ html.is-mobile-device .desktop-app-container {
   display: flex !important;
   flex-direction: column !important;
   background-color: #ffffff !important;
-  border: 1px solid #cbd5e1 !important;
-  border-top: none !important;
+  border: none !important;
   border-bottom-left-radius: 0.75rem !important;
   border-bottom-right-radius: 0.75rem !important;
   margin: 0 auto !important;
@@ -199,7 +195,6 @@ html.is-mobile-device .desktop-content-row {
   display: flex !important;
   flex-direction: column !important;
   align-items: stretch !important;
-  background-color: #f1f4f8 !important;
 }
 
 html.is-mobile-device .desktop-sticky-sidebar {
@@ -217,7 +212,6 @@ html.is-mobile-device .desktop-main-scroll {
   overflow-y: visible !important;
   overflow-x: visible !important;
   -webkit-overflow-scrolling: touch !important;
-  background-color: #f1f4f8 !important;
   padding-bottom: 1rem !important;
 }
 
@@ -278,8 +272,7 @@ html.is-mobile-device .desktop-footer {
     display: flex !important;
     flex-direction: column !important;
     background-color: #ffffff !important;
-    border: 1px solid #cbd5e1 !important;
-    border-top: none !important;
+    border: none !important;
     border-bottom-left-radius: 0.75rem !important;
     border-bottom-right-radius: 0.75rem !important;
     margin: 0 auto !important;
@@ -297,7 +290,6 @@ html.is-mobile-device .desktop-footer {
     display: flex !important;
     flex-direction: column !important;
     align-items: stretch !important;
-    background-color: #f1f4f8 !important;
   }
 
   .desktop-sticky-sidebar {
@@ -315,7 +307,6 @@ html.is-mobile-device .desktop-footer {
     overflow-y: visible !important;
     overflow-x: visible !important;
     -webkit-overflow-scrolling: touch !important;
-    background-color: #f1f4f8 !important;
     padding-bottom: 1rem !important;
   }
 

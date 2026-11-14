@@ -25,6 +25,8 @@ import {
   Eye,
   Users,
   Compass,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { WebsiteFavicon } from "@/components/common/WebsiteFavicon";
 import { useTabFocus } from "@/hooks/useTabFocus";
@@ -35,6 +37,123 @@ interface TitleItem {
   samplePath: string;
   pageviews: number;
   visitors: number;
+}
+
+interface TablePaginationProps {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  pageSize: number;
+  itemLabel: string;
+  onPageChange: (page: number) => void;
+}
+
+function TablePagination({
+  currentPage,
+  totalPages,
+  totalItems,
+  pageSize,
+  itemLabel,
+  onPageChange,
+}: TablePaginationProps) {
+  if (totalItems === 0) return null;
+
+  const startItem = (currentPage - 1) * pageSize + 1;
+  const endItem = Math.min(currentPage * pageSize, totalItems);
+
+  const getPages = () => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    if (currentPage <= 4) {
+      return [1, 2, 3, 4, 5, "...", totalPages];
+    }
+    if (currentPage >= totalPages - 3) {
+      return [
+        1,
+        "...",
+        totalPages - 4,
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      ];
+    }
+    return [
+      1,
+      "...",
+      currentPage - 1,
+      currentPage,
+      currentPage + 1,
+      "...",
+      totalPages,
+    ];
+  };
+
+  const pagesList = getPages();
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 px-3.5 py-2 bg-slate-50/90 border-t border-slate-200/80 text-[11px] text-slate-500 select-none">
+      <div className="text-[11px] text-slate-500 font-medium">
+        Showing <span className="font-bold text-slate-800">{startItem}</span> to{" "}
+        <span className="font-bold text-slate-800">{endItem}</span> of{" "}
+        <span className="font-bold text-slate-800">{formatCommas(totalItems)}</span> {itemLabel}
+      </div>
+
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage <= 1}
+          className="flex items-center gap-0.5 px-2 h-[26px] rounded-md text-[11px] font-medium transition-colors border border-slate-200/80 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-35 disabled:cursor-not-allowed shadow-2xs cursor-pointer disabled:pointer-events-none"
+        >
+          <ChevronLeft className="w-3.5 h-3.5" />
+          <span>Prev</span>
+        </button>
+
+        <div className="flex items-center gap-1">
+          {pagesList.map((p, idx) => {
+            if (p === "...") {
+              return (
+                <span
+                  key={`ellipsis-${idx}`}
+                  className="px-1 text-slate-400 font-bold text-[11px]"
+                >
+                  ...
+                </span>
+              );
+            }
+            const pageNum = Number(p);
+            const isActive = pageNum === currentPage;
+            return (
+              <button
+                key={pageNum}
+                type="button"
+                onClick={() => onPageChange(pageNum)}
+                className={`min-w-[26px] h-[26px] px-1.5 rounded-md text-[11px] font-bold transition-colors flex items-center justify-center cursor-pointer ${
+                  isActive
+                    ? "bg-[#1455bb] text-white shadow-2xs"
+                    : "bg-white text-slate-700 border border-slate-200/80 hover:bg-slate-100"
+                }`}
+              >
+                {pageNum}
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage >= totalPages}
+          className="flex items-center gap-0.5 px-2 h-[26px] rounded-md text-[11px] font-medium transition-colors border border-slate-200/80 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-35 disabled:cursor-not-allowed shadow-2xs cursor-pointer disabled:pointer-events-none"
+        >
+          <span>Next</span>
+          <ChevronRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export default function PagesReportPage() {
@@ -60,6 +179,10 @@ export default function PagesReportPage() {
     y: number;
     placeBelow?: boolean;
   } | null>(null);
+
+  const [urlPage, setUrlPage] = useState(1);
+  const [titlePage, setTitlePage] = useState(1);
+  const PAGE_SIZE = 10;
 
   // Auto-dismiss floating popup on scroll
   useEffect(() => {
@@ -184,12 +307,16 @@ export default function PagesReportPage() {
   const handleRangeChange = (r: RangeOption) => {
     setRange(r);
     setCustomWindow(null);
+    setUrlPage(1);
+    setTitlePage(1);
     hasDataRef.current = false;
     loadPageData(false, undefined, null);
   };
 
   const handleCustomRangeChange = (win: CustomDateWindow | null) => {
     setCustomWindow(win);
+    setUrlPage(1);
+    setTitlePage(1);
     hasDataRef.current = false;
     loadPageData(false, undefined, win);
   };
@@ -207,6 +334,8 @@ export default function PagesReportPage() {
       setPages([]);
       setLandingPages([]);
       setExitPages([]);
+      setUrlPage(1);
+      setTitlePage(1);
       hasDataRef.current = false;
       setLoading(true);
       loadPageData(false, selectedWebsite.id);
@@ -224,6 +353,8 @@ export default function PagesReportPage() {
         setPages([]);
         setLandingPages([]);
         setExitPages([]);
+        setUrlPage(1);
+        setTitlePage(1);
         hasDataRef.current = false;
         setLoading(true);
         loadPageData(false, newSite.id);
@@ -301,6 +432,27 @@ export default function PagesReportPage() {
     });
     return Array.from(map.values()).sort((a, b) => b.pageviews - a.pageviews);
   }, [pages, selectedWebsite?.name]);
+
+  const totalUrlPages = Math.max(1, Math.ceil(pages.length / PAGE_SIZE));
+  const paginatedPages = useMemo(() => {
+    const start = (urlPage - 1) * PAGE_SIZE;
+    return pages.slice(start, start + PAGE_SIZE);
+  }, [pages, urlPage]);
+
+  const totalTitlePages = Math.max(1, Math.ceil(byTitleList.length / PAGE_SIZE));
+  const paginatedTitles = useMemo(() => {
+    const start = (titlePage - 1) * PAGE_SIZE;
+    return byTitleList.slice(start, start + PAGE_SIZE);
+  }, [byTitleList, titlePage]);
+
+  // Clamp current page if total pages shrank
+  useEffect(() => {
+    if (urlPage > totalUrlPages) setUrlPage(1);
+  }, [urlPage, totalUrlPages]);
+
+  useEffect(() => {
+    if (titlePage > totalTitlePages) setTitlePage(1);
+  }, [titlePage, totalTitlePages]);
 
   const maxViews =
     pages.length > 0 ? Math.max(...pages.map((p) => p.pageviews)) : 1;
@@ -437,7 +589,7 @@ export default function PagesReportPage() {
 
           {loading && pages.length === 0 ? (
             <div className="border border-slate-200/80 rounded-xl overflow-hidden divide-y divide-slate-100/60">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
                 <div
                   key={i}
                   className="px-3 py-0 flex items-center justify-between min-h-[30px] h-[30px] animate-pulse"
@@ -460,7 +612,7 @@ export default function PagesReportPage() {
             </div>
           ) : (
             <div className="border border-slate-200/80 rounded-xl overflow-hidden shadow-2xs">
-              <div className="flex-1 max-h-[600px] overflow-y-auto custom-scrollbar">
+              <div className="flex-1 overflow-x-auto">
                 {/* Fixed Header */}
                 <div className="sticky top-0 z-10 flex items-center justify-between px-3 py-1.5 bg-slate-100/95 border-b border-slate-200/80 text-[11px] font-bold text-slate-600">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -475,7 +627,8 @@ export default function PagesReportPage() {
 
                 {/* Flush 30px Zebra Rows */}
                 <div>
-                  {pages.map((page, index) => {
+                  {paginatedPages.map((page, index) => {
+                    const rank = (urlPage - 1) * PAGE_SIZE + index + 1;
                     const fullLink =
                       page.url ||
                       `${cleanDomain}${page.path.startsWith("/") ? page.path : `/${page.path}`}`;
@@ -492,7 +645,7 @@ export default function PagesReportPage() {
                         {/* Left: # Rank + Favicon + URL */}
                         <div className="flex items-center gap-2 min-w-0 flex-1 pr-3">
                           <div className="w-[36px] text-right font-bold text-[#1455bb] text-[12px] shrink-0 font-sans pr-2">
-                            <span>{index + 1}</span>
+                            <span>{rank}</span>
                           </div>
                           <div className="shrink-0">
                             <WebsiteFavicon
@@ -529,6 +682,16 @@ export default function PagesReportPage() {
                   })}
                 </div>
               </div>
+
+              {/* Bottom Pagination */}
+              <TablePagination
+                currentPage={urlPage}
+                totalPages={totalUrlPages}
+                totalItems={pages.length}
+                pageSize={PAGE_SIZE}
+                itemLabel="URLs"
+                onPageChange={(p) => setUrlPage(p)}
+              />
             </div>
           )}
         </div>
@@ -556,7 +719,7 @@ export default function PagesReportPage() {
 
           {loading && byTitleList.length === 0 ? (
             <div className="border border-slate-200/80 rounded-xl overflow-hidden divide-y divide-slate-100/60">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
                 <div
                   key={i}
                   className="px-3 py-0 flex items-center justify-between min-h-[30px] h-[30px] animate-pulse"
@@ -579,7 +742,7 @@ export default function PagesReportPage() {
             </div>
           ) : (
             <div className="border border-slate-200/80 rounded-xl overflow-hidden shadow-2xs">
-              <div className="flex-1 max-h-[600px] overflow-y-auto custom-scrollbar">
+              <div className="flex-1 overflow-x-auto">
                 {/* Fixed Header */}
                 <div className="sticky top-0 z-10 flex items-center justify-between px-3 py-1.5 bg-slate-100/95 border-b border-slate-200/80 text-[11px] font-bold text-slate-600">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -594,7 +757,8 @@ export default function PagesReportPage() {
 
                 {/* Flush 30px Zebra Rows */}
                 <div>
-                  {byTitleList.map((item, index) => {
+                  {paginatedTitles.map((item, index) => {
+                    const rank = (titlePage - 1) * PAGE_SIZE + index + 1;
                     const fullLink = `${cleanDomain}${item.samplePath.startsWith("/") ? item.samplePath : `/${item.samplePath}`}`;
                     const isZebra = index % 2 !== 0;
 
@@ -609,7 +773,7 @@ export default function PagesReportPage() {
                         {/* Left: # Rank + Favicon + Title */}
                         <div className="flex items-center gap-2 min-w-0 flex-1 pr-3">
                           <div className="w-[36px] text-right font-bold text-[#1455bb] text-[12px] shrink-0 font-sans pr-2">
-                            <span>{index + 1}</span>
+                            <span>{rank}</span>
                           </div>
                           <div className="shrink-0">
                             <WebsiteFavicon
@@ -658,6 +822,16 @@ export default function PagesReportPage() {
                   })}
                 </div>
               </div>
+
+              {/* Bottom Pagination */}
+              <TablePagination
+                currentPage={titlePage}
+                totalPages={totalTitlePages}
+                totalItems={byTitleList.length}
+                pageSize={PAGE_SIZE}
+                itemLabel="Titles"
+                onPageChange={(p) => setTitlePage(p)}
+              />
             </div>
           )}
         </div>

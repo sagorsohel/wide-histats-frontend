@@ -20,10 +20,10 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
   const pathname = usePathname() || "/";
   const router = useRouter();
   const { user, initialized } = useAuth();
-  const { selectedWebsite } = useWebsite();
+  const { selectedWebsite, publicVerified } = useWebsite();
   const isLandingPage = pathname === "/";
   const isAlwaysPublic = isPublicPath(pathname);
-  const isAllowedPublicly = !user && isPagePublic(pathname, selectedWebsite);
+  const isAllowedPublicly = !user && publicVerified && isPagePublic(pathname, selectedWebsite);
   const isProtected = !isLandingPage && !isAlwaysPublic && !isAllowedPublicly;
 
   useEffect(() => {
@@ -48,35 +48,20 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
         return;
       }
 
-      // 2. For public analytics pages, wait up to 2.5s for public website context to settle
-      const isAnalyticsPage = [
-        "summary",
-        "realtime",
-        "traffic-stats",
-        "sources",
-        "pages",
-        "devices",
-        "geography",
-      ].includes(cleanPath);
-
-      if (isAnalyticsPage && !selectedWebsite) {
-        const timer = setTimeout(() => {
-          const next =
-            typeof window !== "undefined"
-              ? window.location.pathname + window.location.search
-              : pathname;
-          router.replace(`/login?next=${encodeURIComponent(next)}`);
-        }, 2500);
-        return () => clearTimeout(timer);
+      // 2. For public analytics pages: wait until server verification completes
+      if (!publicVerified) {
+        return;
       }
 
+      // 3. Once verified, if NOT allowed publicly (i.e. Private or not found),
+      // redirect immediately to login.
       const next =
         typeof window !== "undefined"
           ? window.location.pathname + window.location.search
           : pathname;
       router.replace(`/login?next=${encodeURIComponent(next)}`);
     }
-  }, [isProtected, initialized, user, router, pathname, selectedWebsite]);
+  }, [isProtected, initialized, user, router, pathname, selectedWebsite, publicVerified]);
 
   // For landing page (/): full-width layout with natural scrolling
   if (isLandingPage) {

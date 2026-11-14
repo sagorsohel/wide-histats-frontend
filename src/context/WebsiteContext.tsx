@@ -25,6 +25,8 @@ interface WebsiteContextType {
   loading: boolean;
   /** True once the first website list request has settled. */
   websitesLoaded: boolean;
+  /** True once public access verification has completed for unauthenticated visitor. */
+  publicVerified: boolean;
   setSelectedWebsite: (website: Website) => void;
   reloadWebsites: () => Promise<void>;
   createWebsite: (name: string, domain: string, isPublic?: boolean) => Promise<Website | null>;
@@ -42,6 +44,11 @@ export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const userId = user?.id ?? null;
   const { websites, selectedWebsite, loading, loaded, trackingModalWebsite, trackingModalTab } =
     useAppSelector((state) => state.website);
+  const [publicVerified, setPublicVerified] = React.useState<boolean>(Boolean(userId));
+
+  useEffect(() => {
+    if (userId) setPublicVerified(true);
+  }, [userId]);
 
   const reloadWebsites = useCallback(async () => {
     if (userId) {
@@ -49,8 +56,9 @@ export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [userId, dispatch]);
 
-  // Restore the last selected website on the client after mount (no SSR mismatch).
+  // Restore the last selected website on the client after mount (authenticated users only).
   useEffect(() => {
+    if (!userId) return;
     try {
       const raw = localStorage.getItem(SELECTED_KEY);
       const stored = raw ? (JSON.parse(raw) as Website) : null;
@@ -58,7 +66,7 @@ export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ child
     } catch {
       // ignore corrupt storage
     }
-  }, [dispatch]);
+  }, [dispatch, userId]);
 
   // Persist the selection (side effect lives here, not in the reducer).
   const persistReadyRef = useRef(false);
@@ -103,15 +111,24 @@ export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ child
           dispatch(setWebsites([res.data]));
           dispatch(setSelectedWebsiteAction(res.data));
         } else {
-          // Site not found or private
+          // Site not found or private - wipe from memory and storage
           dispatch(setWebsites([]));
           dispatch(setSelectedWebsiteAction(null));
+          try {
+            localStorage.removeItem(SELECTED_KEY);
+          } catch {}
         }
       })
       .catch(() => {
-        // Network error or endpoint failure
+        // Network error, 403 Forbidden, or private access denied
         dispatch(setWebsites([]));
         dispatch(setSelectedWebsiteAction(null));
+        try {
+          localStorage.removeItem(SELECTED_KEY);
+        } catch {}
+      })
+      .finally(() => {
+        setPublicVerified(true);
       });
   }, [userId, dispatch]);
 
@@ -176,6 +193,7 @@ export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ child
         selectedWebsite,
         loading,
         websitesLoaded: loaded,
+        publicVerified,
         setSelectedWebsite,
         reloadWebsites,
         createWebsite,

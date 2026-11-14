@@ -117,7 +117,6 @@ export default function RealtimeHistatsPage() {
   }, []);
 
   const [loading, setLoading] = useState(false);
-  const [realtimeRefMode, setRealtimeRefMode] = useState<"main" | "full">("main");
   const [activeTab, setActiveTab] = useState<TabType>("summary");
   const [isPaused, setIsPaused] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -679,18 +678,8 @@ export default function RealtimeHistatsPage() {
         cleanKey = "direct";
         displayRef = "direct";
       } else {
-        if (realtimeRefMode === "main") {
-          let clean = rawRef.replace(/^https?:\/\//i, "").replace(/^www\./i, "");
-          const slashIdx = clean.indexOf("/");
-          if (slashIdx !== -1) {
-            clean = clean.slice(0, slashIdx);
-          }
-          cleanKey = clean.toLowerCase().trim();
-          displayRef = cleanKey || "direct";
-        } else {
-          cleanKey = rawRef.trim().toLowerCase();
-          displayRef = rawRef.trim();
-        }
+        cleanKey = rawRef.trim().toLowerCase();
+        displayRef = rawRef.trim();
       }
 
       const existing = aggregatedMap.get(cleanKey);
@@ -732,7 +721,7 @@ export default function RealtimeHistatsPage() {
     }
 
     return referrers;
-  }, [data?.topReferrers, onlineCount, realtimeRefMode]);
+  }, [data?.topReferrers, onlineCount]);
 
   // 100% Real-time active visitors - Sorted by highest activity (pageviews) first (#1), then latest timestamp & domain-isolated
   const displayActiveVisitors = useMemo(() => {
@@ -1408,30 +1397,6 @@ export default function RealtimeHistatsPage() {
                     <span className="font-bold text-slate-800 text-[12px] tracking-tight">
                       Popular referrer
                     </span>
-                    <div className="inline-flex items-center rounded-md bg-slate-200/80 p-0.5 text-[10px] font-bold">
-                      <button
-                        type="button"
-                        onClick={() => setRealtimeRefMode("main")}
-                        className={`px-1.5 py-0.5 rounded transition-all ${
-                          realtimeRefMode === "main"
-                            ? "bg-white text-[#1058D1] shadow-2xs font-extrabold"
-                            : "text-slate-500 hover:text-slate-800"
-                        }`}
-                      >
-                        Main
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setRealtimeRefMode("full")}
-                        className={`px-1.5 py-0.5 rounded transition-all ${
-                          realtimeRefMode === "full"
-                            ? "bg-white text-[#1058D1] shadow-2xs font-extrabold"
-                            : "text-slate-500 hover:text-slate-800"
-                        }`}
-                      >
-                        Full
-                      </button>
-                    </div>
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-[#1455bb] border border-slate-300/70 shadow-2xs">
                       Total: {displayReferrers.length}
                     </span>
@@ -2148,30 +2113,6 @@ export default function RealtimeHistatsPage() {
                 <h3 className="font-bold text-slate-900 text-sm tracking-tight">
                   Popular Referring Sources
                 </h3>
-                <div className="inline-flex items-center rounded-lg bg-slate-200/80 p-0.5 text-xs font-bold">
-                  <button
-                    type="button"
-                    onClick={() => setRealtimeRefMode("main")}
-                    className={`px-2.5 py-0.5 rounded-md transition-all ${
-                      realtimeRefMode === "main"
-                        ? "bg-white text-[#1058D1] shadow-2xs font-extrabold"
-                        : "text-slate-600 hover:text-slate-900"
-                    }`}
-                  >
-                    Main Domains
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRealtimeRefMode("full")}
-                    className={`px-2.5 py-0.5 rounded-md transition-all ${
-                      realtimeRefMode === "full"
-                        ? "bg-white text-[#1058D1] shadow-2xs font-extrabold"
-                        : "text-slate-600 hover:text-slate-900"
-                    }`}
-                  >
-                    Full URLs
-                  </button>
-                </div>
               </div>
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-white text-[#1455bb] border border-slate-300/70 shadow-2xs">
                 Total Referrers: {displayReferrers.length}

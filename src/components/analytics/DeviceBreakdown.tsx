@@ -1,9 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { DeviceStat, BrowserStat } from "@/types/analytics";
 import { Monitor, Smartphone, Tablet } from "lucide-react";
 import { BrowserIcon } from "@/components/common/BrandIcons";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 interface DeviceBreakdownProps {
   devices: DeviceStat[];
@@ -32,6 +39,28 @@ export const DeviceBreakdown: React.FC<DeviceBreakdownProps> = ({
   const mobilePct = Math.round((mobileCount / totalSessions) * 100);
   const tabletPct = Math.round((tabletCount / totalSessions) * 100);
 
+  // Device distribution pie chart data
+  const chartData = useMemo(() => [
+    {
+      name: "Mobile",
+      value: mobileCount || (totalSessions > 0 ? totalSessions : 1),
+      pct: mobilePct,
+      color: "#10B981", // Emerald matching Image 3 mobile highlight
+    },
+    {
+      name: "Desktop",
+      value: desktopCount || 0,
+      pct: desktopPct,
+      color: "#1058D1", // Brand blue
+    },
+    ...(tabletCount > 0 ? [{
+      name: "Tablet",
+      value: tabletCount,
+      pct: tabletPct,
+      color: "#A855F7", // Purple matching Tablet card
+    }] : []),
+  ], [mobileCount, mobilePct, desktopCount, desktopPct, tabletCount, tabletPct, totalSessions]);
+
   return (
     <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-3.5 sm:p-4 flex flex-col justify-between transition-all duration-200">
       {/* Header */}
@@ -50,48 +79,114 @@ export const DeviceBreakdown: React.FC<DeviceBreakdownProps> = ({
           </div>
         </div>
 
-        {/* Top 3 Device Cards: Desktop, Mobile, Tablet */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-2.5 mb-3">
-          {/* Desktop */}
-          <div className="p-2 sm:p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col items-center text-center space-y-0.5 transition-all">
-            <Monitor className="w-3.5 h-3.5 text-slate-500" />
-            <span className="text-[10px] font-semibold text-slate-500 block leading-tight">
-              Desktop
-            </span>
-            <span className="text-base sm:text-lg font-black text-slate-900 tracking-tight block tabular-nums leading-tight">
-              {desktopPct}%
-            </span>
-            <span className="text-[10px] text-slate-400 font-medium block tabular-nums leading-tight">
-              {desktopCount.toLocaleString()} views
-            </span>
+        {/* Top Section: Integrated Donut Pie Chart + 3 Device Cards */}
+        <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 mb-3">
+          {/* Donut Pie Chart with dominant percentage in center */}
+          <div className="relative w-24 h-24 sm:w-26 sm:h-26 shrink-0 flex items-center justify-center">
+            {loading ? (
+              <div className="w-20 h-20 rounded-full border-2 border-slate-100 animate-pulse" />
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const item = payload[0].payload;
+                        return (
+                          <div className="bg-white/95 backdrop-blur-xs px-2.5 py-1.5 rounded-lg border border-slate-200 shadow-md text-[11px] font-sans">
+                            <div className="font-bold text-slate-800 flex items-center gap-1.5 pb-0.5 border-b border-slate-100">
+                              <span
+                                className="w-2 h-2 rounded-full inline-block"
+                                style={{ backgroundColor: item.color }}
+                              />
+                              <span>{item.name}</span>
+                            </div>
+                            <div className="flex items-center justify-between gap-3 pt-1 text-slate-600">
+                              <span>Views:</span>
+                              <span className="font-bold font-mono text-slate-900">
+                                {item.value?.toLocaleString()} ({item.pct}%)
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Pie
+                    data={chartData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={48}
+                    innerRadius={28}
+                    paddingAngle={3}
+                    stroke="#ffffff"
+                    strokeWidth={2}
+                  >
+                    {chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+
+            {/* Inner Center Label */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+              <span className="text-[8px] font-bold uppercase tracking-wider text-slate-400">
+                {mobilePct >= desktopPct ? "MOBILE" : "DESKTOP"}
+              </span>
+              <span className="text-sm font-black text-slate-900 tracking-tight tabular-nums">
+                {mobilePct >= desktopPct ? `${mobilePct}%` : `${desktopPct}%`}
+              </span>
+            </div>
           </div>
 
-          {/* Mobile (Prominent / Active) */}
-          <div className="p-2 sm:p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80 flex flex-col items-center text-center space-y-0.5 transition-all">
-            <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
-            <span className="text-[10px] font-bold text-emerald-700 block leading-tight">
-              Mobile
-            </span>
-            <span className="text-base sm:text-lg font-black text-emerald-600 tracking-tight block tabular-nums leading-tight">
-              {mobilePct}%
-            </span>
-            <span className="text-[10px] text-emerald-700/80 font-semibold block tabular-nums leading-tight">
-              {mobileCount.toLocaleString()} views
-            </span>
-          </div>
+          {/* Right: The 3 Device Cards (Desktop, Mobile, Tablet) exactly matching Image 3 */}
+          <div className="grid grid-cols-3 gap-2 flex-1 w-full">
+            {/* Desktop */}
+            <div className="p-2 sm:p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col items-center text-center space-y-0.5 transition-all">
+              <Monitor className="w-3.5 h-3.5 text-slate-500" />
+              <span className="text-[10px] font-semibold text-slate-500 block leading-tight">
+                Desktop
+              </span>
+              <span className="text-base sm:text-lg font-black text-slate-900 tracking-tight block tabular-nums leading-tight">
+                {desktopPct}%
+              </span>
+              <span className="text-[10px] text-slate-400 font-medium block tabular-nums leading-tight">
+                {desktopCount.toLocaleString()} views
+              </span>
+            </div>
 
-          {/* Tablet */}
-          <div className="p-2 sm:p-2.5 rounded-xl bg-purple-50/50 border border-purple-200/70 flex flex-col items-center text-center space-y-0.5 transition-all">
-            <Tablet className="w-3.5 h-3.5 text-purple-600" />
-            <span className="text-[10px] font-semibold text-purple-700 block leading-tight">
-              Tablet
-            </span>
-            <span className="text-base sm:text-lg font-black text-slate-700 tracking-tight block tabular-nums leading-tight">
-              {tabletPct}%
-            </span>
-            <span className="text-[10px] text-slate-400 font-medium block tabular-nums leading-tight">
-              {tabletCount.toLocaleString()} visits
-            </span>
+            {/* Mobile (Prominent / Active) */}
+            <div className="p-2 sm:p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80 flex flex-col items-center text-center space-y-0.5 transition-all">
+              <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="text-[10px] font-bold text-emerald-700 block leading-tight">
+                Mobile
+              </span>
+              <span className="text-base sm:text-lg font-black text-emerald-600 tracking-tight block tabular-nums leading-tight">
+                {mobilePct}%
+              </span>
+              <span className="text-[10px] text-emerald-700/80 font-semibold block tabular-nums leading-tight">
+                {mobileCount.toLocaleString()} views
+              </span>
+            </div>
+
+            {/* Tablet */}
+            <div className="p-2 sm:p-2.5 rounded-xl bg-purple-50/50 border border-purple-200/70 flex flex-col items-center text-center space-y-0.5 transition-all">
+              <Tablet className="w-3.5 h-3.5 text-purple-600" />
+              <span className="text-[10px] font-semibold text-purple-700 block leading-tight">
+                Tablet
+              </span>
+              <span className="text-base sm:text-lg font-black text-slate-700 tracking-tight block tabular-nums leading-tight">
+                {tabletPct}%
+              </span>
+              <span className="text-[10px] text-slate-400 font-medium block tabular-nums leading-tight">
+                {tabletCount.toLocaleString()} visits
+              </span>
+            </div>
           </div>
         </div>
 

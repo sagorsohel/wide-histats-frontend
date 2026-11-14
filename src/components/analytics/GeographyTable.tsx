@@ -2,7 +2,7 @@
 
 import React from "react";
 import { CountryStat } from "@/types/analytics";
-import { Globe2, ArrowRight } from "lucide-react";
+import { Globe2 } from "lucide-react";
 import { CountryFlag } from "@/components/common/CountryFlag";
 import Link from "next/link";
 import { formatCommas, getSite7DigitId } from "@/lib/utils";
@@ -10,29 +10,30 @@ import { useWebsite } from "@/context/WebsiteContext";
 
 interface GeographyTableProps {
   countries: CountryStat[];
+  totalCountries?: number;
   loading?: boolean;
 }
 
 export const GeographyTable: React.FC<GeographyTableProps> = ({
   countries,
+  totalCountries,
   loading = false,
 }) => {
   const { selectedWebsite } = useWebsite();
-  // Take top 7 to match Top Cities height perfectly
-  const displayCountries = countries.slice(0, 7);
-  const totalVisitors =
-    countries.reduce((sum, c) => sum + c.visitors, 0) || 1;
+  const displayCountries = countries.slice(0, 15);
 
   const site7Digit = getSite7DigitId(selectedWebsite);
   const geographyHref = site7Digit
     ? `/geography/?id=${site7Digit}`
     : "/geography";
 
+  const countBadge = totalCountries ?? countries.length;
+
   return (
     <div className="h-full flex flex-col justify-between bg-white rounded-2xl border border-slate-200/90 shadow-xs p-3.5 sm:p-4 transition-all duration-200">
-      {/* Top Header */}
       <div>
-        <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-100 gap-2.5">
+        {/* Top Header */}
+        <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-100 gap-2.5">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#1455bb] border border-blue-100 flex items-center justify-center shrink-0 shadow-2xs">
               <Globe2 className="w-4 h-4" />
@@ -49,32 +50,35 @@ export const GeographyTable: React.FC<GeographyTableProps> = ({
 
           <Link
             href={geographyHref}
-            className="text-[11px] font-bold text-[#1455bb] hover:text-blue-700 flex items-center gap-1 group transition-colors px-2.5 py-0.5 rounded-full bg-blue-50 border border-blue-200/70 shadow-2xs shrink-0 whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#eef2ff] text-blue-700 border border-blue-200/60 hover:bg-blue-100/80 transition-colors shadow-2xs shrink-0 whitespace-nowrap"
+            title="View all country telemetry"
           >
-            <span>View all</span>
-            <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+            <span>Total Countries: {formatCommas(countBadge)}</span>
           </Link>
+        </div>
+
+        {/* Fixed Column Header */}
+        <div className="flex items-center justify-between px-3.5 py-1 mb-1.5 text-xs font-bold text-slate-700 select-none">
+          <span>Countries</span>
+          <span>Visitors</span>
         </div>
 
         {/* Content List */}
         {loading ? (
-          <div className="space-y-1.5">
-            {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+          <div className="space-y-1">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <div
                 key={i}
-                className="rounded-xl border border-slate-100/80 bg-white/50 px-2.5 py-1.5 flex items-center justify-between animate-pulse"
+                className={`rounded-xl px-3.5 py-2.5 flex items-center justify-between animate-pulse ${
+                  i % 2 === 1 ? "bg-white" : "bg-[#E8E8E8]"
+                }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-full bg-slate-200 shrink-0" />
-                  <div className="space-y-1">
-                    <div className="h-3 w-20 bg-slate-200 rounded" />
-                    <div className="h-2.5 w-14 bg-slate-100 rounded" />
-                  </div>
+                  <div className="w-5 h-3.5 rounded bg-slate-200 shrink-0" />
+                  <div className="h-3 w-24 bg-slate-200 rounded" />
                 </div>
-                <div className="space-y-1 text-right">
-                  <div className="h-3 w-10 bg-slate-200 rounded ml-auto" />
-                  <div className="h-2.5 w-8 bg-slate-100 rounded ml-auto" />
-                </div>
+                <div className="h-3 w-10 bg-slate-200 rounded ml-auto" />
               </div>
             ))}
           </div>
@@ -83,61 +87,38 @@ export const GeographyTable: React.FC<GeographyTableProps> = ({
             No location data recorded yet.
           </div>
         ) : (
-          <div className="space-y-1.5">
+          <div className="space-y-1 overflow-y-auto max-h-[380px] pr-1">
             {displayCountries.map((item, index) => {
-              const percentage = Math.round((item.visitors / totalVisitors) * 100);
+              const isEven = index % 2 === 0;
 
               return (
                 <div
                   key={index}
-                  className="rounded-xl border border-slate-100/90 bg-white/70 hover:bg-white hover:border-slate-200/90 px-2.5 py-1.5 flex items-center justify-between transition-all duration-150 shadow-[0_1px_2px_rgba(0,0,0,0.02)] group"
+                  className={`rounded-xl px-3.5 py-2 flex items-center justify-between transition-colors ${
+                    isEven ? "bg-white" : "bg-[#E8E8E8]"
+                  }`}
                 >
-                  {/* Left: Country Flag + Country Name + Percentage */}
+                  {/* Left: Country Flag + Country Name */}
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-7 h-7 rounded-full bg-slate-50 border border-slate-200/60 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs group-hover:scale-105 transition-transform">
-                      <CountryFlag
-                        code={item.country_code}
-                        countryName={item.country}
-                        size="sm"
-                      />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <h4 className="font-bold text-slate-900 text-xs sm:text-[13px] leading-tight truncate group-hover:text-blue-600 transition-colors">
-                          {item.country}
-                        </h4>
-                        <span className="text-[10px] text-slate-400 uppercase font-mono">
-                          {item.country_code}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-slate-500 font-medium leading-tight truncate">
-                        {percentage}% of total audience
-                      </p>
-                    </div>
+                    <CountryFlag
+                      code={item.country_code}
+                      countryName={item.country}
+                      size="sm"
+                    />
+                    <span className="font-bold text-slate-900 text-xs sm:text-[13px] leading-tight truncate">
+                      {item.country}
+                    </span>
                   </div>
 
-                  {/* Right: Visitor Count + 'visitors' */}
-                  <div className="text-right shrink-0">
-                    <span className="font-extrabold text-slate-900 text-xs sm:text-sm tabular-nums block leading-tight">
-                      {formatCommas(item.visitors)}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-medium block leading-tight">
-                      visitors
-                    </span>
-                  </div>
+                  {/* Right: Visitor Count */}
+                  <span className="font-bold text-slate-900 text-xs sm:text-[13px] tabular-nums shrink-0">
+                    {formatCommas(item.visitors)}
+                  </span>
                 </div>
               );
             })}
           </div>
         )}
-      </div>
-
-      {/* Footer Info */}
-      <div className="mt-2.5 pt-2 border-t border-slate-100/80 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400">
-        <span>Global territory distribution</span>
-        <span className="font-semibold text-slate-500">
-          {formatCommas(totalVisitors)} international visitors
-        </span>
       </div>
     </div>
   );

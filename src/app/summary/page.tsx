@@ -65,6 +65,8 @@ export default function SummaryPage() {
   const [sources, setSources] = useState<SourceStat[]>([]);
   const [countries, setCountries] = useState<CountryStat[]>([]);
   const [cities, setCities] = useState<CityStat[]>([]);
+  const [totalCountries, setTotalCountries] = useState<number | undefined>(undefined);
+  const [totalCities, setTotalCities] = useState<number | undefined>(undefined);
   const [devices, setDevices] = useState<DeviceStat[]>([]);
   const [browsers, setBrowsers] = useState<BrowserStat[]>([]);
   const [operatingSystems, setOperatingSystems] = useState<OsStat[]>([]);
@@ -186,8 +188,8 @@ export default function SummaryPage() {
           api.get<{ sources: SourceStat[]; referrers?: ReferrerStat[] }>(
             `/api/v1/analytics/sources?${q}&limit=12`,
           ),
-          api.get<{ countries: CountryStat[]; cities: CityStat[] }>(
-            `/api/v1/analytics/geography?${q}&limit=8`,
+          api.get<{ countries: CountryStat[]; cities: CityStat[]; totalCountries?: number; totalCities?: number }>(
+            `/api/v1/analytics/geography?${q}&limit=15`,
           ),
           api.get<DeviceStat[]>(`/api/v1/analytics/devices?${q}`),
           api.get<BrowserStat[]>(`/api/v1/analytics/browsers?${q}`),
@@ -214,10 +216,12 @@ export default function SummaryPage() {
           setSources(sourcesRes.data.sources);
         if (sourcesRes.success && sourcesRes.data?.referrers)
           setReferrers(sourcesRes.data.referrers);
-        if (geoRes.success && geoRes.data?.countries)
-          setCountries(geoRes.data.countries);
-        if (geoRes.success && geoRes.data?.cities)
-          setCities(geoRes.data.cities);
+        if (geoRes.success && geoRes.data) {
+          if (geoRes.data.countries) setCountries(geoRes.data.countries);
+          if (geoRes.data.cities) setCities(geoRes.data.cities);
+          if (geoRes.data.totalCountries !== undefined) setTotalCountries(geoRes.data.totalCountries);
+          if (geoRes.data.totalCities !== undefined) setTotalCities(geoRes.data.totalCities);
+        }
         if (devicesRes.success && devicesRes.data) setDevices(devicesRes.data);
         if (browsersRes.success && browsersRes.data)
           setBrowsers(browsersRes.data);
@@ -576,11 +580,19 @@ export default function SummaryPage() {
       </div>
 
       {/* ============================================================ */}
-      {/* SECTION 4: Geography (Visitors & Cities) (Full Width 2-Col)  */}
+      {/* SECTION 4: Geography (Top Cities & Visitors by Country)      */}
       {/* ============================================================ */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 items-stretch w-full">
-        <GeographyTable countries={countries} loading={loading} />
-        <TopCitiesTable cities={cities} loading={loading} />
+        <TopCitiesTable
+          cities={cities}
+          totalCities={totalCities}
+          loading={loading}
+        />
+        <GeographyTable
+          countries={countries}
+          totalCountries={totalCountries}
+          loading={loading}
+        />
       </div>
 
       {/* ============================================================ */}

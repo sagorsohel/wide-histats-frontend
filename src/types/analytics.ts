@@ -117,6 +117,8 @@ export interface CityStat {
 export interface GeographyData {
   countries: CountryStat[];
   cities: CityStat[];
+  totalCountries?: number;
+  totalCities?: number;
 }
 
 export interface SourceStat {

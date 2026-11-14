@@ -14,43 +14,7 @@ export const SourcesChart: React.FC<SourcesChartProps> = ({
   sources,
   loading = false,
 }) => {
-  const [mode, setMode] = React.useState<"main" | "full">("main");
-
-  const displaySources = React.useMemo(() => {
-    if (mode === "full") {
-      return sources;
-    }
-    // Aggregate by clean domain for "main" view
-    const domainMap = new Map<string, SourceStat>();
-    for (const s of sources) {
-      let dom = "";
-      const raw = s.source || "";
-      if (!raw || raw.toLowerCase() === "direct" || raw.toLowerCase() === "none") {
-        dom = "direct";
-      } else {
-        try {
-          const u = raw.startsWith("http") ? new URL(raw) : new URL(`https://${raw}`);
-          dom = u.hostname.replace(/^www\./i, "").toLowerCase();
-        } catch {
-          dom = raw.replace(/^https?:\/\//i, "").replace(/^www\./i, "").split("/")[0].toLowerCase();
-        }
-      }
-      dom = dom || "direct";
-      const existing = domainMap.get(dom);
-      if (existing) {
-        existing.sessions += s.sessions;
-        existing.visitors += s.visitors;
-      } else {
-        domainMap.set(dom, {
-          ...s,
-          source: dom,
-          fullUrl: dom === "direct" ? "direct" : `https://${dom}`,
-        });
-      }
-    }
-    return Array.from(domainMap.values()).sort((a, b) => b.sessions - a.sessions);
-  }, [sources, mode]);
-
+  const displaySources = sources;
   const totalSessions = displaySources.reduce((sum, s) => sum + s.sessions, 0) || 1;
 
   return (
@@ -70,32 +34,6 @@ export const SourcesChart: React.FC<SourcesChartProps> = ({
                 Channels and referrers driving visitors
               </p>
             </div>
-          </div>
-
-          {/* Toggle: Main vs Full */}
-          <div className="inline-flex items-center rounded-lg bg-slate-100 p-0.5 text-[10px] font-bold shrink-0">
-            <button
-              type="button"
-              onClick={() => setMode("main")}
-              className={`px-2 py-0.5 rounded-md transition-all ${
-                mode === "main"
-                  ? "bg-white text-[#1058D1] shadow-2xs font-extrabold"
-                  : "text-slate-500 hover:text-slate-800"
-              }`}
-            >
-              Main
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode("full")}
-              className={`px-2 py-0.5 rounded-md transition-all ${
-                mode === "full"
-                  ? "bg-white text-[#1058D1] shadow-2xs font-extrabold"
-                  : "text-slate-500 hover:text-slate-800"
-              }`}
-            >
-              Full
-            </button>
           </div>
         </div>
 
@@ -122,10 +60,10 @@ export const SourcesChart: React.FC<SourcesChartProps> = ({
           <div className="space-y-1.5">
             {displaySources.slice(0, 6).map((item, index) => {
               const percentage = Math.round((item.sessions / totalSessions) * 100);
-              const rawUrl = mode === "main" ? item.source : item.fullUrl || item.url || item.source;
+              const rawUrl = item.fullUrl || item.url || item.source;
               const isDirect = !rawUrl || rawUrl.toLowerCase() === "direct" || rawUrl.toLowerCase() === "none";
               const fullUrl = isDirect ? "direct" : rawUrl.startsWith("http") ? rawUrl : `https://${rawUrl}`;
-              const displayUrl = isDirect ? "direct" : mode === "main" ? item.source : fullUrl;
+              const displayUrl = fullUrl;
 
               return (
                 <div

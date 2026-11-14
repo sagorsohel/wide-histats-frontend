@@ -93,7 +93,7 @@ export const Header: React.FC = () => {
       label: "Overview",
       href: "/summary",
       icon: LayoutGrid,
-      matches: ["/summary", "/summery", "/traffic-stats", "/traffic"],
+      matches: ["/summary", "/summery"],
     },
     {
       id: "realtime",
@@ -102,6 +102,13 @@ export const Header: React.FC = () => {
       icon: Activity,
       matches: ["/realtime"],
       isLive: true,
+    },
+    {
+      id: "traffic-stats",
+      label: "Traffic Stats",
+      href: "/traffic-stats",
+      icon: BarChart2,
+      matches: ["/traffic-stats", "/traffic"],
     },
     {
       id: "sources",
@@ -146,7 +153,7 @@ export const Header: React.FC = () => {
       {/* ROW 1: Clean White Header Bar                                */}
       {/* Logo | Website Dropdown | Tracking Active | + Add Website | User */}
       {/* ============================================================ */}
-      <div className="h-14 px-4 flex items-center justify-between border-b border-slate-200/80 bg-white">
+      <div className="h-14 px-4 flex items-center justify-between border-b border-slate-200/80 bg-white shadow-[inset_1px_0px_20px_8px_#a1a1aabf]">
         {/* Left Side: Logo + Divider + Dropdown */}
         <div className="flex items-center gap-3 min-w-0">
           {/* Logo & Brand */}
@@ -354,7 +361,7 @@ export const Header: React.FC = () => {
       {/* 8 Tabs: Overview Summary | Traffic Stats | Users Online...  */}
       {/* ============================================================ */}
       {!isAuthPage && (
-        <nav className="h-11 bg-[#1058d1] px-4 flex items-center gap-2 sm:gap-3 overflow-x-auto whitespace-nowrap scrollbar-none shadow-xs">
+        <nav className="h-11 bg-[#1058d1] px-4 flex items-center gap-2 sm:gap-3 overflow-x-auto whitespace-nowrap scrollbar-none shadow-[inset_1px_0px_20px_8px_rgb(1_45_121)]">
           {navTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = tab.matches.some(

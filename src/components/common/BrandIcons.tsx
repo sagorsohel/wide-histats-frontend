@@ -521,6 +521,9 @@ export const BrowserIcon: React.FC<{
   const b = (browser || "").toLowerCase().trim();
   const o = (os || "").toLowerCase().trim();
 
+  if (b.includes("gsa") || b.includes("google search app")) {
+    return <GoogleIcon size={size} className={className} />;
+  }
   if (b.includes("chrome") || b.includes("chromium") || b.includes("crios")) {
     return <ChromeIcon size={size} className={className} />;
   }

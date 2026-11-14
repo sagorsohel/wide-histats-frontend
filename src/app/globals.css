@@ -78,12 +78,12 @@
   }
 
   .desktop-footer {
-    position: sticky !important;
-    bottom: 0 !important;
+    position: relative !important;
+    bottom: auto !important;
     height: 2.5rem !important;
     width: 100% !important;
     flex-shrink: 0 !important;
-    z-index: 50 !important;
+    margin-top: auto !important;
   }
 
   .realtime-recent-table {
@@ -116,10 +116,10 @@ html.is-mobile-device .desktop-app-container {
   width: 1140px !important;
   min-width: 1140px !important;
   max-width: 1140px !important;
-  height: calc(6.25rem + 1080px + 2.5rem) !important;
-  min-height: calc(6.25rem + 1080px + 2.5rem) !important;
-  max-height: calc(6.25rem + 1080px + 2.5rem) !important;
-  overflow: hidden !important;
+  height: auto !important;
+  min-height: 100vh !important;
+  max-height: none !important;
+  overflow: visible !important;
   display: flex !important;
   flex-direction: column !important;
   border: none !important;
@@ -129,12 +129,12 @@ html.is-mobile-device .desktop-app-container {
 }
 
 html.is-mobile-device .desktop-content-row {
-  flex: none !important;
+  flex: 1 1 auto !important;
   width: 1140px !important;
-  height: 1080px !important;
-  min-height: 1080px !important;
-  max-height: 1080px !important;
-  overflow: hidden !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: stretch !important;
@@ -148,24 +148,23 @@ html.is-mobile-device .desktop-main-scroll {
   flex: 1 1 auto !important;
   min-width: 0 !important;
   width: 100% !important;
-  height: 1080px !important;
-  min-height: 1080px !important;
-  max-height: 1080px !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  overscroll-behavior-y: contain !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  overflow-y: visible !important;
+  overflow-x: visible !important;
   -webkit-overflow-scrolling: touch !important;
   padding-bottom: 1.5rem !important;
 }
 
 html.is-mobile-device .desktop-footer {
   position: relative !important;
-  bottom: 0 !important;
+  bottom: auto !important;
   height: 2.5rem !important;
   width: 100% !important;
   flex-shrink: 0 !important;
-  z-index: 30 !important;
-  margin-top: 0 !important;
+  margin-top: auto !important;
 }
 
 @media screen and (hover: none) and (pointer: coarse) {
@@ -188,10 +187,10 @@ html.is-mobile-device .desktop-footer {
     width: 1140px !important;
     min-width: 1140px !important;
     max-width: 1140px !important;
-    height: calc(6.25rem + 1080px + 2.5rem) !important;
-    min-height: calc(6.25rem + 1080px + 2.5rem) !important;
-    max-height: calc(6.25rem + 1080px + 2.5rem) !important;
-    overflow: hidden !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    max-height: none !important;
+    overflow: visible !important;
     display: flex !important;
     flex-direction: column !important;
     border: none !important;
@@ -201,12 +200,12 @@ html.is-mobile-device .desktop-footer {
   }
 
   .desktop-content-row {
-    flex: none !important;
+    flex: 1 1 auto !important;
     width: 1140px !important;
-    height: 1080px !important;
-    min-height: 1080px !important;
-    max-height: 1080px !important;
-    overflow: hidden !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: stretch !important;
@@ -220,24 +219,23 @@ html.is-mobile-device .desktop-footer {
     flex: 1 1 auto !important;
     min-width: 0 !important;
     width: 100% !important;
-    height: 1080px !important;
-    min-height: 1080px !important;
-    max-height: 1080px !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    overscroll-behavior-y: contain !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    overflow-y: visible !important;
+    overflow-x: visible !important;
     -webkit-overflow-scrolling: touch !important;
     padding-bottom: 1.5rem !important;
   }
 
   .desktop-footer {
     position: relative !important;
-    bottom: 0 !important;
+    bottom: auto !important;
     height: 2.5rem !important;
     width: 100% !important;
     flex-shrink: 0 !important;
-    z-index: 30 !important;
-    margin-top: 0 !important;
+    margin-top: auto !important;
   }
 
   .realtime-recent-table {

@@ -1186,7 +1186,7 @@ export default function RealtimeHistatsPage() {
   return (
     <div className="w-full mx-auto text-[12px] font-sans antialiased bg-[#F1F5F9] border-none shadow-sm rounded-2xl overflow-hidden select-text">
       {/* 1. Top Website Banner */}
-      <div className="bg-gradient-to-r from-[#1455bb] via-[#124cb0] to-[#0f3f94] text-white px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-blue-400/20">
+      <div className="bg-[#5973a0] text-white px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-blue-400/20">
         <div className="flex items-center gap-2">
           <a
             href={mounted && baseWebsiteUrl ? baseWebsiteUrl : "#"}
@@ -1210,7 +1210,7 @@ export default function RealtimeHistatsPage() {
       </div>
 
       {/* 2. Main Blue Stats Banner (Users Online Right Now & Today Totals) */}
-      <div className="bg-gradient-to-r from-[#1455bb] via-[#165dce] to-[#124cb0] text-white px-4 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-blue-900/30 shadow-inner">
+      <div className="bg-[#263B55] text-white px-4 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-blue-900/30 shadow-inner">
         {/* Left: Active Users Online Right Now with Live Pulsing Indicator */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2.5">
@@ -1317,7 +1317,7 @@ export default function RealtimeHistatsPage() {
       </div>
 
       {/* 3. Sub-Navigation Tabs Bar */}
-      <div className="bg-[#0f3f94] px-3 py-1.5 flex items-center gap-1.5 border-b border-blue-900/40 overflow-x-auto whitespace-nowrap scrollbar-none text-[11px] font-bold">
+      <div className="bg-[#5973A0] px-3 py-1.5 flex items-center gap-1.5 border-b border-blue-900/40 overflow-x-auto whitespace-nowrap scrollbar-none text-[11px] font-bold">
         {[
           { id: "summary", label: "Summary" },
           { id: "recent", label: "Recent" },

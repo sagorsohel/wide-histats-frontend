@@ -27,6 +27,7 @@ import {
   Check,
   Activity,
   Sliders,
+  User,
 } from "lucide-react";
 
 export const Header: React.FC = () => {
@@ -332,6 +333,14 @@ export const Header: React.FC = () => {
                     >
                       <Globe className="w-3.5 h-3.5 text-slate-500" />
                       <span>Manage Websites</span>
+                    </Link>
+                    <Link
+                      href="/profile"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                    >
+                      <User className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Manage Profile</span>
                     </Link>
                     <Link
                       href="/settings"

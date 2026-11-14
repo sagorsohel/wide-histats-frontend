@@ -94,22 +94,22 @@ export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ child
         } catch {}
       }
     }
-    if (!targetId) return;
+    const queryId = targetId || "default";
 
     api
-      .get<Website>(`/api/v1/websites/public/${encodeURIComponent(targetId)}`)
+      .get<Website>(`/api/v1/websites/public/${encodeURIComponent(queryId)}`)
       .then((res) => {
         if (res.success && res.data) {
           dispatch(setWebsites([res.data]));
           dispatch(setSelectedWebsiteAction(res.data));
         } else {
-          // Site not found or private - do not set fake public site
+          // Site not found or private
           dispatch(setWebsites([]));
           dispatch(setSelectedWebsiteAction(null));
         }
       })
       .catch(() => {
-        // Network error or endpoint failure - do not set fake public site
+        // Network error or endpoint failure
         dispatch(setWebsites([]));
         dispatch(setSelectedWebsiteAction(null));
       });

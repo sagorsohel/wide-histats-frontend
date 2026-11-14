@@ -87,8 +87,18 @@ export default function SettingsPage() {
 
   // Default the form to the selected website once it is known.
   useEffect(() => {
-    if (!activeSiteId && selectedWebsite?.id) setActiveSiteId(selectedWebsite.id);
-  }, [activeSiteId, selectedWebsite?.id]);
+    if (websites.length > 0) {
+      const exists = websites.some((w) => w.id === activeSiteId);
+      if (!exists) {
+        const fallback =
+          (selectedWebsite?.id && websites.find((w) => w.id === selectedWebsite.id)?.id) ||
+          websites[0].id;
+        setActiveSiteId(fallback);
+      }
+    } else if (!activeSiteId && selectedWebsite?.id) {
+      setActiveSiteId(selectedWebsite.id);
+    }
+  }, [websites, activeSiteId, selectedWebsite?.id]);
 
   // ============================================================
   // SECTION 1: Public Access & Page Visibility State
@@ -282,7 +292,10 @@ export default function SettingsPage() {
 
   // Compute public share link (defaults to /summary or first selected public page)
   const currentSite =
-    websites.find((w) => w.id === activeSiteId) || selectedWebsite;
+    websites.find((w) => w.id === activeSiteId) ||
+    websites.find((w) => w.id === selectedWebsite?.id) ||
+    websites[0] ||
+    selectedWebsite;
   const site7Digit = getSite7DigitId(currentSite);
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const firstPage = selectedPages.includes("summary")

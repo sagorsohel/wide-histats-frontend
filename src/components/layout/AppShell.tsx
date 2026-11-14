@@ -48,19 +48,25 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
         return;
       }
 
-      // 2. For public analytics pages with ?id=, wait up to 1.5s for website context to settle
-      const hasIdParam =
-        typeof window !== "undefined" &&
-        new URLSearchParams(window.location.search).has("id");
+      // 2. For public analytics pages, wait up to 2.5s for public website context to settle
+      const isAnalyticsPage = [
+        "summary",
+        "realtime",
+        "traffic-stats",
+        "sources",
+        "pages",
+        "devices",
+        "geography",
+      ].includes(cleanPath);
 
-      if (hasIdParam && !selectedWebsite) {
+      if (isAnalyticsPage && !selectedWebsite) {
         const timer = setTimeout(() => {
           const next =
             typeof window !== "undefined"
               ? window.location.pathname + window.location.search
               : pathname;
           router.replace(`/login?next=${encodeURIComponent(next)}`);
-        }, 1500);
+        }, 2500);
         return () => clearTimeout(timer);
       }
 

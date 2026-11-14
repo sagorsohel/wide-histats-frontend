@@ -21,8 +21,31 @@
 }
 
 /* ============================================================ */
-/* Desktop Layout: Fixed Header, Fixed Left Sidebar, Fixed Footer */
-/* Window Scrollbar on Far Right Edge, Compact Card Heights      */
+/* Base Full-Viewport Background & Root Layout                  */
+/* ============================================================ */
+html {
+  width: 100%;
+  min-height: 100%;
+  background: linear-gradient(180deg, #1058d11f 0%, #1058d1 100%) fixed !important;
+  background-color: #1058d1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+body {
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #1058d11f 0%, #1058d1 100%) fixed !important;
+  background-color: #1058d1 !important;
+  color: #1e293b;
+  margin: 0 !important;
+  padding: 0 0 2.5rem 0 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ============================================================ */
+/* Desktop Layout: Header, Natural Content, Footer at end       */
+/* Below the card, full screen area shows user's background     */
 /* ============================================================ */
 @media screen and (min-width: 1024px) and (hover: hover) and (pointer: fine) {
   html {
@@ -36,31 +59,40 @@
   body {
     width: 100%;
     min-width: 1140px;
-    min-height: 100%;
-    background-color: #f1f4f8;
-    color: #1e293b;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    min-height: 100vh;
+    padding-bottom: 2.5rem;
   }
 
   .desktop-app-container {
+    width: 1140px !important;
+    min-width: 1140px !important;
+    max-width: 1140px !important;
     height: auto !important;
-    min-height: 100vh !important;
+    min-height: 0 !important;
     max-height: none !important;
-    overflow: visible !important;
+    overflow: hidden !important;
     display: flex !important;
     flex-direction: column !important;
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-top: none !important;
+    border-bottom-left-radius: 0.75rem !important;
+    border-bottom-right-radius: 0.75rem !important;
+    margin: 0 auto !important;
+    box-shadow: 0 10px 31px rgba(1, 45, 121, 0.4) !important;
   }
 
   .desktop-content-row {
-    flex: 1 1 auto !important;
+    flex: none !important;
     height: auto !important;
-    min-height: calc(100vh - 6.25rem - 2.5rem) !important;
+    min-height: 0 !important;
     max-height: none !important;
     overflow: visible !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: stretch !important;
     width: 100% !important;
+    background-color: #f1f4f8 !important;
   }
 
   .desktop-sticky-sidebar {
@@ -68,22 +100,31 @@
   }
 
   .desktop-main-scroll {
-    flex: 1 1 0% !important;
+    flex: none !important;
     min-width: 0 !important;
+    width: 100% !important;
     height: auto !important;
+    min-height: 0 !important;
     max-height: none !important;
     overflow: visible !important;
     overflow-y: visible !important;
     overflow-x: visible !important;
+    background-color: #f1f4f8 !important;
+    padding-bottom: 1rem !important;
   }
 
   .desktop-footer {
     position: relative !important;
     bottom: auto !important;
-    height: 2.5rem !important;
+    height: 2.75rem !important;
     width: 100% !important;
     flex-shrink: 0 !important;
-    margin-top: auto !important;
+    margin-top: 0 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background-color: #ffffff !important;
+    border-top: 1px solid #e2e8f0 !important;
   }
 
   .realtime-recent-table {
@@ -95,21 +136,37 @@
 }
 
 /* ============================================================ */
-/* Mobile Touch Devices: Fixed First-Page Height & Scrollable Content */
+/* Mobile Touch Devices: Natural Content, Footer at end,        */
+/* and full remaining screen area shows user's background       */
 /* ============================================================ */
-html.is-mobile-device,
-html.is-mobile-device body {
-  width: 1140px !important;
-  min-width: 1140px !important;
-  max-width: 1140px !important;
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  overflow-x: hidden !important;
-  overscroll-behavior: none !important;
-  background-color: #f1f4f8 !important;
-  margin: 0 auto !important;
+html.is-mobile-device {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  min-height: 100vh !important;
+  background: linear-gradient(180deg, #1058d11f 0%, #1058d1 100%) fixed !important;
+  background-color: #1058d1 !important;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  margin: 0 !important;
   padding: 0 !important;
+}
+
+html.is-mobile-device body {
+  width: 100% !important;
+  min-width: 1140px !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: 100vh !important;
+  max-height: none !important;
+  background: linear-gradient(180deg, #1058d11f 0%, #1058d1 100%) fixed !important;
+  background-color: #1058d1 !important;
+  margin: 0 auto !important;
+  padding: 0 0 2.5rem 0 !important;
+  overflow-x: visible !important;
+  overflow-y: visible !important;
+  -webkit-overflow-scrolling: touch !important;
 }
 
 html.is-mobile-device .desktop-app-container {
@@ -117,19 +174,23 @@ html.is-mobile-device .desktop-app-container {
   min-width: 1140px !important;
   max-width: 1140px !important;
   height: auto !important;
-  min-height: 100vh !important;
+  min-height: 0 !important;
   max-height: none !important;
-  overflow: visible !important;
+  overflow: hidden !important;
   display: flex !important;
   flex-direction: column !important;
-  border: none !important;
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-top: none !important;
+  border-bottom-left-radius: 0.75rem !important;
+  border-bottom-right-radius: 0.75rem !important;
   margin: 0 auto !important;
-  box-shadow: none !important;
+  box-shadow: 0 10px 31px rgba(1, 45, 121, 0.4) !important;
   position: relative !important;
 }
 
 html.is-mobile-device .desktop-content-row {
-  flex: 1 1 auto !important;
+  flex: none !important;
   width: 1140px !important;
   height: auto !important;
   min-height: 0 !important;
@@ -138,6 +199,7 @@ html.is-mobile-device .desktop-content-row {
   display: flex !important;
   flex-direction: column !important;
   align-items: stretch !important;
+  background-color: #f1f4f8 !important;
 }
 
 html.is-mobile-device .desktop-sticky-sidebar {
@@ -145,7 +207,7 @@ html.is-mobile-device .desktop-sticky-sidebar {
 }
 
 html.is-mobile-device .desktop-main-scroll {
-  flex: 1 1 auto !important;
+  flex: none !important;
   min-width: 0 !important;
   width: 100% !important;
   height: auto !important;
@@ -155,32 +217,54 @@ html.is-mobile-device .desktop-main-scroll {
   overflow-y: visible !important;
   overflow-x: visible !important;
   -webkit-overflow-scrolling: touch !important;
-  padding-bottom: 1.5rem !important;
+  background-color: #f1f4f8 !important;
+  padding-bottom: 1rem !important;
 }
 
 html.is-mobile-device .desktop-footer {
   position: relative !important;
   bottom: auto !important;
-  height: 2.5rem !important;
+  height: 2.75rem !important;
   width: 100% !important;
   flex-shrink: 0 !important;
-  margin-top: auto !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  background-color: #ffffff !important;
+  border-top: 1px solid #e2e8f0 !important;
+  margin-top: 0 !important;
+  z-index: 20 !important;
 }
 
 @media screen and (hover: none) and (pointer: coarse) {
-  html,
-  body {
-    width: 1140px !important;
-    min-width: 1140px !important;
-    max-width: 1140px !important;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    overflow-x: hidden !important;
-    overscroll-behavior: none !important;
-    background-color: #f1f4f8 !important;
-    margin: 0 auto !important;
+  html {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100vh !important;
+    background: linear-gradient(180deg, #1058d11f 0%, #1058d1 100%) fixed !important;
+    background-color: #1058d1 !important;
+    margin: 0 !important;
     padding: 0 !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  body {
+    width: 100% !important;
+    min-width: 1140px !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    max-height: none !important;
+    background: linear-gradient(180deg, #1058d11f 0%, #1058d1 100%) fixed !important;
+    background-color: #1058d1 !important;
+    margin: 0 auto !important;
+    padding: 0 0 2.5rem 0 !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch !important;
   }
 
   .desktop-app-container {
@@ -188,19 +272,23 @@ html.is-mobile-device .desktop-footer {
     min-width: 1140px !important;
     max-width: 1140px !important;
     height: auto !important;
-    min-height: 100vh !important;
+    min-height: 0 !important;
     max-height: none !important;
-    overflow: visible !important;
+    overflow: hidden !important;
     display: flex !important;
     flex-direction: column !important;
-    border: none !important;
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-top: none !important;
+    border-bottom-left-radius: 0.75rem !important;
+    border-bottom-right-radius: 0.75rem !important;
     margin: 0 auto !important;
-    box-shadow: none !important;
+    box-shadow: 0 10px 31px rgba(1, 45, 121, 0.4) !important;
     position: relative !important;
   }
 
   .desktop-content-row {
-    flex: 1 1 auto !important;
+    flex: none !important;
     width: 1140px !important;
     height: auto !important;
     min-height: 0 !important;
@@ -209,6 +297,7 @@ html.is-mobile-device .desktop-footer {
     display: flex !important;
     flex-direction: column !important;
     align-items: stretch !important;
+    background-color: #f1f4f8 !important;
   }
 
   .desktop-sticky-sidebar {
@@ -216,7 +305,7 @@ html.is-mobile-device .desktop-footer {
   }
 
   .desktop-main-scroll {
-    flex: 1 1 auto !important;
+    flex: none !important;
     min-width: 0 !important;
     width: 100% !important;
     height: auto !important;
@@ -226,16 +315,23 @@ html.is-mobile-device .desktop-footer {
     overflow-y: visible !important;
     overflow-x: visible !important;
     -webkit-overflow-scrolling: touch !important;
-    padding-bottom: 1.5rem !important;
+    background-color: #f1f4f8 !important;
+    padding-bottom: 1rem !important;
   }
 
   .desktop-footer {
     position: relative !important;
     bottom: auto !important;
-    height: 2.5rem !important;
+    height: 2.75rem !important;
     width: 100% !important;
     flex-shrink: 0 !important;
-    margin-top: auto !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background-color: #ffffff !important;
+    border-top: 1px solid #e2e8f0 !important;
+    margin-top: 0 !important;
+    z-index: 20 !important;
   }
 
   .realtime-recent-table {

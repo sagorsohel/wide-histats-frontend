@@ -22,10 +22,10 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
 
   // Dashboard shell: 1140px boxed container, Two-tier Header with blue nav bar at top, NO SIDEBAR, Footer fixed at bottom
   return (
-    <div className="desktop-app-container w-[1140px] min-w-[1140px] max-w-[1140px] mx-auto min-h-screen flex flex-col bg-white border border-black shadow-[0_10px_31px_rgb(1,45,121)] relative">
+    <div className="desktop-app-container w-[1140px] min-w-[1140px] max-w-[1140px] mx-auto h-auto min-h-0 flex flex-col bg-white border border-slate-300 shadow-[0_10px_31px_rgb(1,45,121)] relative rounded-b-xl overflow-hidden">
       <Header />
-      <div className="desktop-content-row flex-1 flex flex-col items-stretch w-full">
-        <main className="desktop-main-scroll flex-1 min-w-0 px-2 py-2.5 lg:p-4 pb-6 bg-[#F1F5F9]">
+      <div className="desktop-content-row flex-none flex flex-col items-stretch w-full bg-[#F1F5F9]">
+        <main className="desktop-main-scroll flex-none min-w-0 px-2 py-2.5 lg:p-4 pb-4 bg-[#F1F5F9]">
           <div className="w-full">{children}</div>
         </main>
       </div>

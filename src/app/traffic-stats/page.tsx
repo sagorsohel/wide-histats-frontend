@@ -198,7 +198,7 @@ export default function TrafficStatsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f1f4f8] text-slate-800 font-sans pb-12">
+    <div className="w-full text-slate-800 font-sans pb-2">
       <div className="max-w-7xl mx-auto space-y-3">
         {/* Top Unified DailyStatsCard with Integrated Calendar */}
         <DailyStatsCard

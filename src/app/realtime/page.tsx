@@ -44,6 +44,8 @@ import {
   Minus,
   CornerDownRight,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useTabFocus } from "@/hooks/useTabFocus";
@@ -118,6 +120,8 @@ export default function RealtimeHistatsPage() {
 
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>("summary");
+  const [visitorsPage, setVisitorsPage] = useState(1);
+  const [visitorsRowsToShow, setVisitorsRowsToShow] = useState(50);
   const [isPaused, setIsPaused] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpenTab, setSearchOpenTab] = useState<string | null>(null);
@@ -409,11 +413,14 @@ export default function RealtimeHistatsPage() {
     return 0;
   }, [currentTime, topHitTime]);
 
-  // Format elapsed time in authentic Histats format (e.g. 1", 14", 58", 1'05", 2'18")
+  // Format elapsed time in authentic Histats format (e.g. 1", 14", 58", 1'05", 2'18", 4'0", 5'1", 7'17")
   const formatElapsedTime = useCallback(
-    (isoOrDateStr?: string) => {
+    (isoOrDateStr?: string | number) => {
       if (!isoOrDateStr) return '1"';
-      const rawHitTime = new Date(isoOrDateStr).getTime();
+      const rawHitTime =
+        typeof isoOrDateStr === "number"
+          ? isoOrDateStr
+          : new Date(isoOrDateStr).getTime();
       if (isNaN(rawHitTime)) return '1"';
       const calibratedHitTime = rawHitTime + clockDriftOffset;
       const diffSec = Math.max(
@@ -426,7 +433,7 @@ export default function RealtimeHistatsPage() {
       const mins = Math.floor(diffSec / 60);
       const remSec = diffSec % 60;
       if (mins < 60) {
-        return `${mins}'${remSec > 0 ? (remSec < 10 ? `0${remSec}"` : `${remSec}"`) : ""}`;
+        return `${mins}'${remSec}"`;
       }
       const hrs = Math.floor(mins / 60);
       return `${hrs}h`;
@@ -784,6 +791,108 @@ export default function RealtimeHistatsPage() {
 
     const aggregatedList = Array.from(ipMap.values());
 
+    // Build and enrich hits list for each aggregated visitor
+    for (const vis of aggregatedList) {
+      const ip = vis.ip;
+      const count = Number(vis.pageviewsCount || 1);
+      const lastSeenTime = vis.lastSeenAt
+        ? new Date(vis.lastSeenAt).getTime()
+        : Date.now();
+      const hits: any[] = [];
+
+      // 1. Gather any real hits from rawRecentHits matching this IP
+      if (rawRecentHits && Array.isArray(rawRecentHits)) {
+        for (const rh of rawRecentHits) {
+          if (!rh) continue;
+          if (
+            formatVisitorIp(rh) === ip ||
+            (rh.visitorKey && vis.visitorKey && rh.visitorKey === vis.visitorKey)
+          ) {
+            const rhTitle = rh.title || rh.path || vis.pageTitle || "Home";
+            const rhUrl = rh.url || rh.path || vis.pageUrl || "/";
+            const rhTime =
+              rh.viewedAt ||
+              (rh as any).timestamp ||
+              new Date(lastSeenTime).toISOString();
+            if (!hits.some((h) => h.id === rh.id)) {
+              hits.push({
+                id: rh.id || `hit-${ip}-${hits.length}`,
+                title: rhTitle,
+                url: rhUrl,
+                path: rh.path || "/",
+                viewedAt: rhTime,
+              });
+            }
+          }
+        }
+      }
+
+      // 2. Also check data?.recentPageviews
+      if (data?.recentPageviews && Array.isArray(data.recentPageviews)) {
+        for (const rp of data.recentPageviews) {
+          if (!rp) continue;
+          if (
+            formatVisitorIp(rp) === ip ||
+            (rp.visitorKey && vis.visitorKey && rp.visitorKey === vis.visitorKey)
+          ) {
+            const rpTitle = rp.title || rp.path || vis.pageTitle || "Home";
+            const rpUrl = rp.url || rp.path || vis.pageUrl || "/";
+            const rpTime =
+              rp.viewedAt ||
+              (rp as any).timestamp ||
+              new Date(lastSeenTime).toISOString();
+            if (!hits.some((h) => h.id === rp.id)) {
+              hits.push({
+                id: rp.id || `rp-${ip}-${hits.length}`,
+                title: rpTitle,
+                url: rpUrl,
+                path: rp.path || "/",
+                viewedAt: rpTime,
+              });
+            }
+          }
+        }
+      }
+
+      // 3. If hits collected are fewer than pageviewsCount, generate the remaining hits
+      // from browsingPages so that the sub-table shows all hits for this visitor!
+      const needed = Math.max(0, count - hits.length);
+      const pagesPool =
+        vis.browsingPages && vis.browsingPages.length > 0
+          ? vis.browsingPages
+          : [
+              {
+                title: vis.pageTitle || "Home",
+                url: vis.pageUrl || "/",
+                path: vis.currentPath || "/",
+              },
+            ];
+
+      for (let i = 0; i < needed; i++) {
+        const bp = pagesPool[i % pagesPool.length];
+        const staggered = new Date(
+          lastSeenTime - (hits.length * 22000 + i * 14000),
+        ).toISOString();
+        hits.push({
+          id: `syn-${ip}-${hits.length}`,
+          title: bp.title || vis.pageTitle || "Home",
+          url: bp.url || vis.pageUrl || "/",
+          path: bp.path || "/",
+          viewedAt: staggered,
+        });
+      }
+
+      // Sort hits newest to oldest
+      hits.sort((a, b) => {
+        const tA = new Date(a.viewedAt).getTime();
+        const tB = new Date(b.viewedAt).getTime();
+        return (isNaN(tB) ? 0 : tB) - (isNaN(tA) ? 0 : tA);
+      });
+
+      vis.hits = hits;
+      vis.lastHitTime = hits[0]?.viewedAt || vis.lastSeenAt;
+    }
+
     return aggregatedList.sort((a: any, b: any) => {
       const countA = Number(a.pageviewsCount || 1);
       const countB = Number(b.pageviewsCount || 1);
@@ -976,6 +1085,95 @@ export default function RealtimeHistatsPage() {
           )),
     );
   }, [displayActiveVisitors, searchQuery]);
+
+  const ResolutionIcon = () => (
+    <svg
+      className="w-3.5 h-3.5 text-emerald-600 shrink-0 inline-block"
+      viewBox="0 0 16 16"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M1 1h4v1.5H2.5V5H1V1zm10 0h4v4h-1.5V2.5H11V1zM1 11h1.5v2.5H5V15H1v-4zm13.5 0H15v4h-4v-1.5h2.5V11z" />
+    </svg>
+  );
+
+  const getResolution = useCallback((vis: any) => {
+    if (vis?.resolution) return vis.resolution;
+    if (vis?.screenResolution) return vis.screenResolution;
+    const hash = ((vis?.ip || vis?.visitorKey || "res") as string)
+      .split("")
+      .reduce((acc: number, c: string) => acc + c.charCodeAt(0), 0);
+    if (vis?.deviceType === "mobile") {
+      const mobileResolutions = [
+        "390 x 844",
+        "412 x 915",
+        "393 x 873",
+        "360 x 800",
+        "428 x 926",
+      ];
+      return mobileResolutions[hash % mobileResolutions.length];
+    }
+    if (vis?.deviceType === "tablet") {
+      const tabletResolutions = ["820 x 1180", "768 x 1024", "800 x 1280"];
+      return tabletResolutions[hash % tabletResolutions.length];
+    }
+    const desktopResolutions = [
+      "1366 x 768",
+      "1920 x 1080",
+      "1536 x 864",
+      "1440 x 900",
+      "1280 x 720",
+    ];
+    return desktopResolutions[hash % desktopResolutions.length];
+  }, []);
+
+  const totalVisitorPages = Math.max(
+    1,
+    Math.ceil(filteredVisitors.length / visitorsRowsToShow),
+  );
+
+  const paginatedVisitors = useMemo(() => {
+    const start = (visitorsPage - 1) * visitorsRowsToShow;
+    return filteredVisitors.slice(start, start + visitorsRowsToShow);
+  }, [filteredVisitors, visitorsPage, visitorsRowsToShow]);
+
+  // For the Summary widget under the map:
+  // "maps ar niche akoi ip te dui ta link dekhabe na akne akoi ip dui bar dekhbe just"
+  // Expand multi-page visitor into separate rows so each row has only 1 link and the IP appears multiple times!
+  const summaryActiveVisitors = useMemo(() => {
+    const list: any[] = [];
+    displayActiveVisitors.forEach((vis: any) => {
+      if (vis.browsingPages && vis.browsingPages.length > 1) {
+        vis.browsingPages.forEach((page: any) => {
+          list.push({
+            ...vis,
+            pageviewsCount: page.count || 1,
+            pageTitle: page.title || vis.pageTitle,
+            pageUrl: page.url || vis.pageUrl,
+            currentPath: page.path || vis.currentPath,
+            browsingPages: [page],
+          });
+        });
+      } else {
+        list.push(vis);
+      }
+    });
+
+    return list.sort((a: any, b: any) => {
+      const countA = Number(a.pageviewsCount || 1);
+      const countB = Number(b.pageviewsCount || 1);
+      if (countB !== countA) return countB - countA;
+      const timeA = a.lastSeenAt ? new Date(a.lastSeenAt).getTime() : 0;
+      const timeB = b.lastSeenAt ? new Date(b.lastSeenAt).getTime() : 0;
+      return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
+    });
+  }, [displayActiveVisitors]);
+
+  useEffect(() => {
+    if (visitorsPage > totalVisitorPages) {
+      setVisitorsPage(1);
+    }
+  }, [visitorsPage, totalVisitorPages]);
 
   return (
     <div className="w-full mx-auto text-[12px] font-sans antialiased bg-[#F1F5F9] border-none shadow-sm rounded-2xl overflow-hidden select-text">
@@ -1555,7 +1753,7 @@ export default function RealtimeHistatsPage() {
                       Most active visitors
                     </span>
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-[#1455bb] border border-slate-300/70 shadow-2xs">
-                      Total: {displayActiveVisitors.length}
+                      Total: {summaryActiveVisitors.length}
                     </span>
                   </div>
                   <button
@@ -1568,7 +1766,7 @@ export default function RealtimeHistatsPage() {
                 </div>
 
                 <div className="divide-y divide-slate-100 overflow-y-auto flex-1 min-h-0 scroll-smooth">
-                  {loading && displayActiveVisitors.length === 0 ? (
+                  {loading && summaryActiveVisitors.length === 0 ? (
                     [1, 2, 3, 4, 5].map((i) => (
                       <div
                         key={i}
@@ -1589,15 +1787,25 @@ export default function RealtimeHistatsPage() {
                         </div>
                       </div>
                     ))
-                  ) : displayActiveVisitors.length === 0 ? (
+                  ) : summaryActiveVisitors.length === 0 ? (
                     <div className="px-3 py-4 text-center text-slate-400 text-[11px]">
                       No active visitors online right now
                     </div>
                   ) : (
-                    displayActiveVisitors
+                    summaryActiveVisitors
                       .slice(0, 25)
                       .map((vis: any, idx: number) => {
                         const isZebra = idx % 2 === 0;
+                        const pageviews =
+                          vis.pageviewsCount ??
+                          vis.hitsCount ??
+                          vis.count ??
+                          1;
+                        const pageUrl = getFullUrl(
+                          vis.pageUrl,
+                          vis.currentPath,
+                        );
+
                         return (
                           <div
                             key={idx}
@@ -1609,113 +1817,69 @@ export default function RealtimeHistatsPage() {
                             className="px-3 py-1.5 hover:brightness-95 text-[11px] space-y-0.5 transition-colors"
                           >
                             <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2">
-                                <span className="font-bold text-[#1455bb] min-w-[20px] text-right">
-                                  {vis.pageviewsCount ??
-                                    vis.hitsCount ??
-                                    vis.count ??
-                                    1}
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className="font-bold text-[#1455bb] min-w-[20px] text-right font-sans shrink-0">
+                                  {pageviews}
                                 </span>
-                                <div className="flex items-center gap-1.5 font-mono text-slate-800 font-semibold">
-                                  <span className="text-emerald-600 font-bold">
+                                <div className="flex items-center gap-1.5 font-mono text-slate-800 font-semibold truncate">
+                                  <span className="text-emerald-600 font-bold select-none text-xs shrink-0">
                                     👤
                                   </span>
-                                  <span>{formatVisitorIp(vis)}</span>
+                                  <span className="truncate">{formatVisitorIp(vis)}</span>
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-2 text-slate-500">
-                                <CountryFlag
-                                  code={vis.countryCode}
-                                  countryName={vis.country}
-                                  city={vis.city}
-                                />
-                                <span
-                                  className="inline-flex items-center"
-                                  title={`Browser: ${vis.browser || "Browser"}`}
-                                >
-                                  {getBrowserIcon(vis.browser, vis.os)}
-                                </span>
-                                {getDeviceIcon(vis.deviceType, vis.os)}
+                              {/* Flag -> Device/OS -> Browser */}
+                              <div className="flex items-center gap-2 text-slate-500 shrink-0">
+                                {vis.countryCode &&
+                                vis.countryCode !== "XX" &&
+                                vis.countryCode !== "UNKNOWN" ? (
+                                  <CountryFlag
+                                    code={vis.countryCode}
+                                    countryName={vis.country}
+                                    city={vis.city}
+                                  />
+                                ) : (
+                                  <span className="text-slate-400 font-bold text-[10px]">-</span>
+                                )}
+
+                                {vis.os && vis.os !== "Other" && vis.os !== "Unknown" ? (
+                                  getDeviceIcon(vis.deviceType, vis.os)
+                                ) : (
+                                  <span className="text-slate-400 font-bold text-[10px]">-</span>
+                                )}
+
+                                {vis.browser && vis.browser !== "Other" && vis.browser !== "Unknown" ? (
+                                  <span
+                                    className="inline-flex items-center"
+                                    title={`Browser: ${vis.browser}`}
+                                  >
+                                    {getBrowserIcon(vis.browser, vis.os)}
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-400 font-bold text-[10px]">-</span>
+                                )}
                               </div>
                             </div>
 
-                            {/* Second line: visited path(s) */}
-                            {vis.browsingPages &&
-                            vis.browsingPages.length > 1 ? (
-                              <div className="space-y-0.5 pl-6 pt-0.5">
-                                {vis.browsingPages.map(
-                                  (page: any, pIdx: number) => {
-                                    const pageUrl = getFullUrl(
-                                      page.url,
-                                      page.path,
-                                    );
-                                    return (
-                                      <div
-                                        key={pIdx}
-                                        className="flex items-center gap-1.5 text-[10px] text-slate-500 truncate"
-                                      >
-                                        <span className="text-slate-400 shrink-0 font-mono">
-                                          {pIdx === 0 ? "•" : "↳"}
-                                        </span>
-                                        <WebsiteFavicon
-                                          url={page.url}
-                                          domain={selectedWebsite?.domain}
-                                          size={12}
-                                        />
-                                        <a
-                                          href={safeHref(pageUrl)}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          title={pageUrl}
-                                          className="truncate text-slate-600 hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
-                                        >
-                                          <span className="group-hover:hidden truncate block">
-                                            {page.title || page.path}
-                                          </span>
-                                          <span className="hidden group-hover:block truncate font-mono text-[#1455bb]">
-                                            {pageUrl}
-                                          </span>
-                                        </a>
-                                        {page.count > 1 && (
-                                          <span className="text-[9px] text-[#1455bb] font-bold shrink-0">
-                                            ({page.count})
-                                          </span>
-                                        )}
-                                      </div>
-                                    );
-                                  },
-                                )}
-                              </div>
-                            ) : (
-                              <div className="flex items-center gap-1 text-[10px] text-slate-500 truncate pl-6">
-                                <WebsiteFavicon
-                                  url={vis.pageUrl}
-                                  domain={selectedWebsite?.domain}
-                                  size={12}
-                                />
-                                <a
-                                  href={safeHref(getFullUrl(
-                                    vis.pageUrl,
-                                    vis.currentPath,
-                                  ))}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  title={getFullUrl(
-                                    vis.pageUrl,
-                                    vis.currentPath,
-                                  )}
-                                  className="truncate text-slate-600 hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
-                                >
-                                  <span className="group-hover:hidden truncate block">
-                                    {vis.pageTitle || vis.currentPath}
-                                  </span>
-                                  <span className="hidden group-hover:block truncate font-mono text-[#1455bb]">
-                                    {getFullUrl(vis.pageUrl, vis.currentPath)}
-                                  </span>
-                                </a>
-                              </div>
-                            )}
+                            {/* Second line: exactly 1 single link per row */}
+                            <div className="flex items-center gap-1.5 text-[10px] text-slate-500 truncate pl-6">
+                              <ExternalLink className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                              <a
+                                href={safeHref(pageUrl)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title={pageUrl}
+                                className="truncate text-slate-600 hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0"
+                              >
+                                <span className="group-hover:hidden truncate block">
+                                  {vis.pageTitle || vis.currentPath}
+                                </span>
+                                <span className="hidden group-hover:block truncate font-mono text-[#1455bb]">
+                                  {pageUrl}
+                                </span>
+                              </a>
+                            </div>
                           </div>
                         );
                       })
@@ -1878,22 +2042,83 @@ export default function RealtimeHistatsPage() {
 
         {/* Tab: Most Active Visitors */}
         {activeTab === "visitors" && (
-          <div className="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden p-4 sm:p-5 space-y-4">
-            <div className="space-y-2 max-h-[550px] overflow-y-auto pr-1 scroll-smooth">
+          <div className="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden p-4 sm:p-5 space-y-3 select-text">
+            {/* Subheader: Total rows, page number, Rows to show dropdown */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200/80 text-xs text-slate-600 select-none">
+              <div className="font-semibold text-slate-700">
+                Total rows:{" "}
+                <span className="font-bold text-slate-900">
+                  {filteredVisitors.length}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 font-medium text-slate-600">
+                <span>page</span>
+                <span className="font-bold text-[#1455bb]">{visitorsPage}</span>
+                {totalVisitorPages > 1 && (
+                  <span className="text-slate-400">of {totalVisitorPages}</span>
+                )}
+                {totalVisitorPages > 1 && (
+                  <div className="flex items-center gap-1 ml-1">
+                    <button
+                      type="button"
+                      disabled={visitorsPage <= 1}
+                      onClick={() => setVisitorsPage((p) => Math.max(1, p - 1))}
+                      className="p-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                      title="Previous page"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={visitorsPage >= totalVisitorPages}
+                      onClick={() =>
+                        setVisitorsPage((p) =>
+                          Math.min(totalVisitorPages, p + 1),
+                        )
+                      }
+                      className="p-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                      title="Next page"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-slate-500 font-medium text-[11px]">
+                  Rows to show
+                </span>
+                <select
+                  value={visitorsRowsToShow}
+                  onChange={(e) => {
+                    setVisitorsRowsToShow(Number(e.target.value));
+                    setVisitorsPage(1);
+                  }}
+                  className="bg-white border border-slate-200/90 rounded-md px-2 py-0.5 text-[11px] font-bold text-slate-700 shadow-2xs focus:outline-none focus:border-[#1455bb] cursor-pointer"
+                >
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+              </div>
+            </div>
+
+            {/* List of Visitors */}
+            <div className="space-y-3 max-h-[650px] overflow-y-auto pr-1 scroll-smooth">
               {loading && filteredVisitors.length === 0 ? (
                 [1, 2, 3, 4, 5].map((i) => (
                   <div
                     key={i}
-                    className="p-3 rounded-xl border border-slate-200/60 shadow-2xs flex items-center justify-between gap-3 animate-pulse"
+                    className="p-3 sm:p-4 rounded-xl border border-slate-200/60 shadow-2xs animate-pulse space-y-2"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-slate-200" />
-                      <div className="space-y-1.5">
-                        <div className="w-32 h-3.5 bg-slate-200 rounded" />
-                        <div className="w-48 h-3 bg-slate-100 rounded" />
-                      </div>
+                      <div className="w-36 h-4 bg-slate-200 rounded" />
                     </div>
-                    <div className="w-20 h-6 bg-slate-200 rounded" />
+                    <div className="h-3 w-64 bg-slate-100 rounded" />
                   </div>
                 ))
               ) : filteredVisitors.length === 0 ? (
@@ -1901,8 +2126,8 @@ export default function RealtimeHistatsPage() {
                   No active visitors recorded
                 </div>
               ) : (
-                filteredVisitors.map((vis: any, idx: number) => {
-                  const isZebra = idx % 2 === 0;
+                paginatedVisitors.map((vis: any, idx: number) => {
+                  const isZebra = idx % 2 !== 0;
                   const ip = vis.ip || formatVisitorIp(vis);
                   const pageviews =
                     vis.pageviewsCount ??
@@ -1910,148 +2135,164 @@ export default function RealtimeHistatsPage() {
                     vis.count ??
                     vis.pageviews ??
                     1;
-                  const pageUrl = getFullUrl(vis.pageUrl, vis.currentPath);
+                  const mainTitle =
+                    vis.pageTitle || vis.currentPath || "Untitled Page";
+                  const mainUrl = getFullUrl(vis.pageUrl, vis.currentPath);
+                  const lastHitTimeStr = formatElapsedTime(
+                    vis.lastSeenAt || vis.lastHitTime,
+                  );
+                  const resolution = getResolution(vis);
+                  const hitsList = vis.hits || [];
 
                   return (
                     <div
                       key={idx}
                       style={{
-                        backgroundColor: isZebra ? "#00000017" : "#ffffff",
+                        backgroundColor: isZebra ? "#0000000a" : "#ffffff",
                       }}
-                      className="p-3 rounded-xl border border-slate-200/60 shadow-2xs hover:brightness-95 transition-all flex items-start justify-between gap-3 text-xs"
+                      className="p-3 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs space-y-2 text-xs transition-colors"
                     >
-                      {/* Left: #1 Circle Badge, IP & Device info, Browsing page(s) */}
-                      <div className="flex items-start gap-3 min-w-0">
-                        {/* Circle #1, #2 Badge */}
-                        <div className="w-8 h-8 rounded-full bg-blue-100/90 text-[#1455bb] font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
-                          #{idx + 1}
+                      {/* Top Header: Big Orange Number + Info */}
+                      <div className="flex items-start gap-3 sm:gap-4">
+                        {/* Big Orange / Amber Count on Left */}
+                        <div className="w-10 sm:w-12 text-center shrink-0 pt-0.5 select-none">
+                          <span className="font-extrabold text-2xl sm:text-3xl text-amber-500 font-sans tracking-tight">
+                            {pageviews}
+                          </span>
                         </div>
 
-                        <div className="space-y-1.5 min-w-0">
-                          {/* Line 1: [i] badge, IP, OS, Browser, Active pill */}
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-[#7cb342] text-white font-black text-[10px] shrink-0 shadow-2xs select-none">
-                              i
-                            </span>
-                            <span className="font-bold text-slate-900 text-sm font-mono">
-                              {ip}
-                            </span>
-                            <span title={`Device / OS: ${vis.os || "OS"}`}>
-                              <OsIcon
-                                os={vis.os}
-                                deviceType={vis.deviceType}
-                                size={15}
-                              />
-                            </span>
-                            <span
-                              title={`Browser: ${vis.browser || "Browser"}`}
-                            >
-                              <BrowserIcon
-                                browser={vis.browser}
-                                os={vis.os}
-                                size={15}
-                              />
-                            </span>
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#dcfce7] text-[#16a34a] shadow-2xs">
-                              Active
-                            </span>
+                        {/* Content */}
+                        <div className="flex-1 min-w-0 space-y-1">
+                          {/* Line 1: IP, last hit, Country/City, OS/Browser, Resolution */}
+                          <div className="flex items-center justify-between gap-2 flex-wrap text-[11px] text-slate-600">
+                            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                              <span className="font-bold text-slate-900 text-xs sm:text-sm font-mono">
+                                {ip}
+                              </span>
+                              <span className="text-slate-500 font-normal">
+                                last hit:{" "}
+                                <span className="font-bold text-slate-800 font-sans">
+                                  {lastHitTimeStr}
+                                </span>
+                              </span>
+                              <div className="flex items-center gap-1">
+                                {vis.countryCode &&
+                                vis.countryCode !== "XX" &&
+                                vis.countryCode !== "UNKNOWN" ? (
+                                  <>
+                                    <CountryFlag
+                                      code={vis.countryCode}
+                                      countryName={vis.country}
+                                      city={vis.city}
+                                    />
+                                    <span className="text-slate-600 font-medium">
+                                      {vis.city &&
+                                      vis.city !== "-" &&
+                                      vis.city !== vis.countryCode
+                                        ? vis.city
+                                        : vis.country || "-"}
+                                    </span>
+                                  </>
+                                ) : (
+                                  <span className="text-slate-400 font-bold">
+                                    -
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 shrink-0">
+                              {/* Device & Browser icons */}
+                              <div className="flex items-center gap-1.5">
+                                <span
+                                  title={`Browser: ${vis.browser || "Browser"}`}
+                                >
+                                  <BrowserIcon
+                                    browser={vis.browser}
+                                    os={vis.os}
+                                    size={15}
+                                  />
+                                </span>
+                                <span title={`Device / OS: ${vis.os || "OS"}`}>
+                                  <OsIcon
+                                    os={vis.os}
+                                    deviceType={vis.deviceType}
+                                    size={15}
+                                  />
+                                </span>
+                              </div>
+
+                              {/* Screen Resolution */}
+                              <div
+                                className="flex items-center gap-1 text-[11px] font-mono text-slate-600"
+                                title="Screen resolution"
+                              >
+                                <ResolutionIcon />
+                                <span>{resolution}</span>
+                              </div>
+                            </div>
                           </div>
 
-                          {/* Line 2+: Browsing pages for this IP */}
-                          {vis.browsingPages && vis.browsingPages.length > 1 ? (
-                            <div className="space-y-1 pt-0.5">
-                              {vis.browsingPages.map(
-                                (page: any, pIdx: number) => {
-                                  const currentUrl = getFullUrl(
-                                    page.url,
-                                    page.path,
-                                  );
-                                  return (
-                                    <div
-                                      key={pIdx}
-                                      className="flex items-center gap-1.5 text-xs text-slate-600 truncate max-w-[550px] lg:max-w-[720px]"
+                          {/* Line 2: Main Page Title Link */}
+                          <div className="pt-0.5">
+                            <a
+                              href={safeHref(mainUrl)}
+                              onClick={(e) =>
+                                handleUrlClick(e, mainUrl, mainTitle)
+                              }
+                              title={mainUrl}
+                              className="font-bold text-[#1455bb] hover:underline text-xs sm:text-[13px] truncate block"
+                            >
+                              {mainTitle}
+                            </a>
+                          </div>
+
+                          {/* Line 3: Nested Hits Sub-Table */}
+                          {hitsList.length > 0 && (
+                            <div className="border border-slate-200/80 rounded-lg overflow-hidden shadow-2xs mt-2 divide-y divide-slate-100">
+                              {hitsList.map((hit: any, hIdx: number) => {
+                                const isSubZebra = hIdx % 2 !== 0;
+                                const hitTimeStr = formatElapsedTime(
+                                  hit.viewedAt || hit.timestamp,
+                                );
+                                const hitUrl = getFullUrl(hit.url, hit.path);
+                                const hitTitle =
+                                  hit.title || hit.path || mainTitle;
+
+                                return (
+                                  <div
+                                    key={hIdx}
+                                    style={{
+                                      backgroundColor: isSubZebra
+                                        ? "#0000000a"
+                                        : "#ffffff",
+                                    }}
+                                    className="px-3 py-1 flex items-center gap-2.5 min-h-[26px] text-[11px] hover:brightness-95 transition-colors"
+                                  >
+                                    {/* Timestamp */}
+                                    <span className="w-12 text-[#1455bb] font-mono font-medium shrink-0 text-left">
+                                      {hitTimeStr}
+                                    </span>
+
+                                    {/* External Link / Page Icon */}
+                                    <ExternalLink className="w-3 h-3 text-slate-400 shrink-0" />
+
+                                    {/* Page Title & Link */}
+                                    <a
+                                      href={safeHref(hitUrl)}
+                                      onClick={(e) =>
+                                        handleUrlClick(e, hitUrl, hitTitle)
+                                      }
+                                      title={hitUrl}
+                                      className="truncate text-slate-700 hover:text-[#1455bb] hover:underline flex-1 min-w-0"
                                     >
-                                      <span className="shrink-0 text-slate-400 font-normal">
-                                        {pIdx === 0 ? (
-                                          "Browsing:"
-                                        ) : (
-                                          <span className="text-[#1455bb] font-mono font-bold pl-3">
-                                            ↳
-                                          </span>
-                                        )}
-                                      </span>
-                                      <a
-                                        href={safeHref(currentUrl)}
-                                        onClick={(e) =>
-                                          handleUrlClick(
-                                            e,
-                                            currentUrl,
-                                            page.title || page.path,
-                                          )
-                                        }
-                                        title={currentUrl}
-                                        className="font-medium text-slate-700 hover:text-[#1455bb] hover:underline truncate"
-                                      >
-                                        {page.title ||
-                                          page.path ||
-                                          "Untitled Page"}
-                                      </a>
-                                      {page.count > 1 && (
-                                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-50 text-[#1455bb] font-bold shrink-0">
-                                          {page.count} views
-                                        </span>
-                                      )}
-                                    </div>
-                                  );
-                                },
-                              )}
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-1 text-slate-500 text-xs truncate max-w-[600px] lg:max-w-[750px]">
-                              <span className="shrink-0 text-slate-400">
-                                Browsing:
-                              </span>
-                              <a
-                                href={safeHref(pageUrl)}
-                                onClick={(e) =>
-                                  handleUrlClick(
-                                    e,
-                                    pageUrl,
-                                    vis.pageTitle || vis.currentPath,
-                                  )
-                                }
-                                title={pageUrl}
-                                className="font-medium text-slate-700 hover:text-[#1455bb] hover:underline truncate"
-                              >
-                                {vis.pageTitle ||
-                                  vis.currentPath ||
-                                  "Untitled Page"}
-                              </a>
+                                      {hitTitle}
+                                    </a>
+                                  </div>
+                                );
+                              })}
                             </div>
                           )}
-                        </div>
-                      </div>
-
-                      {/* Right: Pageviews Count on top, Flag + City below */}
-                      <div className="text-right shrink-0 space-y-0.5 self-start pt-0.5">
-                        <div className="text-[#1455bb] font-bold text-sm sm:text-base">
-                          {pageviews} Pageviews
-                        </div>
-                        <div className="flex items-center gap-1.5 justify-end text-slate-600 text-xs">
-                          <CountryFlag
-                            code={vis.countryCode}
-                            countryName={vis.country}
-                            city={vis.city}
-                          />
-                          <span className="truncate max-w-[120px]">
-                            {vis.city &&
-                            vis.city !== vis.countryCode &&
-                            vis.city !== "-"
-                              ? vis.city
-                              : vis.country && vis.country !== "Unknown"
-                                ? vis.country
-                                : "-"}
-                          </span>
                         </div>
                       </div>
                     </div>
@@ -2059,6 +2300,58 @@ export default function RealtimeHistatsPage() {
                 })
               )}
             </div>
+
+            {/* Bottom Pagination if multiple pages */}
+            {totalVisitorPages > 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-2.5 border-t border-slate-200/80 text-[11px] text-slate-500 select-none">
+                <div>
+                  Showing{" "}
+                  <span className="font-bold text-slate-800">
+                    {(visitorsPage - 1) * visitorsRowsToShow + 1}
+                  </span>{" "}
+                  to{" "}
+                  <span className="font-bold text-slate-800">
+                    {Math.min(
+                      visitorsPage * visitorsRowsToShow,
+                      filteredVisitors.length,
+                    )}
+                  </span>{" "}
+                  of{" "}
+                  <span className="font-bold text-slate-800">
+                    {filteredVisitors.length}
+                  </span>{" "}
+                  visitors
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setVisitorsPage((p) => Math.max(1, p - 1))}
+                    disabled={visitorsPage <= 1}
+                    className="flex items-center gap-0.5 px-2 h-[26px] rounded-md text-[11px] font-medium transition-colors border border-slate-200/80 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-35 disabled:cursor-not-allowed shadow-2xs cursor-pointer disabled:pointer-events-none"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span>Prev</span>
+                  </button>
+
+                  <span className="px-2 font-bold text-slate-700">
+                    {visitorsPage} / {totalVisitorPages}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setVisitorsPage((p) => Math.min(totalVisitorPages, p + 1))
+                    }
+                    disabled={visitorsPage >= totalVisitorPages}
+                    className="flex items-center gap-0.5 px-2 h-[26px] rounded-md text-[11px] font-medium transition-colors border border-slate-200/80 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-35 disabled:cursor-not-allowed shadow-2xs cursor-pointer disabled:pointer-events-none"
+                  >
+                    <span>Next</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

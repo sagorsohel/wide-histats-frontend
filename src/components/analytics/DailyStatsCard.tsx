@@ -278,7 +278,7 @@ export const DailyStatsCard: React.FC<DailyStatsCardProps> = ({
 
         {/* Right Calendar Section: Cleanly rendered without clipping */}
         {calendar && (
-          <div className="shrink-0 w-full lg:w-[276px] p-2 flex items-center justify-center bg-white">
+          <div className="shrink-0 w-full lg:w-[276px] p-2 flex shadow-[inset_1px_0px_20px_8px_#a1a1aabf] items-center justify-center bg-white">
             {calendar}
           </div>
         )}

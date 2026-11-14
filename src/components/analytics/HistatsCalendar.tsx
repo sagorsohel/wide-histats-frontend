@@ -332,7 +332,7 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
 
   return (
     <div
-      className={`w-[260px] max-w-[260px] flex flex-col justify-between select-none font-sans text-xs ${className}`}
+      className={`w-[260px] max-w-[260px] shadow-[inset_1px_0px_20px_8px_#a1a1aabf] flex flex-col justify-between select-none font-sans text-xs ${className}`}
     >
       {/* ============================================================ */}
       {/* 1. TOP TABS: Exact Histats Style Tabs (h-[20px])              */}
@@ -403,7 +403,7 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
       {/* ============================================================ */}
       {/* 2. MAIN CALENDAR FRAME: Exact Histats Box                     */}
       {/* ============================================================ */}
-      <div className="bg-[#f6f6f6] border border-[#b0b0b0] rounded-b-[2px] rounded-tr-[2px] p-1.5 shadow-2xs flex flex-col justify-between shrink-0">
+      <div className="bg-[#f6f6f6] border border-[#b0b0b0] rounded-b-[2px] rounded-tr-[2px] p-1.5  flex flex-col justify-between shrink-0">
         {activeTab !== "monthly" ? (
           <>
             {/* Days of week header: M T W T F S S */}

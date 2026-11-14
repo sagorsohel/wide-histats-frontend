@@ -26,6 +26,7 @@ import {
   Users,
   Compass,
 } from "lucide-react";
+import { WebsiteFavicon } from "@/components/common/WebsiteFavicon";
 import { useTabFocus } from "@/hooks/useTabFocus";
 import { formatCommas } from "@/lib/utils";
 
@@ -52,6 +53,21 @@ export default function PagesReportPage() {
   >([]);
   const [overview, setOverview] = useState<OverviewStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hoveredLink, setHoveredLink] = useState<{
+    url: string;
+    title: string;
+    x: number;
+    y: number;
+    placeBelow?: boolean;
+  } | null>(null);
+
+  // Auto-dismiss floating popup on scroll
+  useEffect(() => {
+    if (!hoveredLink) return;
+    const handleScroll = () => setHoveredLink(null);
+    window.addEventListener("scroll", handleScroll, true);
+    return () => window.removeEventListener("scroll", handleScroll, true);
+  }, [hoveredLink]);
 
   const getDateRange = useCallback((option: RangeOption) => {
     const now = new Date();
@@ -420,12 +436,22 @@ export default function PagesReportPage() {
           </div>
 
           {loading && pages.length === 0 ? (
-            <div className="space-y-1.5 flex-1">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div className="border border-slate-200/80 rounded-xl overflow-hidden divide-y divide-slate-100/60">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                 <div
                   key={i}
-                  className="h-9 rounded-md bg-slate-100 animate-pulse"
-                />
+                  className="px-3 py-0 flex items-center justify-between min-h-[30px] h-[30px] animate-pulse"
+                >
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div className="w-[36px] h-3.5 bg-slate-200 rounded shrink-0" />
+                    <div className="w-3.5 h-3.5 bg-slate-200 rounded shrink-0" />
+                    <div className="h-3.5 bg-slate-200 rounded flex-1 max-w-[320px]" />
+                  </div>
+                  <div className="flex items-center gap-4 sm:gap-6 shrink-0">
+                    <div className="w-16 h-3.5 bg-slate-200 rounded" />
+                    <div className="w-16 h-3.5 bg-slate-200 rounded" />
+                  </div>
+                </div>
               ))}
             </div>
           ) : pages.length === 0 ? (
@@ -433,64 +459,75 @@ export default function PagesReportPage() {
               No URL pageviews recorded for this window.
             </div>
           ) : (
-            <div className="flex-1 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
-              {/* Fixed Header */}
-              <div className="sticky top-0 z-10 flex items-center justify-between px-3 py-2 bg-slate-100 rounded-md text-xs font-bold text-slate-600 mb-1">
-                <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                  <span className="w-6 text-center">#</span>
-                  <span>URL</span>
+            <div className="border border-slate-200/80 rounded-xl overflow-hidden shadow-2xs">
+              <div className="flex-1 max-h-[600px] overflow-y-auto custom-scrollbar">
+                {/* Fixed Header */}
+                <div className="sticky top-0 z-10 flex items-center justify-between px-3 py-1.5 bg-slate-100/95 border-b border-slate-200/80 text-[11px] font-bold text-slate-600">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className="w-[36px] text-right pr-2 shrink-0">#</span>
+                    <span>URL</span>
+                  </div>
+                  <div className="flex items-center gap-4 sm:gap-6 text-right shrink-0">
+                    <span className="w-16 text-right">Views</span>
+                    <span className="w-16 text-right">Visitors</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-4 sm:gap-6 text-right shrink-0">
-                  <span className="w-16 text-right">Views</span>
-                  <span className="w-16 text-right">Visitors</span>
-                </div>
-              </div>
 
-              {/* Rows */}
-              <div className="space-y-1">
-                {pages.map((page, index) => {
-                  const fullLink =
-                    page.url ||
-                    `${cleanDomain}${page.path.startsWith("/") ? page.path : `/${page.path}`}`;
+                {/* Flush 30px Zebra Rows */}
+                <div>
+                  {pages.map((page, index) => {
+                    const fullLink =
+                      page.url ||
+                      `${cleanDomain}${page.path.startsWith("/") ? page.path : `/${page.path}`}`;
+                    const isZebra = index % 2 !== 0;
 
-                  return (
-                    <div
-                      key={index}
-                      className={`flex items-center justify-between px-3 py-2 rounded-md transition-colors ${
-                        index % 2 === 0 ? "bg-white" : "bg-[#e8e8e8]"
-                      }`}
-                    >
-                      {/* Left: # + Just URL */}
-                      <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-3">
-                        <span className="w-6 text-slate-400 font-mono font-bold text-[11px] shrink-0 text-center">
-                          {index + 1}
-                        </span>
-                        <div className="min-w-0 flex-1 flex items-center gap-1.5">
+                    return (
+                      <div
+                        key={index}
+                        style={{
+                          backgroundColor: isZebra ? "#00000017" : "#ffffff",
+                        }}
+                        className="px-3 py-0 flex items-center justify-between hover:brightness-95 text-[11px] transition-colors min-h-[30px] h-[30px]"
+                      >
+                        {/* Left: # Rank + Favicon + URL */}
+                        <div className="flex items-center gap-2 min-w-0 flex-1 pr-3">
+                          <div className="w-[36px] text-right font-bold text-[#1455bb] text-[12px] shrink-0 font-sans pr-2">
+                            <span>{index + 1}</span>
+                          </div>
+                          <div className="shrink-0">
+                            <WebsiteFavicon
+                              url={fullLink}
+                              domain={selectedWebsite?.domain}
+                              size={14}
+                              fallbackIcon="link"
+                            />
+                          </div>
                           <a
                             href={fullLink}
                             target="_blank"
                             rel="noopener noreferrer"
                             title={fullLink}
-                            className="font-normal text-slate-900 truncate hover:text-[#1455bb] hover:underline font-mono text-xs sm:text-[13px] block"
+                            className="truncate text-slate-800 font-normal hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0 text-[11px] font-mono"
                           >
-                            {fullLink}
+                            <span className="truncate block font-normal text-[11px]">
+                              {fullLink}
+                            </span>
                           </a>
-                          <ExternalLink className="w-3 h-3 text-slate-400 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
-                      </div>
 
-                      {/* Right: Views + Visitors */}
-                      <div className="flex items-center gap-4 sm:gap-6 shrink-0 text-right">
-                        <div className="w-16 text-right font-bold text-slate-900 text-xs sm:text-sm tabular-nums">
-                          {formatCommas(page.pageviews)}
-                        </div>
-                        <div className="w-16 text-right font-bold text-slate-900 text-xs sm:text-sm tabular-nums">
-                          {formatCommas(page.visitors)}
+                        {/* Right: Views + Visitors */}
+                        <div className="flex items-center gap-4 sm:gap-6 shrink-0 text-right">
+                          <div className="w-16 text-right font-bold text-slate-900 text-[11px] tabular-nums font-sans">
+                            {formatCommas(page.pageviews)}
+                          </div>
+                          <div className="w-16 text-right font-bold text-slate-700 text-[11px] tabular-nums font-sans">
+                            {formatCommas(page.visitors)}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
@@ -518,12 +555,22 @@ export default function PagesReportPage() {
           </div>
 
           {loading && byTitleList.length === 0 ? (
-            <div className="space-y-1.5 flex-1">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div className="border border-slate-200/80 rounded-xl overflow-hidden divide-y divide-slate-100/60">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                 <div
                   key={i}
-                  className="h-9 rounded-md bg-slate-100 animate-pulse"
-                />
+                  className="px-3 py-0 flex items-center justify-between min-h-[30px] h-[30px] animate-pulse"
+                >
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div className="w-[36px] h-3.5 bg-slate-200 rounded shrink-0" />
+                    <div className="w-3.5 h-3.5 bg-slate-200 rounded shrink-0" />
+                    <div className="h-3.5 bg-slate-200 rounded flex-1 max-w-[320px]" />
+                  </div>
+                  <div className="flex items-center gap-4 sm:gap-6 shrink-0">
+                    <div className="w-16 h-3.5 bg-slate-200 rounded" />
+                    <div className="w-16 h-3.5 bg-slate-200 rounded" />
+                  </div>
+                </div>
               ))}
             </div>
           ) : byTitleList.length === 0 ? (
@@ -531,61 +578,123 @@ export default function PagesReportPage() {
               No title telemetry recorded for this window.
             </div>
           ) : (
-            <div className="flex-1 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
-              {/* Fixed Header */}
-              <div className="sticky top-0 z-10 flex items-center justify-between px-3 py-2 bg-slate-100 rounded-md text-xs font-bold text-slate-600 mb-1">
-                <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                  <span className="w-6 text-center">#</span>
-                  <span>Title</span>
+            <div className="border border-slate-200/80 rounded-xl overflow-hidden shadow-2xs">
+              <div className="flex-1 max-h-[600px] overflow-y-auto custom-scrollbar">
+                {/* Fixed Header */}
+                <div className="sticky top-0 z-10 flex items-center justify-between px-3 py-1.5 bg-slate-100/95 border-b border-slate-200/80 text-[11px] font-bold text-slate-600">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className="w-[36px] text-right pr-2 shrink-0">#</span>
+                    <span>Title</span>
+                  </div>
+                  <div className="flex items-center gap-4 sm:gap-6 text-right shrink-0">
+                    <span className="w-16 text-right">Views</span>
+                    <span className="w-16 text-right">Visitors</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-4 sm:gap-6 text-right shrink-0">
-                  <span className="w-16 text-right">Views</span>
-                  <span className="w-16 text-right">Visitors</span>
-                </div>
-              </div>
 
-              {/* Rows */}
-              <div className="space-y-1">
-                {byTitleList.map((item, index) => {
-                  return (
-                    <div
-                      key={index}
-                      className={`flex items-center justify-between px-3 py-2 rounded-md transition-colors ${
-                        index % 2 === 0 ? "bg-white" : "bg-[#e8e8e8]"
-                      }`}
-                    >
-                      {/* Left: # + Just Title */}
-                      <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-3">
-                        <span className="w-6 text-slate-400 font-mono font-bold text-[11px] shrink-0 text-center">
-                          {index + 1}
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <span
-                            title={item.title}
-                            className="font-normal text-slate-900 truncate text-xs sm:text-[13px] block"
+                {/* Flush 30px Zebra Rows */}
+                <div>
+                  {byTitleList.map((item, index) => {
+                    const fullLink = `${cleanDomain}${item.samplePath.startsWith("/") ? item.samplePath : `/${item.samplePath}`}`;
+                    const isZebra = index % 2 !== 0;
+
+                    return (
+                      <div
+                        key={index}
+                        style={{
+                          backgroundColor: isZebra ? "#00000017" : "#ffffff",
+                        }}
+                        className="px-3 py-0 flex items-center justify-between hover:brightness-95 text-[11px] transition-colors min-h-[30px] h-[30px]"
+                      >
+                        {/* Left: # Rank + Favicon + Title */}
+                        <div className="flex items-center gap-2 min-w-0 flex-1 pr-3">
+                          <div className="w-[36px] text-right font-bold text-[#1455bb] text-[12px] shrink-0 font-sans pr-2">
+                            <span>{index + 1}</span>
+                          </div>
+                          <div className="shrink-0">
+                            <WebsiteFavicon
+                              url={fullLink}
+                              domain={selectedWebsite?.domain}
+                              size={14}
+                              fallbackIcon="link"
+                            />
+                          </div>
+                          <a
+                            href={fullLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onMouseEnter={(e) => {
+                              const rect =
+                                e.currentTarget.getBoundingClientRect();
+                              const placeBelow = rect.top < 65;
+                              setHoveredLink({
+                                url: fullLink,
+                                title: item.title,
+                                x: rect.left,
+                                y: placeBelow ? rect.bottom + 6 : rect.top - 6,
+                                placeBelow,
+                              });
+                            }}
+                            onMouseLeave={() => setHoveredLink(null)}
+                            className="truncate text-slate-800 font-normal hover:text-[#1455bb] hover:underline cursor-pointer group flex-1 min-w-0 text-[11px]"
                           >
-                            {item.title}
-                          </span>
+                            <span className="truncate block font-normal text-[11px]">
+                              {item.title}
+                            </span>
+                          </a>
                         </div>
-                      </div>
 
-                      {/* Right: Views + Visitors */}
-                      <div className="flex items-center gap-4 sm:gap-6 shrink-0 text-right">
-                        <div className="w-16 text-right font-bold text-slate-900 text-xs sm:text-sm tabular-nums">
-                          {formatCommas(item.pageviews)}
-                        </div>
-                        <div className="w-16 text-right font-bold text-slate-900 text-xs sm:text-sm tabular-nums">
-                          {formatCommas(item.visitors)}
+                        {/* Right: Views + Visitors */}
+                        <div className="flex items-center gap-4 sm:gap-6 shrink-0 text-right">
+                          <div className="w-16 text-right font-bold text-slate-900 text-[11px] tabular-nums font-sans">
+                            {formatCommas(item.pageviews)}
+                          </div>
+                          <div className="w-16 text-right font-bold text-slate-700 text-[11px] tabular-nums font-sans">
+                            {formatCommas(item.visitors)}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Floating URL Popup Tooltip on Hover - Shows Full Complete URL */}
+      {hoveredLink && (
+        <div
+          style={{
+            position: "fixed",
+            left: Math.max(
+              16,
+              Math.min(
+                hoveredLink.x,
+                (typeof window !== "undefined" ? window.innerWidth : 1200) -
+                  Math.min(
+                    hoveredLink.url.length * 8 + 60,
+                    (typeof window !== "undefined" ? window.innerWidth : 1200) -
+                      32,
+                  ),
+              ),
+            ),
+            maxWidth: "calc(100vw - 32px)",
+            top: hoveredLink.y,
+            transform: hoveredLink.placeBelow ? "none" : "translateY(-100%)",
+            zIndex: 9999,
+          }}
+          className="pointer-events-none px-3 py-1.5 bg-[#0f172a] text-white rounded-lg shadow-2xl border border-slate-700/80 text-[11px] font-mono flex items-center gap-2 animate-in fade-in zoom-in-95 duration-100 backdrop-blur-md select-none w-max max-w-[95vw]"
+        >
+          <div className="w-4 h-4 rounded bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
+            <Link2 className="w-3 h-3 text-blue-400" />
+          </div>
+          <span className="text-blue-100 font-medium font-mono text-[11px] whitespace-nowrap">
+            {hoveredLink.url}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

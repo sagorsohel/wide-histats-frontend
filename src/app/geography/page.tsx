@@ -328,10 +328,15 @@ export default function GeographyPage() {
             onPresetChange={handleRangeChange}
             currentWindow={customWindow}
             onDateChange={handleCustomRangeChange}
+            className="w-full max-w-[340px]"
           />
         }
       >
-        <GeoPieChart countries={countries} loading={loading} />
+        <GeoPieChart
+          countries={countries}
+          cities={cities}
+          loading={loading}
+        />
       </DailyStatsCard>
 
       {/* ============================================================ */}

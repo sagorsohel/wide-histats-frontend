@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useWebsite } from "@/context/WebsiteContext";
-import { useAuth } from "@/context/AuthContext";
+import { useAppSelector } from "@/store";
 import { api } from "@/lib/api";
 import { getSocket } from "@/lib/socket";
+import { resolveRange } from "@/lib/dateRange";
+import { useTabFocus } from "@/hooks/useTabFocus";
 import { TrafficStatsData } from "@/types/analytics";
 import { formatCommas } from "@/lib/utils";
 import {
@@ -16,12 +17,26 @@ import {
 import { DailyStatsCard } from "@/components/analytics/DailyStatsCard";
 import { TrafficStatsChart } from "@/components/analytics/TrafficStatsChart";
 import { TrafficHourlyTable } from "@/components/analytics/TrafficHourlyTable";
-import { Eye, Users, UserPlus, RefreshCw, Layers } from "lucide-react";
+
+const REFRESH_MS = 30_000;
+
+const emptyTraffic = (start: Date): TrafficStatsData => ({
+  date: start.toISOString(),
+  dateFormatted: start.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+  dateFull: start.toDateString(),
+  totalPageviews: 0,
+  totalVisitors: 0,
+  firstTimeVisitors: 0,
+  pagesPerVisit: 0,
+  newVisitorsRatio: 0,
+  avgBounceRate: 0,
+  hourly: [],
+});
 
 export default function TrafficStatsPage() {
-  const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
-  const { selectedWebsite, websites } = useWebsite();
+  const { selectedWebsite } = useWebsite();
+  const siteId = selectedWebsite?.id ?? null;
+  const timezone = selectedWebsite?.timezone ?? null;
 
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
   const [viewTab, setViewTab] = useState<CalendarViewTab>("hourly");
@@ -32,139 +47,138 @@ export default function TrafficStatsPage() {
 
   const [trafficData, setTrafficData] = useState<TrafficStatsData | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Seed the live counter from the shared realtime store, then follow socket updates.
+  const storeActiveCount = useAppSelector((state) =>
+    siteId ? state.realtime.byWebsite[siteId]?.data?.activeCount : undefined,
+  );
   const [liveUsersCount, setLiveUsersCount] = useState<number>(0);
+  useEffect(() => {
+    if (typeof storeActiveCount === "number") setLiveUsersCount(storeActiveCount);
+  }, [storeActiveCount]);
 
   const tableRef = useRef<HTMLDivElement>(null);
 
-  // Protected route check
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push("/login");
-    }
-  }, [user, authLoading, router]);
+  // The window being shown: a selected range, or the single selected day.
+  const windowStart = rangeStart && rangeEnd ? rangeStart : selectedDate;
+  const windowEnd = rangeStart && rangeEnd ? rangeEnd : selectedDate;
+  const windowKey = `${windowStart.toDateString()}|${windowEnd.toDateString()}`;
 
-  const loadTrafficData = useCallback(
-    async (targetDate: Date, isSilent = false) => {
-      if (!selectedWebsite?.id) {
-        setLoading(false);
-        return;
-      }
-
-      // Format start and end of selected day in local time
-      const from = new Date(targetDate);
-      from.setHours(0, 0, 0, 0);
-
-      // Strict future check: future date has zero traffic
-      if (from.getTime() > Date.now()) {
-        setTrafficData({
-          date: targetDate.toISOString(),
-          dateFormatted: targetDate.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          }),
-          dateFull: targetDate.toDateString(),
-          totalPageviews: 0,
-          totalVisitors: 0,
-          firstTimeVisitors: 0,
-          pagesPerVisit: 0,
-          newVisitorsRatio: 0,
-          avgBounceRate: 0,
-          hourly: [],
-        });
-        setLoading(false);
-        return;
-      }
-
-      const to = new Date(targetDate);
-      to.setHours(23, 59, 59, 999);
-
-      const endpoint = `/api/v1/analytics/traffic?websiteId=${selectedWebsite.id}&from=${from.toISOString()}&to=${to.toISOString()}`;
-
-      if (!isSilent && !trafficData) {
-        const cached = api.getCached<TrafficStatsData>(endpoint);
-        if (cached?.data) {
-          setTrafficData(cached.data);
-          setLoading(false);
-        } else {
-          setLoading(true);
-        }
-      }
-
-      try {
-        const res = await api.get<TrafficStatsData>(endpoint, {
-          skipCache: isSilent,
-        });
-
-        if (res.success && res.data) {
-          setTrafficData(res.data);
-        }
-      } catch (err) {
-        console.error("Failed to load traffic stats:", err);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [selectedWebsite?.id, trafficData],
+  const bounds = useMemo(
+    () =>
+      resolveRange(
+        "today",
+        { from: windowStart.toISOString(), to: windowEnd.toISOString(), mode: "range" },
+        timezone,
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [windowKey, timezone],
   );
 
-  // Initial and reactive load on website or date change
-  useEffect(() => {
-    if (selectedWebsite?.id) {
-      loadTrafficData(selectedDate);
+  const seqRef = useRef(0);
+  const inFlightRef = useRef(false);
+  const loadArgsRef = useRef({ siteId, bounds, windowStart });
+  loadArgsRef.current = { siteId, bounds, windowStart };
+
+  const loadTrafficData = useCallback(async (silent: boolean) => {
+    const { siteId, bounds, windowStart } = loadArgsRef.current;
+    if (!siteId) {
+      setLoading(false);
+      return;
     }
-  }, [selectedWebsite?.id, selectedDate, loadTrafficData]);
+    if (silent && (inFlightRef.current || document.visibilityState === "hidden")) return;
 
-  // Real-time socket listener for live active visitor pulse
+    const seq = ++seqRef.current;
+    const isStale = () => seq !== seqRef.current;
+
+    if (bounds.isFuture) {
+      setTrafficData(emptyTraffic(windowStart));
+      setLoading(false);
+      return;
+    }
+
+    if (!silent) setLoading(true);
+    inFlightRef.current = true;
+    try {
+      const endpoint =
+        `/api/v1/analytics/traffic?websiteId=${encodeURIComponent(siteId)}` +
+        `&from=${encodeURIComponent(bounds.from)}&to=${encodeURIComponent(bounds.to)}`;
+      const res = await api.get<TrafficStatsData>(endpoint, { skipCache: silent });
+      if (isStale()) return;
+      if (res.success && res.data) setTrafficData(res.data);
+    } catch (err) {
+      console.error("Failed to load traffic stats:", err);
+    } finally {
+      if (!isStale()) {
+        inFlightRef.current = false;
+        setLoading(false);
+      }
+    }
+  }, []);
+
+  // One load per website / window change. Clear the previous site's numbers on switch.
+  const prevSiteRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!selectedWebsite?.id) return;
+    if (prevSiteRef.current && prevSiteRef.current !== siteId) {
+      setTrafficData(null);
+      setLiveUsersCount(0);
+    }
+    prevSiteRef.current = siteId;
+    loadTrafficData(false);
+  }, [siteId, bounds, loadTrafficData]);
 
+  // Background refresh (paused while hidden) + refresh on focus / reconnect.
+  useEffect(() => {
+    const timer = setInterval(() => loadTrafficData(true), REFRESH_MS);
+    return () => clearInterval(timer);
+  }, [loadTrafficData]);
+  useTabFocus(() => loadTrafficData(true));
+  useEffect(() => {
+    const handleSync = () => loadTrafficData(true);
+    window.addEventListener("histat:socket_sync", handleSync);
+    return () => window.removeEventListener("histat:socket_sync", handleSync);
+  }, [loadTrafficData]);
+
+  // Live active-visitor count. Backend event names are namespaced with "website:".
+  useEffect(() => {
+    if (!siteId) return;
     const socket = getSocket();
     if (!socket) return;
 
     const handleRealtimeUpdate = (data: any) => {
-      if (data && typeof data.activeCount === "number") {
+      if (data?.websiteId === siteId && typeof data.activeCount === "number") {
         setLiveUsersCount(data.activeCount);
       }
     };
 
-    socket.on("realtime_update", handleRealtimeUpdate);
-
+    socket.on("website:realtime_update", handleRealtimeUpdate);
+    socket.on("website:realtime_init", handleRealtimeUpdate);
     return () => {
-      socket.off("realtime_update", handleRealtimeUpdate);
+      socket.off("website:realtime_update", handleRealtimeUpdate);
+      socket.off("website:realtime_init", handleRealtimeUpdate);
     };
-  }, [selectedWebsite?.id]);
-
-  // Background auto-refresh every 20 seconds
-  useEffect(() => {
-    if (!selectedWebsite?.id) return;
-    const interval = setInterval(() => {
-      loadTrafficData(selectedDate, true);
-    }, 20000);
-    return () => clearInterval(interval);
-  }, [selectedWebsite?.id, selectedDate, loadTrafficData]);
+  }, [siteId]);
 
   const handleDateSelect = (date: Date) => {
+    setRangeStart(null);
+    setRangeEnd(null);
     setSelectedDate(date);
-    loadTrafficData(date);
   };
 
   const handleRangeSelect = (start: Date, end: Date) => {
     setRangeStart(start);
     setRangeEnd(end);
     setSelectedDate(start);
-    loadTrafficData(start);
   };
 
   const scrollToTable = () => {
     tableRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Format header date string, e.g. "5 November"
-  const headerDateStr = selectedDate.toLocaleDateString("en-US", {
-    day: "numeric",
-    month: "long",
-  });
+  // Header date, e.g. "5 November" or "1 November – 7 November" for a range
+  const fmtDay = (d: Date) => d.toLocaleDateString("en-US", { day: "numeric", month: "long" });
+  const isRange = !!(rangeStart && rangeEnd && rangeStart.toDateString() !== rangeEnd.toDateString());
+  const headerDateStr = isRange ? `${fmtDay(rangeStart!)} – ${fmtDay(rangeEnd!)}` : fmtDay(selectedDate);
 
   // Prepare stat items for DailyStatsCard
   const trafficStatItems = [
@@ -206,7 +220,7 @@ export default function TrafficStatsPage() {
           items={trafficStatItems}
           loading={loading}
           domain={selectedWebsite?.domain}
-          dateText={trafficData?.dateFormatted || headerDateStr}
+          dateText={isRange ? headerDateStr : trafficData?.dateFormatted || headerDateStr}
           calendar={
             <HistatsCalendar
               selectedDate={selectedDate}

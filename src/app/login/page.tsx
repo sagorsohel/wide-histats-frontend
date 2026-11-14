@@ -7,9 +7,18 @@ import { AlertCircle, Lock, Mail } from "lucide-react";
 import Link from "next/link";
 import { AnalycosLogo } from "@/components/common/AnalycosLogo";
 
+// Only allow same-site relative redirects (prevents open-redirects via ?next=).
+const getNextPath = (): string => {
+  if (typeof window === "undefined") return "/control-panel";
+  const next = new URLSearchParams(window.location.search).get("next");
+  return next && next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/login")
+    ? next
+    : "/control-panel";
+};
+
 export default function LoginPage() {
   const router = useRouter();
-  const { user, loading: authLoading, login, quickDemoLogin } = useAuth();
+  const { user, initialized, login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,10 +27,10 @@ export default function LoginPage() {
 
   // If already logged in, redirect straight to /control-panel
   useEffect(() => {
-    if (!authLoading && user) {
-      router.replace("/control-panel");
+    if (initialized && user) {
+      router.replace(getNextPath());
     }
-  }, [user, authLoading, router]);
+  }, [user, initialized, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,31 +38,14 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const success = await login(email, password);
-      if (success) {
-        router.push("/control-panel");
+      const result = await login(email.trim(), password);
+      if (result.success) {
+        router.push(getNextPath());
       } else {
-        setError("Invalid email or password. Please verify credentials.");
+        setError(result.message || "Invalid email or password. Please verify credentials.");
       }
     } catch (err: any) {
       setError(err.message || "An error occurred during authentication.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDemoSignIn = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const success = await quickDemoLogin();
-      if (success) {
-        router.push("/control-panel");
-      } else {
-        setError("Failed to sign in with demo credentials.");
-      }
-    } catch (err: any) {
-      setError(err.message || "Failed to sign in with demo credentials.");
     } finally {
       setLoading(false);
     }
@@ -126,8 +118,6 @@ export default function LoginPage() {
               {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
-
-          {/* Quick Demo Login Option */}
 
           {/* Link to Register page */}
           <div className="mt-6 text-center text-xs text-slate-500 border-t border-slate-100 pt-4">

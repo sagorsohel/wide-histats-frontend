@@ -6,7 +6,7 @@ import { FileText, ArrowRight } from "lucide-react";
 import { WebsiteFavicon } from "@/components/common/WebsiteFavicon";
 import Link from "next/link";
 import { useWebsite } from "@/context/WebsiteContext";
-import { getSite7DigitId } from "@/lib/utils";
+import { getSite7DigitId, safeHref } from "@/lib/utils";
 
 interface TopPagesTableProps {
   pages: PageStat[];
@@ -122,7 +122,7 @@ export const TopPagesTable: React.FC<TopPagesTableProps> = ({
                     </div>
 
                     <a
-                      href={fullLink}
+                      href={safeHref(fullLink)}
                       target="_blank"
                       rel="noopener noreferrer"
                       title={fullLink}

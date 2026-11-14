@@ -40,6 +40,19 @@ export const Header: React.FC = () => {
     setMounted(true);
   }, []);
 
+  // Close any open dropdown with Escape (keyboard accessibility).
+  useEffect(() => {
+    if (!userDropdownOpen && !websiteDropdownOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setUserDropdownOpen(false);
+        setWebsiteDropdownOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [userDropdownOpen, websiteDropdownOpen]);
+
   const isAuthPage =
     pathname === "/" || pathname === "/login" || pathname === "/register";
 
@@ -68,20 +81,10 @@ export const Header: React.FC = () => {
     }
     setSelectedWebsite(site);
     setWebsiteDropdownOpen(false);
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(
-        new CustomEvent("histat:website_changed", { detail: site }),
-      );
-      if (
-        !isAuthPage &&
-        pathname !== "/control-panel" &&
-        pathname !== "/websites"
-      ) {
-        const cleanPath = pathname.endsWith("/") ? pathname : `${pathname}/`;
-        const site7Digit = getSite7DigitId(site);
-        window.history.replaceState(null, "", `${cleanPath}?id=${site7Digit}`);
-        router.push(`${cleanPath}?id=${site7Digit}`);
-      }
+    // Pages react to the selection change; just keep the URL's ?id= in sync.
+    if (!isAuthPage && pathname !== "/control-panel" && pathname !== "/websites") {
+      const cleanPath = pathname.endsWith("/") ? pathname : `${pathname}/`;
+      router.replace(`${cleanPath}?id=${encodeURIComponent(getSite7DigitId(site))}`);
     }
   };
 
@@ -177,6 +180,8 @@ export const Header: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setWebsiteDropdownOpen(!websiteDropdownOpen)}
+                  aria-haspopup="listbox"
+                  aria-expanded={websiteDropdownOpen}
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50/70 text-xs font-semibold text-slate-800 shadow-2xs transition-all cursor-pointer"
                 >
                   <Globe className="w-3.5 h-3.5 text-slate-500 shrink-0" />
@@ -292,6 +297,9 @@ export const Header: React.FC = () => {
             <button
               type="button"
               onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+              aria-haspopup="menu"
+              aria-expanded={userDropdownOpen}
+              aria-label="Account menu"
               className="flex items-center gap-1 p-0.5 rounded-full hover:ring-2 hover:ring-blue-500/20 transition-all cursor-pointer"
             >
               <div className="w-7 h-7 rounded-full bg-[#1058d1] text-white flex items-center justify-center font-bold text-xs uppercase shadow-xs">
@@ -312,7 +320,7 @@ export const Header: React.FC = () => {
                       {user?.name || "User Account"}
                     </div>
                     <div className="text-[11px] text-slate-400 truncate mt-0.5">
-                      {user?.email || "user@analycos.com"}
+                      {user?.email || ""}
                     </div>
                   </div>
 

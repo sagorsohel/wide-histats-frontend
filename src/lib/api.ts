@@ -118,8 +118,11 @@ class ApiClient {
         });
 
         if (response.status === 401 || response.status === 403) {
-          // Token is definitively invalid/revoked
+          // Token is definitively invalid/revoked: wipe it and tell the UI to sign out.
           this.clearAuth();
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new CustomEvent("histat:auth_expired"));
+          }
           return null;
         }
 
@@ -185,15 +188,33 @@ class ApiClient {
           response = await fetch(`${API_BASE}${endpoint}`, {
             ...options,
             headers,
+            cache: "no-store",
             credentials: "include",
           });
         }
       }
 
-      const data = await response.json();
+      // Proxies/gateways can answer with HTML (502/504) or an empty body.
+      let data: any = null;
+      const text = await response.text();
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = null;
+        }
+      }
 
       if (!response.ok) {
-        throw new Error(data.message || `Request failed with status ${response.status}`);
+        const fallback =
+          response.status >= 500
+            ? "The server is temporarily unavailable. Please try again shortly."
+            : `Request failed with status ${response.status}`;
+        return { success: false, message: data?.message || fallback, errors: data?.errors };
+      }
+
+      if (!data) {
+        return { success: false, message: "Unexpected response from the server." };
       }
 
       return data;

@@ -3,10 +3,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useWebsite } from "@/context/WebsiteContext";
 import { api } from "@/lib/api";
+import { safeHref } from "@/lib/utils";
 import {
   getSocket,
-  subscribeToWebsite,
-  unsubscribeFromWebsite,
 } from "@/lib/socket";
 import {
   RealtimeData,
@@ -143,7 +142,6 @@ export default function RealtimeHistatsPage() {
   const [animatingHitIds, setAnimatingHitIds] = useState<
     Record<string, boolean>
   >({});
-  const isInitialLoad = React.useRef(true);
 
   // 1-second live ticker for exact real-time elapsed seconds
   useEffect(() => {
@@ -153,215 +151,124 @@ export default function RealtimeHistatsPage() {
     return () => clearInterval(timer);
   }, []);
 
+  // Polling is only a safety net; live updates arrive over the socket.
+  const REALTIME_POLL_MS = 5_000;
+  const inFlightRef = React.useRef(false);
+  const seqRef = React.useRef(0);
+  const isPausedRef = React.useRef(isPaused);
+  isPausedRef.current = isPaused;
+
   const loadRealtime = useCallback(
-    async (isSilent = false, overrideSiteId?: string) => {
-      const siteId = overrideSiteId || activeSiteIdRef.current;
+    async (isSilent = false) => {
+      const siteId = activeSiteIdRef.current;
       if (!siteId) {
         setLoading(false);
         return;
       }
-      if (isPaused) return;
+      if (isPausedRef.current) return;
+      if (isSilent && (inFlightRef.current || document.visibilityState === "hidden")) return;
 
+      const seq = ++seqRef.current;
       const hasData = !!currentSiteRealtimeRef.current?.data;
-      if (!isSilent && !hasData) {
-        setLoading(true);
-      }
+      if (!isSilent && !hasData) setLoading(true);
+      inFlightRef.current = true;
 
       try {
         const res = await api.get<RealtimeData>(
-          `/api/v1/analytics/realtime?websiteId=${siteId}`,
+          `/api/v1/analytics/realtime?websiteId=${encodeURIComponent(siteId)}`,
           { skipCache: true, ttlMs: 0 },
         );
-
-        // Strict race condition guard: If user switched website while this request was in flight, discard!
-        if (siteId !== activeSiteIdRef.current) {
-          return;
-        }
-
+        // Discard if the user switched website (or a newer request started) meanwhile.
+        if (seq !== seqRef.current || siteId !== activeSiteIdRef.current) return;
         if (res.success && res.data) {
           dispatch(setRealtimeData({ websiteId: siteId, data: res.data }));
         }
       } catch (err) {
         console.error("Failed to fetch realtime stats", err);
       } finally {
-        if (siteId === activeSiteIdRef.current) {
+        if (seq === seqRef.current) {
+          inFlightRef.current = false;
           setLoading(false);
         }
       }
     },
-    [isPaused, dispatch],
+    [dispatch],
   );
 
-  // Instantly handle website switcher change: reset previous site's state & load new site immediately!
-  const prevWebsiteIdRef = React.useRef<string | null>(null);
-
+  // Website switch: reset per-site UI state and load the new site once.
+  // (WebsiteProvider owns the socket room subscription.)
   useEffect(() => {
-    if (
-      selectedWebsite?.id &&
-      selectedWebsite.id !== prevWebsiteIdRef.current
-    ) {
-      const oldId = prevWebsiteIdRef.current;
-      if (oldId) {
-        unsubscribeFromWebsite(oldId);
-      }
-      prevWebsiteIdRef.current = selectedWebsite.id;
-      activeSiteIdRef.current = selectedWebsite.id;
-      setAnimatingHitIds({});
-      setSearchQuery("");
-      setLoading(true);
-      subscribeToWebsite(selectedWebsite.id);
-      loadRealtime(false, selectedWebsite.id);
-    }
+    if (!selectedWebsite?.id) return;
+    setAnimatingHitIds({});
+    setSearchQuery("");
+    loadRealtime(false);
   }, [selectedWebsite?.id, loadRealtime]);
 
-  // Listen to global website changed event for immediate 0ms update
+  // Resume immediately when un-paused.
   useEffect(() => {
-    const handleWebsiteChanged = (e: any) => {
-      const newSite = e.detail;
-      if (newSite?.id) {
-        if (
-          prevWebsiteIdRef.current &&
-          prevWebsiteIdRef.current !== newSite.id
-        ) {
-          unsubscribeFromWebsite(prevWebsiteIdRef.current);
-        }
-        prevWebsiteIdRef.current = newSite.id;
-        activeSiteIdRef.current = newSite.id;
-        setAnimatingHitIds({});
-        setSearchQuery("");
-        setLoading(true);
-        subscribeToWebsite(newSite.id);
-        loadRealtime(false, newSite.id);
-      }
-    };
-    window.addEventListener("histat:website_changed", handleWebsiteChanged);
-    return () =>
-      window.removeEventListener(
-        "histat:website_changed",
-        handleWebsiteChanged,
-      );
+    if (!isPaused) loadRealtime(true);
+  }, [isPaused, loadRealtime]);
+
+  // Tab focus / network restore (debounced) and socket reconnect.
+  useTabFocus(() => loadRealtime(true));
+  useEffect(() => {
+    const handleSync = () => loadRealtime(true);
+    window.addEventListener("histat:socket_sync", handleSync);
+    return () => window.removeEventListener("histat:socket_sync", handleSync);
   }, [loadRealtime]);
 
-  // Silent auto-sync on tab wake, network restore, or socket reconnection
-  useTabFocus(() => {
-    if (selectedWebsite) {
-      subscribeToWebsite(selectedWebsite.id);
-      loadRealtime(true);
-    }
-  });
-
+  // Safety-net polling: never overlaps, paused while the tab is hidden.
   useEffect(() => {
-    const handleSilentSync = () => {
-      if (selectedWebsite) {
-        subscribeToWebsite(selectedWebsite.id);
-        loadRealtime(true, selectedWebsite.id);
-      }
-    };
-
-    window.addEventListener("histat:socket_sync", handleSilentSync);
-    window.addEventListener("histat:silent_system_refresh", handleSilentSync);
-    window.addEventListener("online", handleSilentSync);
-    window.addEventListener("focus", handleSilentSync);
-
-    return () => {
-      window.removeEventListener("histat:socket_sync", handleSilentSync);
-      window.removeEventListener(
-        "histat:silent_system_refresh",
-        handleSilentSync,
-      );
-      window.removeEventListener("online", handleSilentSync);
-      window.removeEventListener("focus", handleSilentSync);
-    };
-  }, [selectedWebsite, loadRealtime]);
-
-  // 1-Second Silent background auto-reload interval (runs continuously and forcefully every 1s)
-  useEffect(() => {
-    const targetId = activeSiteIdRef.current || selectedWebsite?.id;
-    if (targetId) {
-      loadRealtime(!currentSiteRealtime?.data, targetId);
-    }
-
-    const interval = setInterval(() => {
-      const currentTarget = activeSiteIdRef.current || selectedWebsite?.id;
-      if (currentTarget) {
-        // Self-healing: if socket disconnected in background, reconnect immediately
-        const s = getSocket();
-        if (s && !s.connected) {
-          s.connect();
-          subscribeToWebsite(currentTarget);
-          if (selectedWebsite?.trackingId) {
-            subscribeToWebsite(selectedWebsite.trackingId);
-          }
-        }
-        // Forceful 1-second refresh always in background
-        loadRealtime(true, currentTarget);
-      }
-    }, 1000);
-
+    const interval = setInterval(() => loadRealtime(true), REALTIME_POLL_MS);
     return () => clearInterval(interval);
-  }, [loadRealtime, selectedWebsite?.id, selectedWebsite?.trackingId]);
+  }, [loadRealtime]);
 
-  // Socket.IO real-time listener (Instant "Sathe Sathe" updates with 100% website isolation)
+  // Socket.IO live listener, isolated to the selected website.
   useEffect(() => {
     if (!selectedWebsite || isPaused) return;
     const socket = getSocket();
     if (!socket) return;
 
-    // Ensure we join the website's room immediately (both UUID and numeric trackingId)
-    subscribeToWebsite(selectedWebsite.id);
-    if (selectedWebsite.trackingId) {
-      subscribeToWebsite(selectedWebsite.trackingId);
-    }
+    const matchesSite = (incomingId?: string) =>
+      !!incomingId &&
+      (incomingId === activeSiteIdRef.current || incomingId === selectedWebsite.trackingId);
 
     const handleRealtimeUpdate = (payload: any) => {
       const activeId = activeSiteIdRef.current;
-      const trackingId = selectedWebsite?.trackingId;
-      if (payload.websiteId === activeId || payload.websiteId === trackingId) {
-        dispatch(updateLiveCounts(payload));
-      }
+      if (!activeId || !matchesSite(payload?.websiteId)) return;
+      // Always store under the UUID, even if the payload used the tracking ID.
+      dispatch(updateLiveCounts({ ...payload, websiteId: activeId }));
     };
 
     const handlePageView = (event: any) => {
       const activeId = activeSiteIdRef.current;
-      const trackingId = selectedWebsite?.trackingId;
       if (!activeId) return;
-
-      // Match either website UUID or 7-digit trackingId
-      if (
-        event.websiteId &&
-        event.websiteId !== activeId &&
-        event.websiteId !== trackingId
-      ) {
-        return;
-      }
+      if (event?.websiteId && !matchesSite(event.websiteId)) return;
 
       const domain = selectedWebsite?.domain || "";
       const cleanUrl =
         event.url ||
         (domain ? `https://${domain}${event.path || "/"}` : event.path || "/");
 
+      // Unknown fields stay empty: never invent a country, browser or IP.
       const newHit: RealtimeRecentHit = {
         id:
           event.id ||
-          "hit-" +
-            Date.now() +
-            "-" +
-            Math.random().toString(36).substring(2, 7),
+          `hit-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
         websiteId: activeId,
         path: event.path || "/",
-        title: event.title || event.path || "Home Page",
+        title: event.title || event.path || "",
         url: cleanUrl,
         referrer: event.referrer || null,
         viewedAt: event.timestamp || event.viewedAt || new Date().toISOString(),
-        country: event.country || "United States",
-        countryCode: event.countryCode || "US",
+        country: event.country || "",
+        countryCode: event.countryCode || "",
         city: event.city || "",
-        browser: event.browser || "Chrome",
-        os: event.os || "Windows",
-        deviceType: event.deviceType || "desktop",
-        visitorKey:
-          event.visitorKey || "vis-" + Math.floor(Math.random() * 10000),
-        ip: event.ip || "127.0.0.1",
+        browser: event.browser || "",
+        os: event.os || "",
+        deviceType: event.deviceType || "",
+        visitorKey: event.visitorKey || "",
+        ip: event.ip || "",
         hitsCount: event.hitsCount || 1,
       };
 
@@ -1327,7 +1234,7 @@ export default function RealtimeHistatsPage() {
                             />
                           </div>
                           <a
-                            href={getFullUrl(hit.url, hit.path)}
+                            href={safeHref(getFullUrl(hit.url, hit.path))}
                             onClick={(e) =>
                               handleUrlClick(
                                 e,
@@ -1485,7 +1392,7 @@ export default function RealtimeHistatsPage() {
                               />
                             </div>
                             <a
-                              href={pageUrl}
+                              href={safeHref(pageUrl)}
                               onClick={(e) =>
                                 handleUrlClick(
                                   e,
@@ -1613,7 +1520,7 @@ export default function RealtimeHistatsPage() {
                             />
                             {isUrl ? (
                               <a
-                                href={ref.referrer}
+                                href={safeHref(ref.referrer)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 title={ref.referrer}
@@ -1757,7 +1664,7 @@ export default function RealtimeHistatsPage() {
                                           size={12}
                                         />
                                         <a
-                                          href={pageUrl}
+                                          href={safeHref(pageUrl)}
                                           target="_blank"
                                           rel="noopener noreferrer"
                                           title={pageUrl}
@@ -1788,10 +1695,10 @@ export default function RealtimeHistatsPage() {
                                   size={12}
                                 />
                                 <a
-                                  href={getFullUrl(
+                                  href={safeHref(getFullUrl(
                                     vis.pageUrl,
                                     vis.currentPath,
-                                  )}
+                                  ))}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   title={getFullUrl(
@@ -1932,7 +1839,7 @@ export default function RealtimeHistatsPage() {
                           </svg>
                         </span>
                         <a
-                          href={hitUrl}
+                          href={safeHref(hitUrl)}
                           onClick={(e) =>
                             handleUrlClick(e, hitUrl, hit.title || hit.path)
                           }
@@ -1951,7 +1858,7 @@ export default function RealtimeHistatsPage() {
                           </span>
                           <ExternalLink className="w-3 h-3 text-slate-400 shrink-0" />
                           <a
-                            href={hit.referrer!}
+                            href={safeHref(hit.referrer)}
                             target="_blank"
                             rel="noopener noreferrer"
                             title={hit.referrer || ""}
@@ -2074,7 +1981,7 @@ export default function RealtimeHistatsPage() {
                                         )}
                                       </span>
                                       <a
-                                        href={currentUrl}
+                                        href={safeHref(currentUrl)}
                                         onClick={(e) =>
                                           handleUrlClick(
                                             e,
@@ -2105,7 +2012,7 @@ export default function RealtimeHistatsPage() {
                                 Browsing:
                               </span>
                               <a
-                                href={pageUrl}
+                                href={safeHref(pageUrl)}
                                 onClick={(e) =>
                                   handleUrlClick(
                                     e,
@@ -2250,7 +2157,7 @@ export default function RealtimeHistatsPage() {
                           />
                         </div>
                         <a
-                          href={pageUrl}
+                          href={safeHref(pageUrl)}
                           onClick={(e) =>
                             handleUrlClick(e, pageUrl, page.title || page.path)
                           }
@@ -2360,7 +2267,7 @@ export default function RealtimeHistatsPage() {
                         <ReferrerBrandIcon referrer={ref.referrer} size={14} />
                         {isUrl ? (
                           <a
-                            href={ref.referrer}
+                            href={safeHref(ref.referrer)}
                             target="_blank"
                             rel="noopener noreferrer"
                             title={ref.referrer}
@@ -2652,9 +2559,10 @@ export default function RealtimeHistatsPage() {
               <button
                 type="button"
                 onClick={() => {
-                  if (typeof window !== "undefined") {
+                  const target = safeHref(confirmUrlModal.url);
+                  if (typeof window !== "undefined" && target !== "#") {
                     window.open(
-                      confirmUrlModal.url,
+                      target,
                       "_blank",
                       "noopener,noreferrer",
                     );

@@ -206,8 +206,10 @@ export const TrafficStatsChart: React.FC<TrafficStatsChartProps> = ({
         {/* Left: [COMPARE] button */}
         <button
           type="button"
-          onClick={() => alert("Comparison mode activated")}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded border border-slate-300 bg-gradient-to-b from-white to-[#f1f5f9] text-[#1d5b9f] hover:text-blue-900 font-bold text-xs shadow-2xs transition-all"
+          disabled
+          title="Period comparison is coming soon"
+          aria-disabled="true"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded border border-slate-300 bg-gradient-to-b from-white to-[#f1f5f9] text-[#1d5b9f] font-bold text-xs shadow-2xs transition-all opacity-60 cursor-not-allowed"
         >
           <Layers className="w-3.5 h-3.5 text-[#1d5b9f]" />
           <span>COMPARE</span>

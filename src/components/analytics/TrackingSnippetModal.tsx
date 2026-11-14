@@ -119,6 +119,10 @@ export const TrackingSnippetModal: React.FC<TrackingSnippetModalProps> = ({
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [codeType, setCodeType] = useState<"standard" | "async">("async");
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  // Two-step inline delete confirmation (replaces window.confirm).
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   // Counter creation state
   const [newStyle, setNewStyle] = useState<CounterStyle>("cloud");
@@ -252,35 +256,51 @@ as.src = ('${scriptUrl}');
 
   // Save new counter
   const handleSaveCounter = async () => {
-    const created = await counterService.createCounter(website, {
-      name:
-        newStyle === "hidden"
-          ? "Standard counter (Hidden)"
-          : `${newStyle.charAt(0).toUpperCase() + newStyle.slice(1)} Counter`,
-      style: newStyle,
-      displayOptions: newDisplayOptions,
-    });
-
-    const updatedList = await counterService.getCounters(website);
-    setCounters(updatedList);
-    setSelectedCounter(created);
-    setView("code");
+    if (saving) return;
+    setSaving(true);
+    setActionError(null);
+    try {
+      const created = await counterService.createCounter(website, {
+        name:
+          newStyle === "hidden"
+            ? "Standard counter (Hidden)"
+            : `${newStyle.charAt(0).toUpperCase() + newStyle.slice(1)} Counter`,
+        style: newStyle,
+        displayOptions: newDisplayOptions,
+      });
+      const updatedList = await counterService.getCounters(website);
+      setCounters(updatedList);
+      setSelectedCounter(created);
+      setView("code");
+    } catch (err: any) {
+      setActionError(err?.message || "Failed to create counter.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   // Delete counter
   const handleDeleteCounter = async (e: React.MouseEvent, counterId: string) => {
     e.stopPropagation();
+    setActionError(null);
     if (counters.length <= 1) {
-      alert("At least one tracking counter must remain for the website.");
+      setActionError("At least one tracking counter must remain for the website.");
       return;
     }
-    if (confirm("Are you sure you want to delete this counter?")) {
+    if (pendingDeleteId !== counterId) {
+      setPendingDeleteId(counterId); // first click asks, second click deletes
+      return;
+    }
+    setPendingDeleteId(null);
+    try {
       await counterService.deleteCounter(website, counterId);
       const updatedList = await counterService.getCounters(website);
       setCounters(updatedList);
       if (selectedCounter?.counterId === counterId) {
         setSelectedCounter(updatedList[0] || null);
       }
+    } catch (err: any) {
+      setActionError(err?.message || "Failed to delete counter.");
     }
   };
 
@@ -323,6 +343,14 @@ as.src = ('${scriptUrl}');
 
         {/* Modal Body Container */}
         <div className="p-4 sm:p-6 overflow-y-auto flex-1 custom-scrollbar space-y-5">
+          {actionError && (
+            <div role="alert" className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between gap-3">
+              <span>{actionError}</span>
+              <button type="button" onClick={() => setActionError(null)} className="font-bold" aria-label="Dismiss">
+                ✕
+              </button>
+            </div>
+          )}
           {/* ============================================================ */}
           {/* VIEW 1: COUNTERS LIST (Matching Image 4)                    */}
           {/* ============================================================ */}
@@ -398,10 +426,14 @@ as.src = ('${scriptUrl}');
                           <button
                             type="button"
                             onClick={(e) => handleDeleteCounter(e, c.counterId)}
-                            title="Delete counter"
-                            className="w-6 h-6 rounded bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center font-black text-xs shadow-xs transition-colors cursor-pointer"
+                            onBlur={() => setPendingDeleteId(null)}
+                            title={pendingDeleteId === c.counterId ? "Click again to delete" : "Delete counter"}
+                            aria-label={pendingDeleteId === c.counterId ? "Confirm delete counter" : "Delete counter"}
+                            className={`h-6 rounded bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center font-black text-xs shadow-xs transition-colors cursor-pointer ${
+                              pendingDeleteId === c.counterId ? "px-2" : "w-6"
+                            }`}
                           >
-                            ✕
+                            {pendingDeleteId === c.counterId ? "Delete?" : "✕"}
                           </button>
                         </div>
                       </div>
@@ -514,9 +546,10 @@ as.src = ('${scriptUrl}');
                 <button
                   type="button"
                   onClick={handleSaveCounter}
-                  className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-gradient-to-r from-[#1455bb] to-[#1e6ae8] hover:from-[#1047a0] hover:to-[#1755be] text-white text-xs font-black shadow-md shadow-blue-600/30 active:scale-95 transition-all cursor-pointer"
+                  disabled={saving}
+                  className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-gradient-to-r from-[#1455bb] to-[#1e6ae8] hover:from-[#1047a0] hover:to-[#1755be] text-white text-xs font-black shadow-md shadow-blue-600/30 active:scale-95 transition-all cursor-pointer disabled:opacity-60"
                 >
-                  <span>Save & Generate Code</span>
+                  <span>{saving ? "Saving..." : "Save & Generate Code"}</span>
                   <Check className="w-3.5 h-3.5" />
                 </button>
               </div>

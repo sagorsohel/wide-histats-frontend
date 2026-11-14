@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { safeHref } from "@/lib/utils";
 import { SourceStat } from "@/types/analytics";
 import { Share2 } from "lucide-react";
 import { WebsiteFavicon } from "@/components/common/WebsiteFavicon";
@@ -115,7 +116,7 @@ export const SourcesChart: React.FC<SourcesChartProps> = ({
                     </div>
                     {!isDirect ? (
                       <a
-                        href={fullUrl}
+                        href={safeHref(fullUrl)}
                         target="_blank"
                         rel="noopener noreferrer"
                         title={fullUrl}

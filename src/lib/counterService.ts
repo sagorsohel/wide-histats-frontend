@@ -1,75 +1,67 @@
 import { Website, WebsiteCounter, CounterStyle, CounterDisplayOptions } from "@/types/analytics";
 import { api } from "./api";
 
-// Helper to generate a unique 7-digit numeric counter ID
-export const generate7DigitCounterId = (): string => {
-  return String(Math.floor(1000000 + Math.random() * 9000000));
-};
+// The backend is the source of truth for counters (it generates the 7-digit counter IDs
+// and always creates the main counter). localStorage is only a read-through cache so the
+// list can render instantly / offline; it is never used to invent IDs.
 
 const getStorageKey = (websiteId: string) => `analycos_counters_${websiteId}`;
 
+const readCache = (websiteId: string): WebsiteCounter[] => {
+  try {
+    const stored = localStorage.getItem(getStorageKey(websiteId));
+    const parsed = stored ? JSON.parse(stored) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const writeCache = (websiteId: string, list: WebsiteCounter[]) => {
+  try {
+    localStorage.setItem(getStorageKey(websiteId), JSON.stringify(list));
+  } catch {
+    // storage unavailable
+  }
+};
+
+/** Placeholder shown only when the server can't be reached and nothing is cached. */
+const offlineMainCounter = (website: Website): WebsiteCounter => ({
+  id: `main-${website.id}`,
+  websiteId: website.id,
+  counterId: website.trackingId,
+  name: "Standard counter",
+  style: "hidden",
+  isHidden: true,
+  isMain: true,
+  displayOptions: {
+    visitorsToday: true,
+    totalVisitors: false,
+    pageviewsToday: false,
+    totalPageviews: false,
+    usersOnline: false,
+  },
+  createdAt: new Date().toISOString(),
+});
+
 export const counterService = {
-  // Load counters for a specific website
+  /** Server list (refreshes the cache); falls back to the cache if the request fails. */
   async getCounters(website: Website): Promise<WebsiteCounter[]> {
-    if (!website || !website.id) return [];
+    if (!website?.id) return [];
 
-    const storageKey = getStorageKey(website.id);
-
-    // 1. Try reading from localStorage first for instantaneous 0ms display
-    let localList: WebsiteCounter[] = [];
-    try {
-      const stored = localStorage.getItem(storageKey);
-      if (stored) {
-        localList = JSON.parse(stored);
-      }
-    } catch {}
-
-    // If no counters exist locally, create the initial default "Main (Hidden)" counter
-    if (!localList || localList.length === 0) {
-      const mainCounter: WebsiteCounter = {
-        id: `main-${website.id}`,
-        websiteId: website.id,
-        counterId: website.trackingId || generate7DigitCounterId(),
-        name: "Standard counter",
-        style: "hidden",
-        isHidden: true,
-        isMain: true,
-        displayOptions: {
-          visitorsToday: true,
-          totalVisitors: false,
-          pageviewsToday: false,
-          totalPageviews: false,
-          usersOnline: false,
-        },
-        createdAt: new Date().toISOString(),
-      };
-      localList = [mainCounter];
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(localList));
-      } catch {}
+    const res = await api.get<WebsiteCounter[]>(`/api/v1/websites/${website.id}/counters`, {
+      skipCache: true,
+    });
+    if (res.success && Array.isArray(res.data)) {
+      writeCache(website.id, res.data);
+      return res.data;
     }
 
-    // 2. Background attempt to fetch/sync from backend API if available
-    try {
-      const res = await api.get<WebsiteCounter[]>(
-        `/api/v1/websites/${website.id}/counters`,
-        { skipCache: true }
-      );
-      if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
-        // Merge API data with local storage
-        localList = res.data;
-        try {
-          localStorage.setItem(storageKey, JSON.stringify(localList));
-        } catch {}
-      }
-    } catch {
-      // Offline or network error: fallback smoothly to local storage
-    }
-
-    return localList;
+    const cached = readCache(website.id);
+    return cached.length > 0 ? cached : [offlineMainCounter(website)];
   },
 
-  // Create a new counter for a website
+  /** Creates the counter on the server and returns the server's record. Throws on failure. */
   async createCounter(
     website: Website,
     data: {
@@ -78,59 +70,28 @@ export const counterService = {
       displayOptions: CounterDisplayOptions;
     }
   ): Promise<WebsiteCounter> {
-    const counterId = generate7DigitCounterId();
-    const isHidden = data.style === "hidden";
-
-    const newCounter: WebsiteCounter = {
-      id: `c_${Date.now()}_${counterId}`,
-      websiteId: website.id,
-      counterId,
-      name: data.name || (isHidden ? "Standard counter" : `Counter ${counterId}`),
+    const res = await api.post<WebsiteCounter>(`/api/v1/websites/${website.id}/counters`, {
+      name: data.name,
       style: data.style,
-      isHidden,
-      isMain: false,
+      isHidden: data.style === "hidden",
       displayOptions: data.displayOptions,
-      createdAt: new Date().toISOString(),
-    };
-
-    // Save locally immediately
-    const storageKey = getStorageKey(website.id);
-    try {
-      const stored = localStorage.getItem(storageKey);
-      const list: WebsiteCounter[] = stored ? JSON.parse(stored) : [];
-      list.push(newCounter);
-      localStorage.setItem(storageKey, JSON.stringify(list));
-    } catch {}
-
-    // Background push to backend API
-    try {
-      await api.post(`/api/v1/websites/${website.id}/counters`, {
-        name: newCounter.name,
-        style: newCounter.style,
-        isHidden: newCounter.isHidden,
-        displayOptions: newCounter.displayOptions,
-      });
-    } catch {}
-
-    return newCounter;
+    });
+    if (!res.success || !res.data) {
+      throw new Error(res.message || "Failed to create counter.");
+    }
+    writeCache(website.id, [...readCache(website.id), res.data]);
+    return res.data;
   },
 
-  // Delete a counter
+  /** Deletes on the server first; the cache is only updated when that succeeds. Throws on failure. */
   async deleteCounter(website: Website, counterId: string): Promise<void> {
-    const storageKey = getStorageKey(website.id);
-    try {
-      const stored = localStorage.getItem(storageKey);
-      if (stored) {
-        let list: WebsiteCounter[] = JSON.parse(stored);
-        list = list.filter((c) => c.counterId !== counterId && c.id !== counterId);
-        localStorage.setItem(storageKey, JSON.stringify(list));
-      }
-    } catch {}
-
-    // Background push to backend API
-    try {
-      await api.delete(`/api/v1/websites/${website.id}/counters/${counterId}`);
-    } catch {}
+    const res = await api.delete(`/api/v1/websites/${website.id}/counters/${encodeURIComponent(counterId)}`);
+    if (!res.success) {
+      throw new Error(res.message || "Failed to delete counter.");
+    }
+    writeCache(
+      website.id,
+      readCache(website.id).filter((c) => c.counterId !== counterId && c.id !== counterId),
+    );
   },
 };
-

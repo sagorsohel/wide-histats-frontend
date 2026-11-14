@@ -15,19 +15,20 @@ export interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
+  /** False until the persisted session has been read on the client and/or validated. */
+  initialized: boolean;
 }
 
-const initialStoredUser = api.getStoredUser();
-const initialAccessToken = api.getAccessToken();
-const initialRefreshToken = api.getRefreshToken();
-
+// NOTE: localStorage is read in `hydrateFromStorage` (dispatched from a client effect),
+// never at module load, so the server render and first client render match.
 const initialState: AuthState = {
-  user: initialStoredUser,
-  accessToken: initialAccessToken,
-  refreshToken: initialRefreshToken,
-  isAuthenticated: !!(initialStoredUser && initialAccessToken),
+  user: null,
+  accessToken: null,
+  refreshToken: null,
+  isAuthenticated: false,
   loading: false,
   error: null,
+  initialized: false,
 };
 
 // Async Thunks
@@ -129,6 +130,24 @@ export const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
+    hydrateFromStorage: (state) => {
+      const storedUser = api.getStoredUser();
+      const accessToken = api.getAccessToken();
+      const refreshToken = api.getRefreshToken();
+      state.accessToken = accessToken;
+      state.refreshToken = refreshToken;
+      if (storedUser && (accessToken || refreshToken)) {
+        state.user = storedUser;
+        state.isAuthenticated = true;
+        state.initialized = true;
+      } else if (!accessToken && !refreshToken) {
+        // Definitely signed out, nothing to validate.
+        state.user = null;
+        state.isAuthenticated = false;
+        state.initialized = true;
+      }
+      // Tokens but no cached user: wait for fetchCurrentUser to decide.
+    },
     setCredentials: (
       state,
       action: PayloadAction<{ user: User; accessToken: string; refreshToken?: string }>
@@ -171,6 +190,7 @@ export const authSlice = createSlice({
       state.isAuthenticated = false;
       state.loading = false;
       state.error = null;
+      state.initialized = true;
       api.clearAuth();
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
@@ -193,6 +213,7 @@ export const authSlice = createSlice({
       state.refreshToken = action.payload.refreshToken;
       state.isAuthenticated = true;
       state.error = null;
+      state.initialized = true;
     });
     builder.addCase(loginUser.rejected, (state, action) => {
       state.loading = false;
@@ -211,6 +232,7 @@ export const authSlice = createSlice({
       state.refreshToken = action.payload.refreshToken;
       state.isAuthenticated = true;
       state.error = null;
+      state.initialized = true;
     });
     builder.addCase(registerUser.rejected, (state, action) => {
       state.loading = false;
@@ -222,16 +244,21 @@ export const authSlice = createSlice({
       if (action.payload) {
         state.user = action.payload;
         state.isAuthenticated = true;
+      } else {
+        state.user = null;
+        state.isAuthenticated = false;
       }
       state.loading = false;
+      state.initialized = true;
     });
     builder.addCase(fetchCurrentUser.rejected, (state) => {
-      // Only clear if neither accessToken nor refreshToken exists
+      // Only clear if neither accessToken nor refreshToken exists (a network blip keeps the session)
       if (!api.getAccessToken() && !api.getRefreshToken()) {
         state.user = null;
         state.isAuthenticated = false;
       }
       state.loading = false;
+      state.initialized = true;
     });
 
     // logoutUser
@@ -241,11 +268,12 @@ export const authSlice = createSlice({
       state.refreshToken = null;
       state.isAuthenticated = false;
       state.loading = false;
+      state.initialized = true;
     });
   },
 });
 
-export const { setCredentials, setUser, setTokens, logout, setLoading, setError } =
+export const { hydrateFromStorage, setCredentials, setUser, setTokens, logout, setLoading, setError } =
   authSlice.actions;
 
 export default authSlice.reducer;

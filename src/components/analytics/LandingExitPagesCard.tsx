@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { LandingExitPageStat } from "@/types/analytics";
 import { LogIn, LogOut, ExternalLink, Compass } from "lucide-react";
 import { WebsiteFavicon } from "@/components/common/WebsiteFavicon";
-import { formatNumber } from "@/lib/utils";
+import { formatNumber, safeHref } from "@/lib/utils";
 
 interface LandingExitPagesCardProps {
   landingPages: LandingExitPageStat[];
@@ -131,7 +131,7 @@ export const LandingExitPagesCard: React.FC<LandingExitPagesCardProps> = ({
                       </div>
 
                       <a
-                        href={domain ? `https://${domain}${item.path}` : item.path}
+                        href={safeHref(domain ? `https://${domain}${item.path}` : item.path)}
                         target="_blank"
                         rel="noreferrer"
                         className="font-bold text-slate-800 text-xs truncate block group-hover:text-blue-600 transition-colors leading-tight font-mono"
@@ -140,7 +140,7 @@ export const LandingExitPagesCard: React.FC<LandingExitPagesCardProps> = ({
                       </a>
 
                       <a
-                        href={domain ? `https://${domain}${item.path}` : item.path}
+                        href={safeHref(domain ? `https://${domain}${item.path}` : item.path)}
                         target="_blank"
                         rel="noreferrer"
                         className="text-slate-300 hover:text-slate-500 transition-colors opacity-0 group-hover:opacity-100 shrink-0"

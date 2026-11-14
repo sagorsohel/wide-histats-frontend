@@ -75,26 +75,8 @@ export const GeoPieChart: React.FC<GeoPieChartProps> = ({
       return top5;
     }
 
-    // Default authentic sample data when loading or empty
-    if (activeTab === "cities") {
-      return [
-        { name: "New York", value: 1650, pct: "34.2", color: COLORS[0] },
-        { name: "London", value: 1240, pct: "25.7", color: COLORS[1] },
-        { name: "Tokyo", value: 890, pct: "18.5", color: COLORS[2] },
-        { name: "Paris", value: 520, pct: "10.8", color: COLORS[3] },
-        { name: "Berlin", value: 310, pct: "6.4", color: COLORS[4] },
-        { name: "Others", value: 210, pct: "4.4", color: COLORS[6] },
-      ];
-    }
-
-    return [
-      { name: "United States", value: 4820, pct: "34.0", color: COLORS[0] },
-      { name: "United Kingdom", value: 3120, pct: "22.0", color: COLORS[1] },
-      { name: "Germany", value: 2270, pct: "16.0", color: COLORS[2] },
-      { name: "Indonesia", value: 1845, pct: "13.0", color: COLORS[3] },
-      { name: "France", value: 1275, pct: "9.0", color: COLORS[4] },
-      { name: "Others", value: 840, pct: "6.0", color: COLORS[6] },
-    ];
+    // No data: render an explicit empty state (never show invented numbers)
+    return [];
   }, [activeTab, countries, cities]);
 
   return (
@@ -128,8 +110,12 @@ export const GeoPieChart: React.FC<GeoPieChartProps> = ({
       <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-3">
         {/* 1. Pie Chart Graphic */}
         <div className="w-[140px] h-[130px] shrink-0 relative flex items-center justify-center">
-          {loading && (!countries || countries.length === 0) ? (
+          {loading && chartData.length === 0 ? (
             <div className="w-24 h-24 rounded-full bg-slate-100 animate-pulse" />
+          ) : chartData.length === 0 ? (
+            <div className="w-24 h-24 rounded-full border-[10px] border-slate-100 flex items-center justify-center text-[10px] font-semibold text-slate-400">
+              No data
+            </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -181,6 +167,11 @@ export const GeoPieChart: React.FC<GeoPieChartProps> = ({
 
         {/* 2. Visual Country/City Distribution Legend with exact Count Numbers */}
         <div className="flex-1 w-full grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+          {!loading && chartData.length === 0 && (
+            <div className="col-span-2 text-[11px] text-slate-400 py-2">
+              No visits recorded for this period.
+            </div>
+          )}
           {chartData.map((item, idx) => (
             <div
               key={idx}

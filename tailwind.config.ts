@@ -39,6 +39,24 @@ const config: Config = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        // Tailwind v4 sizes used throughout the codebase (missing in v3.4 → silently ignored before)
+        xs: "0.125rem",
+        "2xs": "0.0625rem",
+      },
+      boxShadow: {
+        "2xs": "0 1px rgb(0 0 0 / 0.05)",
+        xs: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+      },
+      dropShadow: {
+        xs: "0 1px 1px rgb(0 0 0 / 0.05)",
+      },
+      backdropBlur: {
+        "2xs": "2px",
+        xs: "4px",
+      },
+      opacity: {
+        "22": "0.22",
+        "28": "0.28",
       },
       animation: {
         "pulse-fast": "pulse 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite",

@@ -6,42 +6,74 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCommas(num: number): string {
-  if (num === undefined || num === null) return "0";
+  if (num === undefined || num === null || Number.isNaN(num)) return "0";
   return num.toLocaleString("en-US");
 }
 
 export function formatNumber(num: number): string {
-  if (num >= 1000000) {
-    return (num / 1000000).toFixed(1) + "M";
+  if (num === undefined || num === null || Number.isNaN(num)) return "0";
+  const trim = (v: number) => v.toFixed(1).replace(/\.0$/, "");
+  // Promote to the next unit when rounding would otherwise print "1000k".
+  if (num >= 999_950) {
+    return trim(num / 1_000_000) + "M";
   }
   if (num >= 1000) {
-    return (num / 1000).toFixed(1) + "k";
+    return trim(num / 1000) + "k";
   }
-  return num.toString();
+  return String(Math.round(num));
 }
 
 export function formatDuration(seconds: number): string {
-  if (seconds < 60) {
-    return `${seconds}s`;
+  const total = Math.max(0, Math.round(seconds || 0));
+  if (total < 60) {
+    return `${total}s`;
   }
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
+  const hours = Math.floor(total / 3600);
+  const mins = Math.floor((total % 3600) / 60);
+  const secs = total % 60;
+  if (hours > 0) return `${hours}h ${mins}m`;
   return `${mins}m ${secs}s`;
 }
 
 export function formatTimeAgo(timestamp: number | string): string {
   const time = typeof timestamp === "string" ? new Date(timestamp).getTime() : timestamp;
-  const elapsed = Math.floor((Date.now() - time) / 1000);
+  const elapsed = Math.max(0, Math.floor((Date.now() - time) / 1000));
 
   if (elapsed < 10) return "just now";
   if (elapsed < 60) return `${elapsed}s ago`;
   const mins = Math.floor(elapsed / 60);
   if (mins < 60) return `${mins}m ago`;
   const hours = Math.floor(mins / 60);
-  return `${hours}h ago`;
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
 }
 
-// Compute clean, unique 7-digit site ID (e.g. 4867998, 5055120) for URLs and UI
+/**
+ * Returns `url` only when it is safe to use in an `href` / `window.open`:
+ * absolute http(s) URLs or same-site relative paths. Anything else
+ * (`javascript:`, `data:`, `vbscript:` …) collapses to `fallback`.
+ * Referrers and page URLs come from the public tracking endpoint, so they
+ * must be treated as untrusted input.
+ */
+export function safeHref(url?: string | null, fallback = "#"): string {
+  if (!url) return fallback;
+  const trimmed = String(url).trim();
+  if (!trimmed) return fallback;
+  if (trimmed.startsWith("/") && !trimmed.startsWith("//")) return trimmed;
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      return parsed.href;
+    }
+  } catch {
+    // not an absolute URL
+  }
+  return fallback;
+}
+
+// Public site ID used in URLs and UI (e.g. 4867998). The backend always supplies a
+// unique 7-digit `displayId`; the UUID fallback keeps IDs collision-free otherwise.
 export function getSite7DigitId(site?: {
   id?: string;
   displayId?: string;
@@ -50,13 +82,6 @@ export function getSite7DigitId(site?: {
   if (!site) return "";
   if (site.displayId && site.displayId.length >= 5) return site.displayId;
   const digits = site.trackingId?.replace(/[^0-9]/g, "");
-  if (digits && digits.length >= 7) return digits.slice(0, 7);
-  if (site.id) {
-    let hash = 0;
-    for (let i = 0; i < site.id.length; i++) {
-      hash = (hash * 31 + site.id.charCodeAt(i)) & 0xffffffff;
-    }
-    return String(4800000 + (Math.abs(hash) % 300000));
-  }
-  return "";
+  if (digits && digits.length >= 7) return digits;
+  return site.id || "";
 }

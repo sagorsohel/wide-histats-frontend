@@ -82,34 +82,8 @@ export const DevicePieChart: React.FC<DevicePieChartProps> = ({
       return top5;
     }
 
-    // Default authentic sample data when loading or empty
-    if (activeTab === "os") {
-      return [
-        { name: "Android", value: 4820, pct: "52.0", color: COLORS[0] },
-        { name: "iOS", value: 2450, pct: "26.4", color: COLORS[1] },
-        { name: "Windows", value: 1280, pct: "13.8", color: COLORS[2] },
-        { name: "macOS", value: 460, pct: "5.0", color: COLORS[3] },
-        { name: "Linux", value: 180, pct: "1.9", color: COLORS[4] },
-        { name: "Others", value: 80, pct: "0.9", color: COLORS[6] },
-      ];
-    }
-
-    if (activeTab === "devices") {
-      return [
-        { name: "Mobile", value: 6820, pct: "73.5", color: COLORS[0] },
-        { name: "Desktop", value: 2150, pct: "23.2", color: COLORS[1] },
-        { name: "Tablet", value: 310, pct: "3.3", color: COLORS[2] },
-      ];
-    }
-
-    return [
-      { name: "Chrome", value: 4230, pct: "45.6", color: COLORS[0] },
-      { name: "Mobile Safari", value: 2310, pct: "24.9", color: COLORS[1] },
-      { name: "Samsung Internet", value: 1120, pct: "12.1", color: COLORS[2] },
-      { name: "Firefox", value: 740, pct: "8.0", color: COLORS[3] },
-      { name: "Edge", value: 520, pct: "5.6", color: COLORS[4] },
-      { name: "Others", value: 360, pct: "3.8", color: COLORS[6] },
-    ];
+    // No data: render an explicit empty state (never show invented numbers)
+    return [];
   }, [activeTab, browsers, osList, devices]);
 
   return (
@@ -154,8 +128,12 @@ export const DevicePieChart: React.FC<DevicePieChartProps> = ({
       <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-3">
         {/* 1. Pie Chart Graphic */}
         <div className="w-[140px] h-[130px] shrink-0 relative flex items-center justify-center">
-          {loading && (!browsers || browsers.length === 0) ? (
+          {loading && chartData.length === 0 ? (
             <div className="w-24 h-24 rounded-full bg-slate-100 animate-pulse" />
+          ) : chartData.length === 0 ? (
+            <div className="w-24 h-24 rounded-full border-[10px] border-slate-100 flex items-center justify-center text-[10px] font-semibold text-slate-400">
+              No data
+            </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -207,6 +185,11 @@ export const DevicePieChart: React.FC<DevicePieChartProps> = ({
 
         {/* 2. Visual Distribution Legend with exact Count Numbers (No %) */}
         <div className="flex-1 w-full grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+          {!loading && chartData.length === 0 && (
+            <div className="col-span-2 text-[11px] text-slate-400 py-2">
+              No visits recorded for this period.
+            </div>
+          )}
           {chartData.map((item, idx) => (
             <div
               key={idx}

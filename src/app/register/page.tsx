@@ -9,7 +9,7 @@ import { AnalycosLogo } from "@/components/common/AnalycosLogo";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { user, loading: authLoading, register } = useAuth();
+  const { user, initialized, register } = useAuth();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -19,10 +19,10 @@ export default function RegisterPage() {
 
   // If already logged in, redirect straight to /control-panel
   useEffect(() => {
-    if (!authLoading && user) {
+    if (initialized && user) {
       router.replace("/control-panel");
     }
-  }, [user, authLoading, router]);
+  }, [user, initialized, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,11 +36,11 @@ export default function RegisterPage() {
     }
 
     try {
-      const success = await register(name.trim(), email.trim(), password);
-      if (success) {
+      const result = await register(name.trim(), email.trim(), password);
+      if (result.success) {
         router.push("/control-panel");
       } else {
-        setError("Failed to register. Please check your details and try again.");
+        setError(result.message || "Failed to register. Please check your details and try again.");
       }
     } catch (err: any) {
       setError(err.message || "An error occurred during registration.");

@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation";
 import { useWebsite } from "@/context/WebsiteContext";
 import { Website } from "@/types/analytics";
 import { api } from "@/lib/api";
-import { subscribeToWebsite } from "@/lib/socket";
-import { WebsiteFavicon } from "@/components/layout/Sidebar";
 import { getSite7DigitId } from "@/lib/utils";
 import {
   ExternalLink,
@@ -55,22 +53,14 @@ export default function ControlPanelPage() {
     null,
   );
   const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Dynamic live snapshot time
-  const [snapshotTime, setSnapshotTime] = useState<string>(() =>
-    new Date().toLocaleString("en-US", {
-      month: "numeric",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: true,
-    }),
-  );
+  // Starts empty and is filled on the client, so server and client markup match.
+  const [snapshotTime, setSnapshotTime] = useState<string>("");
 
   useEffect(() => {
-    const timer = setInterval(() => {
+    const update = () =>
       setSnapshotTime(
         new Date().toLocaleString("en-US", {
           month: "numeric",
@@ -82,7 +72,8 @@ export default function ControlPanelPage() {
           hour12: true,
         }),
       );
-    }, 10000);
+    update();
+    const timer = setInterval(update, 10000);
     return () => clearInterval(timer);
   }, []);
 
@@ -106,15 +97,9 @@ export default function ControlPanelPage() {
   // Select website and instantly open its analytics summary with 7-digit ID in URL
   const handleSelectSite = (site: Website, targetPath: string = "/summary") => {
     setSelectedWebsite(site);
-    subscribeToWebsite(site.id);
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(
-        new CustomEvent("histat:website_changed", { detail: site }),
-      );
-    }
     const cleanPath = targetPath.endsWith("/") ? targetPath : `${targetPath}/`;
     const site7Digit = getSite7DigitId(site);
-    router.push(`${cleanPath}?id=${site7Digit}`);
+    router.push(`${cleanPath}?id=${encodeURIComponent(site7Digit)}`);
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -147,6 +132,7 @@ export default function ControlPanelPage() {
   const handleConfirmDelete = async () => {
     if (!deleteConfirmSite) return;
     setDeleting(true);
+    setDeleteError(null);
 
     try {
       const res = await api.delete(`/api/v1/websites/${deleteConfirmSite.id}`);
@@ -154,10 +140,10 @@ export default function ControlPanelPage() {
         await reloadWebsites();
         setDeleteConfirmSite(null);
       } else {
-        alert(res.message || "Failed to delete website.");
+        setDeleteError(res.message || "Failed to delete website.");
       }
     } catch (err: any) {
-      alert(err.message || "Failed to delete website.");
+      setDeleteError(err.message || "Failed to delete website.");
     } finally {
       setDeleting(false);
     }
@@ -170,7 +156,7 @@ export default function ControlPanelPage() {
 
   return (
     // Full bleed container breaking out of main padding to fill 100% of the page
-    <div className="-m-2 sm:-m-4 lg:-m-6 min-h-[calc(100vh-4rem)] p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-[#d6e7fa] via-[#edf4fc] to-[#d8e6f8] relative overflow-hidden flex flex-col antialiased text-slate-800 font-sans select-text">
+    <div className="-mx-2 -my-2.5 lg:-m-4 min-h-[calc(100vh-4rem)] p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-[#d6e7fa] via-[#edf4fc] to-[#d8e6f8] relative overflow-hidden flex flex-col antialiased text-slate-800 font-sans select-text">
       {/* ============================================================ */}
       {/* FULL-PAGE AMBIENT RADIAL LIGHT SPHERES                       */}
       {/* ============================================================ */}
@@ -189,7 +175,7 @@ export default function ControlPanelPage() {
         {/* Top Header Row: Active Count + Action Buttons (Matching Screenshot) */}
         <div className="flex items-center justify-between gap-3 pb-2 border-b border-slate-200/80">
           <h1 className="text-base sm:text-lg font-bold text-[#1455bb] tracking-tight">
-            Active today ({websites.length})
+            Your websites ({websites.length})
           </h1>
 
           {/* Action Buttons: Refresh & Register Website */}
@@ -370,30 +356,22 @@ export default function ControlPanelPage() {
                     </a>
 
                     {/* 2. Public / Private Lock (Amber Padlock) */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        alert(
-                          `Website "${site.name}" statistics are currently ${
-                            site.isPublic
-                              ? "PUBLIC (Unlocked)"
-                              : "PRIVATE (Locked)"
-                          }.`,
-                        );
-                      }}
+                    <span
+                      role="img"
+                      aria-label={site.isPublic ? "Public statistics" : "Private statistics"}
                       title={
                         site.isPublic
                           ? "Public Statistics (Unlocked)"
                           : "Private Statistics (Locked)"
                       }
-                      className="w-7 h-7 rounded-md hover:bg-amber-50 flex items-center justify-center text-amber-500 hover:text-amber-600 transition-colors cursor-pointer"
+                      className="w-7 h-7 rounded-md flex items-center justify-center text-amber-500"
                     >
                       {site.isPublic ? (
                         <Unlock className="w-4 h-4" />
                       ) : (
                         <Lock className="w-4 h-4" />
                       )}
-                    </button>
+                    </span>
 
                     {/* 3. Analytics Activity / Reports (Bar Chart) */}
                     <button
@@ -567,10 +545,19 @@ export default function ControlPanelPage() {
               </div>
             </div>
 
+            {deleteError && (
+              <div role="alert" className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
+                {deleteError}
+              </div>
+            )}
+
             <div className="flex items-center justify-end gap-2.5 pt-2">
               <button
                 type="button"
-                onClick={() => setDeleteConfirmSite(null)}
+                onClick={() => {
+                  setDeleteConfirmSite(null);
+                  setDeleteError(null);
+                }}
                 disabled={deleting}
                 className="px-4 py-2.5 rounded-2xl text-slate-600 hover:bg-slate-100 font-bold text-xs transition-colors cursor-pointer"
               >

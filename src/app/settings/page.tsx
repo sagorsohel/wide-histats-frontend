@@ -43,15 +43,22 @@ export default function SettingsPage() {
   const [saveTzSuccess, setSaveTzSuccess] = useState(false);
   const [saveTzError, setSaveTzError] = useState<string | null>(null);
 
-  // Sync site with selected website
+  // Default the form to the selected website once it is known.
   useEffect(() => {
-    const site = websites.find((w) => w.id === activeSiteId) || selectedWebsite;
-    if (site) {
-      setActiveSiteId(site.id);
-      setCountry(site.country || "Bangladesh");
-      setTimezone(site.timezone || "Asia/Dhaka");
-    }
-  }, [activeSiteId, selectedWebsite, websites]);
+    if (!activeSiteId && selectedWebsite?.id) setActiveSiteId(selectedWebsite.id);
+  }, [activeSiteId, selectedWebsite?.id]);
+
+  // Load the saved values ONLY when the edited website changes. Background refreshes of
+  // the website list must not overwrite what the user is currently editing.
+  const loadedFormSiteRef = React.useRef<string | null>(null);
+  useEffect(() => {
+    if (!activeSiteId || loadedFormSiteRef.current === activeSiteId) return;
+    const site = websites.find((w) => w.id === activeSiteId);
+    if (!site) return;
+    loadedFormSiteRef.current = activeSiteId;
+    setCountry(site.country || "Bangladesh");
+    setTimezone(site.timezone || "Asia/Dhaka");
+  }, [activeSiteId, websites]);
 
   const handleCountryChange = (selectedCountryName: string) => {
     setCountry(selectedCountryName);

@@ -1,20 +1,15 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { useWebsite } from "@/context/WebsiteContext";
-import { api } from "@/lib/api";
 import { CountryStat, CityStat, OverviewStats } from "@/types/analytics";
-import {
-  RangeOption,
-  CustomDateWindow,
-} from "@/components/analytics/DateRangePicker";
 import { HistatsCalendar } from "@/components/analytics/HistatsCalendar";
 import { DailyStatsCard } from "@/components/analytics/DailyStatsCard";
 import { GeoPieChart } from "@/components/analytics/GeoPieChart";
 import { Globe2, Building2, Info, ArrowUpRight } from "lucide-react";
 import { CountryFlag } from "@/components/common/CountryFlag";
 import { formatCommas } from "@/lib/utils";
-import { useTabFocus } from "@/hooks/useTabFocus";
+import { useReportLoader, emptyOverview, ReportFetchContext } from "@/hooks/useReportLoader";
 import dynamic from "next/dynamic";
 
 const RealtimeGeoMap = dynamic(
@@ -35,217 +30,47 @@ const RealtimeGeoMap = dynamic(
 export default function GeographyPage() {
   const { selectedWebsite } = useWebsite();
 
-  const [range, setRange] = useState<RangeOption>("today");
-  const [customWindow, setCustomWindow] = useState<CustomDateWindow | null>(
-    null,
-  );
   const [countries, setCountries] = useState<CountryStat[]>([]);
   const [cities, setCities] = useState<CityStat[]>([]);
   const [overview, setOverview] = useState<OverviewStats | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  const getDateRange = useCallback((option: RangeOption) => {
-    const now = new Date();
-    let from = new Date();
-    let to = new Date();
-    if (option === "today") {
-      from.setHours(0, 0, 0, 0);
-    } else if (option === "yesterday") {
-      from.setDate(from.getDate() - 1);
-      from.setHours(0, 0, 0, 0);
-      to.setDate(to.getDate() - 1);
-      to.setHours(23, 59, 59, 999);
-    } else if (option === "7d") {
-      from.setDate(from.getDate() - 7);
-      from.setHours(0, 0, 0, 0);
-    } else if (option === "30d") {
-      from.setDate(from.getDate() - 30);
-      from.setHours(0, 0, 0, 0);
-    }
-
-    return { from: from.toISOString(), to: to.toISOString() };
+  const resetData = useCallback(() => {
+    setCountries([]);
+    setCities([]);
+    setOverview(null);
   }, []);
 
-  const hasDataRef = React.useRef(false);
-  const activeSiteIdRef = React.useRef<string | null>(
-    selectedWebsite?.id || null,
-  );
-  activeSiteIdRef.current = selectedWebsite?.id || null;
-
-  const loadGeoData = useCallback(
-    async (
-      isSilent = false,
-      overrideSiteId?: string,
-      overrideWindow?: CustomDateWindow | null,
-    ) => {
-      const siteId = overrideSiteId || activeSiteIdRef.current;
-      if (!siteId) return;
-      const win = overrideWindow !== undefined ? overrideWindow : customWindow;
-      let from: string;
-      let to: string;
-      if (win) {
-        from = win.from;
-        to = win.to;
-      } else {
-        const dates = getDateRange(range);
-        from = dates.from;
-        to = dates.to;
-      }
-      const q = `websiteId=${siteId}&from=${from}&to=${to}&limit=10000`;
-
-      // Strict future check: future date has zero traffic
-      if (new Date(from).getTime() > Date.now()) {
-        setCountries([]);
-        setCities([]);
-        setOverview({
-          activeVisitors: 0,
-          totalPageviews: 0,
-          uniqueVisitors: 0,
-          totalSessions: 0,
-          pagesPerSession: 0,
-          bounceRate: 0,
-          avgDuration: 0,
-          from,
-          to,
-        });
-        setLoading(false);
-        hasDataRef.current = true;
+  const fetcher = useCallback(
+    async (ctx: ReportFetchContext) => {
+      if (ctx.isFuture) {
+        resetData();
+        setOverview(emptyOverview(ctx.from, ctx.to));
         return;
       }
+      const [res, overviewRes] = await Promise.all([
+        ctx.get<{ countries: CountryStat[]; cities: CityStat[] }>(
+          `/api/v1/analytics/geography?${ctx.query}&limit=10000`,
+        ),
+        ctx.get<OverviewStats>(`/api/v1/analytics/overview?${ctx.query}`),
+      ]);
+      if (ctx.isStale()) return;
 
-      if (!isSilent && !hasDataRef.current) {
-        const cached = api.getCached<any>(`/api/v1/analytics/geography?${q}`);
-        const cachedOverview = api.getCached<OverviewStats>(
-          `/api/v1/analytics/overview?websiteId=${siteId}&from=${from}&to=${to}`,
-        );
-        if (cached?.data?.countries) {
-          setCountries(cached.data.countries);
-          if (cached.data.cities) setCities(cached.data.cities);
-          if (cachedOverview?.data) setOverview(cachedOverview.data);
-          setLoading(false);
-        } else {
-          setLoading(true);
-        }
+      if (res.success && res.data) {
+        setCountries(res.data.countries || []);
+        setCities(res.data.cities || []);
       }
-
-      try {
-        const [res, overviewRes] = await Promise.all([
-          api.get<{
-            countries: CountryStat[];
-            cities: CityStat[];
-          }>(`/api/v1/analytics/geography?${q}`),
-          api.get<OverviewStats>(
-            `/api/v1/analytics/overview?websiteId=${siteId}&from=${from}&to=${to}`,
-          ),
-        ]);
-
-        // Strict race condition check: if user switched website while this was in flight, discard!
-        if (siteId !== activeSiteIdRef.current) {
-          return;
-        }
-
-        if (res.success && res.data) {
-          setCountries(res.data.countries || []);
-          setCities(res.data.cities || []);
-        }
-        if (overviewRes.success && overviewRes.data) {
-          setOverview(overviewRes.data);
-        }
-        hasDataRef.current = true;
-      } catch (err) {
-        console.error(err);
-      } finally {
-        if (siteId === activeSiteIdRef.current) {
-          setLoading(false);
-        }
-      }
+      if (overviewRes.success && overviewRes.data) setOverview(overviewRes.data);
     },
-    [range, customWindow, getDateRange],
+    [resetData],
   );
 
-  const handleRangeChange = (r: RangeOption) => {
-    setRange(r);
-    setCustomWindow(null);
-    hasDataRef.current = false;
-    loadGeoData(false, undefined, null);
-  };
-
-  const handleCustomRangeChange = (win: CustomDateWindow | null) => {
-    setCustomWindow(win);
-    hasDataRef.current = false;
-    loadGeoData(false, undefined, win);
-  };
-
-  // Instantly handle website switcher change in Geography page
-  const prevWebsiteIdRef = React.useRef<string | null>(
-    selectedWebsite?.id || null,
-  );
-
-  useEffect(() => {
-    if (
-      selectedWebsite?.id &&
-      selectedWebsite.id !== prevWebsiteIdRef.current
-    ) {
-      prevWebsiteIdRef.current = selectedWebsite.id;
-      activeSiteIdRef.current = selectedWebsite.id;
-      setCountries([]);
-      setCities([]);
-      hasDataRef.current = false;
-      setLoading(true);
-      loadGeoData(false, selectedWebsite.id);
-    } else if (selectedWebsite?.id && !hasDataRef.current) {
-      loadGeoData(false, selectedWebsite.id);
-    }
-  }, [selectedWebsite?.id, loadGeoData]);
-
-  // Listen to global website changed event for immediate 0ms update
-  useEffect(() => {
-    const handleWebsiteChanged = (e: any) => {
-      const newSite = e.detail;
-      if (newSite?.id) {
-        prevWebsiteIdRef.current = newSite.id;
-        setCountries([]);
-        setCities([]);
-        hasDataRef.current = false;
-        setLoading(true);
-        loadGeoData(false, newSite.id);
-      }
-    };
-    window.addEventListener("histat:website_changed", handleWebsiteChanged);
-    return () =>
-      window.removeEventListener(
-        "histat:website_changed",
-        handleWebsiteChanged,
-      );
-  }, [loadGeoData]);
-
-  // Auto-refresh when user returns to this tab
-  useTabFocus(() => loadGeoData(true));
-
-  // Silent sync on socket reconnect or network restore
-  useEffect(() => {
-    const handleSilentSync = () => {
-      if (selectedWebsite) {
-        loadGeoData(true);
-      }
-    };
-    window.addEventListener("histat:socket_sync", handleSilentSync);
-    window.addEventListener("online", handleSilentSync);
-    window.addEventListener("focus", handleSilentSync);
-    return () => {
-      window.removeEventListener("histat:socket_sync", handleSilentSync);
-      window.removeEventListener("online", handleSilentSync);
-      window.removeEventListener("focus", handleSilentSync);
-    };
-  }, [selectedWebsite, loadGeoData]);
-
-  useEffect(() => {
-    loadGeoData(hasDataRef.current);
-    const interval = setInterval(() => {
-      loadGeoData(true);
-    }, 15000);
-    return () => clearInterval(interval);
-  }, [loadGeoData]);
+  const {
+    range,
+    customWindow,
+    setRange: handleRangeChange,
+    setCustomWindow: handleCustomRangeChange,
+    loading,
+  } = useReportLoader({ fetcher, onSiteChange: resetData, intervalMs: 30_000 });
 
   const totalVisitors = countries.reduce(
     (sum, c) => sum + (c.visitors || 0),

@@ -8,7 +8,6 @@ import React, {
   useRef,
 } from "react";
 import { useWebsite } from "@/context/WebsiteContext";
-import { api } from "@/lib/api";
 import { PageStat, OverviewStats } from "@/types/analytics";
 import {
   RangeOption,
@@ -29,8 +28,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { WebsiteFavicon } from "@/components/common/WebsiteFavicon";
-import { useTabFocus } from "@/hooks/useTabFocus";
-import { formatCommas } from "@/lib/utils";
+import { useReportLoader, emptyOverview, ReportFetchContext } from "@/hooks/useReportLoader";
+import { formatCommas, safeHref } from "@/lib/utils";
 
 interface TitleItem {
   title: string;
@@ -159,10 +158,6 @@ function TablePagination({
 export default function PagesReportPage() {
   const { selectedWebsite } = useWebsite();
 
-  const [range, setRange] = useState<RangeOption>("today");
-  const [customWindow, setCustomWindow] = useState<CustomDateWindow | null>(
-    null,
-  );
   const [pages, setPages] = useState<PageStat[]>([]);
   const [landingPages, setLandingPages] = useState<
     { path: string; sessions: number }[]
@@ -171,7 +166,6 @@ export default function PagesReportPage() {
     { path: string; sessions: number }[]
   >([]);
   const [overview, setOverview] = useState<OverviewStats | null>(null);
-  const [loading, setLoading] = useState(true);
   const [hoveredLink, setHoveredLink] = useState<{
     url: string;
     title: string;
@@ -192,213 +186,60 @@ export default function PagesReportPage() {
     return () => window.removeEventListener("scroll", handleScroll, true);
   }, [hoveredLink]);
 
-  const getDateRange = useCallback((option: RangeOption) => {
-    const now = new Date();
-    let from = new Date();
-    if (option === "today") from.setHours(0, 0, 0, 0);
-    else if (option === "yesterday") {
-      from.setDate(from.getDate() - 1);
-      from.setHours(0, 0, 0, 0);
-      now.setDate(now.getDate() - 1);
-    } else if (option === "7d") from.setDate(from.getDate() - 7);
-    else if (option === "30d") from.setDate(from.getDate() - 30);
-
-    return { from: from.toISOString(), to: now.toISOString() };
+  const resetData = useCallback(() => {
+    setPages([]);
+    setLandingPages([]);
+    setExitPages([]);
+    setOverview(null);
+    setUrlPage(1);
+    setTitlePage(1);
   }, []);
 
-  const hasDataRef = useRef(false);
-  const activeSiteIdRef = useRef<string | null>(selectedWebsite?.id || null);
-  activeSiteIdRef.current = selectedWebsite?.id || null;
-
-  const loadPageData = useCallback(
-    async (
-      isSilent = false,
-      overrideSiteId?: string,
-      overrideWindow?: CustomDateWindow | null,
-    ) => {
-      const siteId = overrideSiteId || activeSiteIdRef.current;
-      if (!siteId) return;
-      const win = overrideWindow !== undefined ? overrideWindow : customWindow;
-      let from: string;
-      let to: string;
-      if (win) {
-        from = win.from;
-        to = win.to;
-      } else {
-        const dates = getDateRange(range);
-        from = dates.from;
-        to = dates.to;
-      }
-      const q = `websiteId=${siteId}&from=${from}&to=${to}&limit=50000`;
-
-      // Strict future check: future date has zero traffic
-      if (new Date(from).getTime() > Date.now()) {
-        setPages([]);
-        setLandingPages([]);
-        setExitPages([]);
-        setOverview({
-          activeVisitors: 0,
-          totalPageviews: 0,
-          uniqueVisitors: 0,
-          totalSessions: 0,
-          pagesPerSession: 0,
-          bounceRate: 0,
-          avgDuration: 0,
-          from,
-          to,
-        });
-        setLoading(false);
-        hasDataRef.current = true;
+  const fetcher = useCallback(
+    async (ctx: ReportFetchContext) => {
+      if (ctx.isFuture) {
+        resetData();
+        setOverview(emptyOverview(ctx.from, ctx.to));
         return;
       }
+      const q = `${ctx.query}&limit=50000`;
+      const [pRes, landRes, exitRes, overviewRes] = await Promise.all([
+        ctx.get<PageStat[]>(`/api/v1/analytics/pages?${q}`),
+        ctx.get<{ path: string; sessions: number }[]>(`/api/v1/analytics/landing-pages?${q}`),
+        ctx.get<{ path: string; sessions: number }[]>(`/api/v1/analytics/exit-pages?${q}`),
+        ctx.get<OverviewStats>(`/api/v1/analytics/overview?${ctx.query}`),
+      ]);
+      if (ctx.isStale()) return;
 
-      if (!isSilent && !hasDataRef.current) {
-        const cached = api.getCached<PageStat[]>(
-          `/api/v1/analytics/pages?${q}`,
-        );
-        const cachedOverview = api.getCached<OverviewStats>(
-          `/api/v1/analytics/overview?websiteId=${siteId}&from=${from}&to=${to}`,
-        );
-        if (cached?.data) {
-          setPages(cached.data);
-          if (cachedOverview?.data) setOverview(cachedOverview.data);
-          setLoading(false);
-        } else {
-          setLoading(true);
-        }
-      }
-
-      try {
-        const [pRes, landRes, exitRes, overviewRes] = await Promise.all([
-          api.get<PageStat[]>(`/api/v1/analytics/pages?${q}`),
-          api.get<{ path: string; sessions: number }[]>(
-            `/api/v1/analytics/landing-pages?${q}`,
-          ),
-          api.get<{ path: string; sessions: number }[]>(
-            `/api/v1/analytics/exit-pages?${q}`,
-          ),
-          api.get<OverviewStats>(
-            `/api/v1/analytics/overview?websiteId=${siteId}&from=${from}&to=${to}`,
-          ),
-        ]);
-
-        // Strict race condition check: if user switched website while this was in flight, discard!
-        if (siteId !== activeSiteIdRef.current) {
-          return;
-        }
-
-        if (pRes.success && pRes.data) setPages(pRes.data);
-        if (landRes.success && landRes.data) setLandingPages(landRes.data);
-        if (exitRes.success && exitRes.data) setExitPages(exitRes.data);
-        if (overviewRes.success && overviewRes.data)
-          setOverview(overviewRes.data);
-        hasDataRef.current = true;
-      } catch (err) {
-        console.error(err);
-      } finally {
-        if (siteId === activeSiteIdRef.current) {
-          setLoading(false);
-        }
-      }
+      if (pRes.success && pRes.data) setPages(pRes.data);
+      if (landRes.success && landRes.data) setLandingPages(landRes.data);
+      if (exitRes.success && exitRes.data) setExitPages(exitRes.data);
+      if (overviewRes.success && overviewRes.data) setOverview(overviewRes.data);
     },
-    [range, customWindow, getDateRange],
+    [resetData],
   );
+
+  const { range, customWindow, setRange, setCustomWindow, loading } = useReportLoader({
+    fetcher,
+    onSiteChange: resetData,
+    intervalMs: 30_000,
+  });
 
   const handleRangeChange = (r: RangeOption) => {
     setRange(r);
-    setCustomWindow(null);
     setUrlPage(1);
     setTitlePage(1);
-    hasDataRef.current = false;
-    loadPageData(false, undefined, null);
   };
 
   const handleCustomRangeChange = (win: CustomDateWindow | null) => {
     setCustomWindow(win);
     setUrlPage(1);
     setTitlePage(1);
-    hasDataRef.current = false;
-    loadPageData(false, undefined, win);
   };
-
-  // Instantly handle website switcher change in Pages report
-  const prevWebsiteIdRef = useRef<string | null>(selectedWebsite?.id || null);
-
-  useEffect(() => {
-    if (
-      selectedWebsite?.id &&
-      selectedWebsite.id !== prevWebsiteIdRef.current
-    ) {
-      prevWebsiteIdRef.current = selectedWebsite.id;
-      activeSiteIdRef.current = selectedWebsite.id;
-      setPages([]);
-      setLandingPages([]);
-      setExitPages([]);
-      setUrlPage(1);
-      setTitlePage(1);
-      hasDataRef.current = false;
-      setLoading(true);
-      loadPageData(false, selectedWebsite.id);
-    } else if (selectedWebsite?.id && !hasDataRef.current) {
-      loadPageData(false, selectedWebsite.id);
-    }
-  }, [selectedWebsite?.id, loadPageData]);
-
-  // Listen to global website changed event for immediate 0ms update
-  useEffect(() => {
-    const handleWebsiteChanged = (e: any) => {
-      const newSite = e.detail;
-      if (newSite?.id) {
-        prevWebsiteIdRef.current = newSite.id;
-        setPages([]);
-        setLandingPages([]);
-        setExitPages([]);
-        setUrlPage(1);
-        setTitlePage(1);
-        hasDataRef.current = false;
-        setLoading(true);
-        loadPageData(false, newSite.id);
-      }
-    };
-    window.addEventListener("histat:website_changed", handleWebsiteChanged);
-    return () =>
-      window.removeEventListener(
-        "histat:website_changed",
-        handleWebsiteChanged,
-      );
-  }, [loadPageData]);
-
-  // Auto-refresh when user returns to this tab
-  useTabFocus(() => loadPageData(true));
-
-  // Silent sync on socket reconnect or network restore
-  useEffect(() => {
-    const handleSilentSync = () => {
-      if (selectedWebsite) {
-        loadPageData(true);
-      }
-    };
-    window.addEventListener("histat:socket_sync", handleSilentSync);
-    window.addEventListener("online", handleSilentSync);
-    window.addEventListener("focus", handleSilentSync);
-    return () => {
-      window.removeEventListener("histat:socket_sync", handleSilentSync);
-      window.removeEventListener("online", handleSilentSync);
-      window.removeEventListener("focus", handleSilentSync);
-    };
-  }, [selectedWebsite, loadPageData]);
-
-  useEffect(() => {
-    loadPageData(hasDataRef.current);
-    const interval = setInterval(() => {
-      loadPageData(true);
-    }, 15000);
-    return () => clearInterval(interval);
-  }, [loadPageData]);
 
   // Compute clean domain string (always starts with https://)
   const cleanDomain = useMemo(() => {
-    if (!selectedWebsite?.domain) return "https://streamespn.org";
+    if (!selectedWebsite?.domain) return "";
     const d = selectedWebsite.domain.trim().replace(/\/+$/, "");
     return d.startsWith("http") ? d : `https://${d}`;
   }, [selectedWebsite?.domain]);
@@ -656,7 +497,7 @@ export default function PagesReportPage() {
                             />
                           </div>
                           <a
-                            href={fullLink}
+                            href={safeHref(fullLink)}
                             target="_blank"
                             rel="noopener noreferrer"
                             title={fullLink}
@@ -784,7 +625,7 @@ export default function PagesReportPage() {
                             />
                           </div>
                           <a
-                            href={fullLink}
+                            href={safeHref(fullLink)}
                             target="_blank"
                             rel="noopener noreferrer"
                             onMouseEnter={(e) => {

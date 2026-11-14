@@ -6,7 +6,7 @@ import { useWebsite } from "@/context/WebsiteContext";
 import { getSite7DigitId } from "@/lib/utils";
 
 // Paths that should NOT have ?id= appended
-const EXCLUDED_PATHS = ["/", "/login", "/control-panel", "/websites"];
+const EXCLUDED_PATHS = ["/", "/login", "/register", "/control-panel", "/websites"];
 
 export const UrlWebsiteSync: React.FC = () => {
   const pathname = usePathname();

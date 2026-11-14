@@ -1,11 +1,10 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useCallback, useRef } from "react";
 import { Website } from "@/types/analytics";
 import { useAppDispatch, useAppSelector } from "@/store";
 import {
   fetchWebsites,
-  setWebsites,
   createNewWebsite,
   setSelectedWebsite as setSelectedWebsiteAction,
   openTrackingModal as openTrackingModalAction,
@@ -14,12 +13,16 @@ import {
 import { useAuth } from "./AuthContext";
 import { subscribeToWebsite, unsubscribeFromWebsite } from "@/lib/socket";
 import { useTabFocus } from "@/hooks/useTabFocus";
-import { api } from "@/lib/api";
+
+const SELECTED_KEY = "histat_selected_website";
+const WEBSITES_REFRESH_MS = 60_000;
 
 interface WebsiteContextType {
   websites: Website[];
   selectedWebsite: Website | null;
   loading: boolean;
+  /** True once the first website list request has settled. */
+  websitesLoaded: boolean;
   setSelectedWebsite: (website: Website) => void;
   reloadWebsites: () => Promise<void>;
   createWebsite: (name: string, domain: string, isPublic?: boolean) => Promise<Website | null>;
@@ -34,77 +37,80 @@ const WebsiteContext = createContext<WebsiteContextType | undefined>(undefined);
 export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const dispatch = useAppDispatch();
   const { user } = useAuth();
-  const { websites, selectedWebsite, loading, trackingModalWebsite, trackingModalTab } = useAppSelector(
-    (state) => state.website
-  );
+  const userId = user?.id ?? null;
+  const { websites, selectedWebsite, loading, loaded, trackingModalWebsite, trackingModalTab } =
+    useAppSelector((state) => state.website);
 
   const reloadWebsites = useCallback(async () => {
-    if (user) {
-      await dispatch(fetchWebsites());
+    if (userId) {
+      await dispatch(fetchWebsites({ silent: true }));
     }
-  }, [user, dispatch]);
+  }, [userId, dispatch]);
 
-  // Client-side hydration of selectedWebsite after SSR mount (prevents React #418 hydration mismatch)
+  // Restore the last selected website on the client after mount (no SSR mismatch).
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("histat_selected_website");
-      if (raw) {
-        const stored = JSON.parse(raw);
-        if (stored && !selectedWebsite) {
-          dispatch(setSelectedWebsiteAction(stored));
-        }
+      const raw = localStorage.getItem(SELECTED_KEY);
+      const stored = raw ? (JSON.parse(raw) as Website) : null;
+      if (stored?.id) dispatch(setSelectedWebsiteAction(stored));
+    } catch {
+      // ignore corrupt storage
+    }
+  }, [dispatch]);
+
+  // Persist the selection (side effect lives here, not in the reducer).
+  const persistReadyRef = useRef(false);
+  useEffect(() => {
+    if (!persistReadyRef.current) {
+      persistReadyRef.current = true;
+      return; // skip the initial null render so the restore above isn't wiped
+    }
+    try {
+      if (selectedWebsite) localStorage.setItem(SELECTED_KEY, JSON.stringify(selectedWebsite));
+      else localStorage.removeItem(SELECTED_KEY);
+    } catch {
+      // storage unavailable
+    }
+  }, [selectedWebsite]);
+
+  // Load websites whenever a user signs in.
+  useEffect(() => {
+    if (userId) dispatch(fetchWebsites());
+  }, [userId, dispatch]);
+
+  // Light background refresh of the website list, only while signed in and visible.
+  useEffect(() => {
+    if (!userId) return;
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        dispatch(fetchWebsites({ silent: true }));
       }
-    } catch {}
-  }, [dispatch, selectedWebsite]);
-
-  useEffect(() => {
-    dispatch(fetchWebsites());
-  }, [dispatch]);
-
-  // 15-second silent full system auto-sync in background (zero visual disturbance)
-  useEffect(() => {
-    const timer = setInterval(async () => {
-      try {
-        const res = await api.get<Website[]>("/api/v1/websites", { skipCache: true });
-        if (res.success && res.data) {
-          dispatch(setWebsites(res.data));
-        }
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new CustomEvent("histat:silent_system_refresh"));
-        }
-      } catch {}
-    }, 15000);
+    }, WEBSITES_REFRESH_MS);
     return () => clearInterval(timer);
-  }, [dispatch]);
+  }, [userId, dispatch]);
 
   useTabFocus(() => {
-    if (websites.length === 0) {
-      dispatch(fetchWebsites());
-    }
-    if (selectedWebsite?.id) {
-      subscribeToWebsite(selectedWebsite.id);
-    }
+    if (!userId) return;
+    dispatch(fetchWebsites({ silent: true }));
+    if (selectedWebsite?.id) subscribeToWebsite(selectedWebsite.id);
   });
 
+  // The single place that manages the realtime room subscription.
   useEffect(() => {
-    if (selectedWebsite?.id) {
-      subscribeToWebsite(selectedWebsite.id);
-      return () => {
-        unsubscribeFromWebsite(selectedWebsite.id);
-      };
-    }
-  }, [selectedWebsite?.id]);
+    const id = selectedWebsite?.id;
+    if (!id || !userId) return;
+    subscribeToWebsite(id);
+    return () => {
+      unsubscribeFromWebsite(id);
+    };
+  }, [selectedWebsite?.id, userId]);
 
-  const setSelectedWebsite = (website: Website) => {
-    // Clear in-memory API cache so new website receives fresh data immediately
-    api.clearCache();
-    dispatch(setSelectedWebsiteAction(website));
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(
-        new CustomEvent("histat:website_changed", { detail: website })
-      );
-    }
-  };
+  const setSelectedWebsite = useCallback(
+    (website: Website) => {
+      dispatch(setSelectedWebsiteAction(website));
+    },
+    [dispatch],
+  );
 
   const createWebsite = async (
     name: string,
@@ -132,6 +138,7 @@ export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ child
         websites,
         selectedWebsite,
         loading,
+        websitesLoaded: loaded,
         setSelectedWebsite,
         reloadWebsites,
         createWebsite,

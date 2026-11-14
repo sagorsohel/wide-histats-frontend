@@ -10,16 +10,10 @@ export interface WebsiteRealtimeState {
 export interface RealtimeState {
   // Keyed by websiteId to guarantee 100% data isolation between websites
   byWebsite: Record<string, WebsiteRealtimeState>;
-  isPaused: boolean;
-  activeTab: string;
-  mapZoom: number;
 }
 
 const initialState: RealtimeState = {
   byWebsite: {},
-  isPaused: false,
-  activeTab: "summary",
-  mapZoom: 1,
 };
 
 export const realtimeSlice = createSlice({
@@ -89,18 +83,12 @@ export const realtimeSlice = createSlice({
       } else {
         const current = state.byWebsite[websiteId];
         if (current.data) {
-          if (activeCount !== undefined && (activeCount > 0 || !current.data.activeCount)) {
-            current.data.activeCount = activeCount;
-          }
-          if (activeCount5m !== undefined && (activeCount5m > 0 || !current.data.activeCount5m)) {
-            current.data.activeCount5m = activeCount5m;
-          }
-          if (activeCount15m !== undefined && (activeCount15m > 0 || !current.data.activeCount15m)) {
-            current.data.activeCount15m = activeCount15m;
-          }
-          if (activeVisitors !== undefined && activeVisitors.length > 0) {
-            current.data.activeVisitors = activeVisitors;
-          }
+          // Apply every reported value, including 0, so counts can drop when visitors leave.
+          if (typeof activeCount === "number") current.data.activeCount = activeCount;
+          if (typeof activeCount5m === "number") current.data.activeCount5m = activeCount5m;
+          if (typeof activeCount15m === "number") current.data.activeCount15m = activeCount15m;
+          if (Array.isArray(activeVisitors)) current.data.activeVisitors = activeVisitors;
+          current.lastUpdated = Date.now();
         }
       }
     },
@@ -153,15 +141,6 @@ export const realtimeSlice = createSlice({
       }
     },
 
-    setPaused: (state, action: PayloadAction<boolean>) => {
-      state.isPaused = action.payload;
-    },
-    setActiveTab: (state, action: PayloadAction<string>) => {
-      state.activeTab = action.payload;
-    },
-    setMapZoom: (state, action: PayloadAction<number>) => {
-      state.mapZoom = action.payload;
-    },
     clearWebsiteRealtime: (state, action: PayloadAction<string>) => {
       delete state.byWebsite[action.payload];
     },
@@ -175,9 +154,6 @@ export const {
   setRealtimeData,
   updateLiveCounts,
   addRecentHit,
-  setPaused,
-  setActiveTab,
-  setMapZoom,
   clearWebsiteRealtime,
   clearAllRealtime,
 } = realtimeSlice.actions;

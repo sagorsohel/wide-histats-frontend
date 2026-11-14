@@ -1186,31 +1186,9 @@ export default function RealtimeHistatsPage() {
   return (
     <div className="w-full mx-auto text-[12px] font-sans antialiased bg-[#F1F5F9] border-none shadow-sm rounded-2xl overflow-hidden select-text">
       {/* 1. Top Website Banner */}
-      <div className="bg-[#5973a0] text-white px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-blue-400/20">
-        <div className="flex items-center gap-2">
-          <a
-            href={mounted && baseWebsiteUrl ? baseWebsiteUrl : "#"}
-            target="_blank"
-            rel="noopener noreferrer"
-            title={mounted ? baseWebsiteUrl : ""}
-            className="text-white hover:text-blue-100 font-bold text-[13px] flex items-center gap-2 group cursor-pointer transition-colors"
-          >
-            <WebsiteFavicon domain={selectedWebsite?.domain} size={16} />
-            <span suppressHydrationWarning>
-              {mounted
-                ? selectedWebsite?.domain ||
-                  (baseWebsiteUrl
-                    ? baseWebsiteUrl.replace(/^https?:\/\//, "")
-                    : "")
-                : ""}
-            </span>
-            <ExternalLink className="w-3.5 h-3.5 text-blue-200 group-hover:text-white transition-colors" />
-          </a>
-        </div>
-      </div>
 
       {/* 2. Main Blue Stats Banner (Users Online Right Now & Today Totals) */}
-      <div className="bg-[#263B55] text-white px-4 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-blue-900/30 shadow-inner">
+      <div className="bg-[#263B55] text-white px-4 py-2 flex flex-wrap items-center justify-between gap-3 border-b border-blue-900/30 shadow-inner">
         {/* Left: Active Users Online Right Now with Live Pulsing Indicator */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2.5">
@@ -1226,14 +1204,10 @@ export default function RealtimeHistatsPage() {
             {loading && !data && onlineCount === 0 ? (
               <div className="h-8 w-14 rounded-lg bg-white/20 animate-pulse inline-block" />
             ) : (
-              <span className="text-3xl sm:text-4xl font-black text-white tracking-tight tabular-nums drop-shadow-xs">
+              <span className="text-3xl  font-black text-white tracking-tight tabular-nums drop-shadow-xs">
                 {onlineCount}
               </span>
             )}
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-white text-[#1455bb] shadow-xs flex items-center gap-1 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>LIVE</span>
-            </span>
           </div>
         </div>
 

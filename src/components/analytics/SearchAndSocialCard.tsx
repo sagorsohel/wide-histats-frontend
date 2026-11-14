@@ -198,8 +198,10 @@ export const SearchAndSocialCard: React.FC<SearchAndSocialCardProps> = ({
         </div>
 
         {/* Fixed Column Header */}
-        <div className="flex items-center justify-between px-3.5 py-1 mb-1.5 text-xs font-bold text-slate-700 select-none">
-          <span>{activeTab === "search" ? "Search Engine" : "Social Network"}</span>
+        <div className="flex items-center justify-between px-3 py-1 mb-1.5 text-xs font-bold text-slate-700 select-none">
+          <span>
+            {activeTab === "search" ? "Search Engine" : "Social Network"}
+          </span>
           <div className="flex items-center gap-3 sm:gap-4 text-right">
             <span className="w-16 text-right">Visits</span>
             <span className="w-10 text-right">Share</span>
@@ -212,15 +214,16 @@ export const SearchAndSocialCard: React.FC<SearchAndSocialCardProps> = ({
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className={`rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-2.5 animate-pulse ${
-                  i % 2 === 1 ? "bg-white" : "bg-[#E8E8E8]"
-                }`}
+                style={{
+                  backgroundColor: i % 2 === 0 ? "#E8E8E8" : "#ffffff",
+                }}
+                className="rounded-xl px-3 py-0 flex items-center justify-between gap-2.5 min-h-[30px] h-[30px] animate-pulse"
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-1 min-w-0">
                   <div className="w-4 h-4 bg-slate-200 rounded shrink-0" />
-                  <div className="h-3 w-28 bg-slate-200 rounded" />
+                  <div className="h-3 bg-slate-200 rounded w-3/4 max-w-[200px]" />
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 shrink-0">
                   <div className="h-3 w-12 bg-slate-200 rounded" />
                   <div className="h-3 w-8 bg-slate-200 rounded" />
                 </div>
@@ -231,17 +234,21 @@ export const SearchAndSocialCard: React.FC<SearchAndSocialCardProps> = ({
           <div className="space-y-1">
             {currentList.slice(0, 6).map((item, index) => {
               const percentage = Math.round((item.count / currentTotal) * 100);
-              const isEven = index % 2 === 0;
+              const isZebra = index % 2 !== 0;
 
               return (
                 <div
                   key={index}
-                  className={`rounded-xl px-3.5 py-2 flex items-center justify-between gap-2.5 transition-colors ${
-                    isEven ? "bg-white" : "bg-[#E8E8E8]"
-                  }`}
+                  style={{
+                    backgroundColor: isZebra ? "#E8E8E8" : "#ffffff",
+                  }}
+                  className="rounded-xl px-3 py-0 flex items-center justify-between gap-2.5 transition-colors hover:brightness-95 min-h-[30px] h-[30px] text-[11px]"
                 >
-                  {/* Left: Brand Icon + Channel Name */}
+                  {/* Left: Rank + Brand Icon + Channel Name */}
                   <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className="w-4 text-center font-bold text-slate-500 text-xs shrink-0 font-mono">
+                      {index + 1}
+                    </span>
                     <div className="w-4 h-4 flex items-center justify-center shrink-0">
                       <ReferrerBrandIcon referrer={item.name} size={14} />
                     </div>

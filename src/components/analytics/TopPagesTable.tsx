@@ -52,7 +52,7 @@ export const TopPagesTable: React.FC<TopPagesTableProps> = ({
         </div>
 
         {/* Fixed Column Header */}
-        <div className="flex items-center justify-between px-3.5 py-1 mb-1.5 text-xs font-bold text-slate-700 select-none">
+        <div className="flex items-center justify-between px-3 py-1 mb-1.5 text-xs font-bold text-slate-700 select-none">
           <span>Pages</span>
           <div className="flex items-center gap-6 sm:gap-8 text-right">
             <span className="w-16 text-right">Views</span>
@@ -66,9 +66,10 @@ export const TopPagesTable: React.FC<TopPagesTableProps> = ({
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className={`rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-3 animate-pulse ${
-                  i % 2 === 1 ? "bg-white" : "bg-[#E8E8E8]"
-                }`}
+                style={{
+                  backgroundColor: i % 2 === 0 ? "#E8E8E8" : "#ffffff",
+                }}
+                className="rounded-xl px-3 py-0 flex items-center justify-between gap-3 min-h-[30px] h-[30px] animate-pulse"
               >
                 <div className="flex items-center gap-2.5 flex-1 min-w-0">
                   <div className="w-4 h-4 bg-slate-200 rounded shrink-0" />
@@ -97,14 +98,15 @@ export const TopPagesTable: React.FC<TopPagesTableProps> = ({
                 page.url ||
                 `${cleanDomain}${page.path.startsWith("/") ? page.path : `/${page.path}`}`;
               const displayUrl = fullLink;
-              const isEven = index % 2 === 0;
+              const isZebra = index % 2 !== 0;
 
               return (
                 <div
                   key={index}
-                  className={`rounded-xl px-3.5 py-2 flex items-center justify-between gap-3 transition-colors ${
-                    isEven ? "bg-white" : "bg-[#E8E8E8]"
-                  }`}
+                  style={{
+                    backgroundColor: isZebra ? "#E8E8E8" : "#ffffff",
+                  }}
+                  className="rounded-xl px-3 py-0 flex items-center justify-between gap-3 transition-colors hover:brightness-95 min-h-[30px] h-[30px] text-[11px]"
                 >
                   {/* Left: Rank + Favicon + Full URL */}
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -137,7 +139,7 @@ export const TopPagesTable: React.FC<TopPagesTableProps> = ({
                     <span className="w-16 font-bold text-slate-900 text-xs sm:text-[13px] tabular-nums block text-right">
                       {page.pageviews.toLocaleString()}
                     </span>
-                    <span className="w-16 font-bold text-slate-900 text-xs sm:text-[13px] tabular-nums block text-right">
+                    <span className="w-16 font-bold text-slate-700 text-xs sm:text-[13px] tabular-nums block text-right">
                       {(
                         page.visitors || Math.round(page.pageviews * 0.65)
                       ).toLocaleString()}

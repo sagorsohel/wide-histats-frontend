@@ -4,9 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useWebsite } from "@/context/WebsiteContext";
 import { api } from "@/lib/api";
 import { safeHref } from "@/lib/utils";
-import {
-  getSocket,
-} from "@/lib/socket";
+import { getSocket } from "@/lib/socket";
 import {
   RealtimeData,
   ActiveVisitor,
@@ -170,7 +168,11 @@ export default function RealtimeHistatsPage() {
         return;
       }
       if (isPausedRef.current) return;
-      if (isSilent && (inFlightRef.current || document.visibilityState === "hidden")) return;
+      if (
+        isSilent &&
+        (inFlightRef.current || document.visibilityState === "hidden")
+      )
+        return;
 
       const seq = ++seqRef.current;
       const hasData = !!currentSiteRealtimeRef.current?.data;
@@ -183,7 +185,8 @@ export default function RealtimeHistatsPage() {
           { skipCache: true, ttlMs: 0 },
         );
         // Discard if the user switched website (or a newer request started) meanwhile.
-        if (seq !== seqRef.current || siteId !== activeSiteIdRef.current) return;
+        if (seq !== seqRef.current || siteId !== activeSiteIdRef.current)
+          return;
         if (res.success && res.data) {
           dispatch(setRealtimeData({ websiteId: siteId, data: res.data }));
         }
@@ -235,7 +238,8 @@ export default function RealtimeHistatsPage() {
 
     const matchesSite = (incomingId?: string) =>
       !!incomingId &&
-      (incomingId === activeSiteIdRef.current || incomingId === selectedWebsite.trackingId);
+      (incomingId === activeSiteIdRef.current ||
+        incomingId === selectedWebsite.trackingId);
 
     const handleRealtimeUpdate = (payload: any) => {
       const activeId = activeSiteIdRef.current;
@@ -806,7 +810,9 @@ export default function RealtimeHistatsPage() {
           if (!rh) continue;
           if (
             formatVisitorIp(rh) === ip ||
-            (rh.visitorKey && vis.visitorKey && rh.visitorKey === vis.visitorKey)
+            (rh.visitorKey &&
+              vis.visitorKey &&
+              rh.visitorKey === vis.visitorKey)
           ) {
             const rhTitle = rh.title || rh.path || vis.pageTitle || "Home";
             const rhUrl = rh.url || rh.path || vis.pageUrl || "/";
@@ -833,7 +839,9 @@ export default function RealtimeHistatsPage() {
           if (!rp) continue;
           if (
             formatVisitorIp(rp) === ip ||
-            (rp.visitorKey && vis.visitorKey && rp.visitorKey === vis.visitorKey)
+            (rp.visitorKey &&
+              vis.visitorKey &&
+              rp.visitorKey === vis.visitorKey)
           ) {
             const rpTitle = rp.title || rp.path || vis.pageTitle || "Home";
             const rpUrl = rp.url || rp.path || vis.pageUrl || "/";
@@ -1402,7 +1410,7 @@ export default function RealtimeHistatsPage() {
                       <div
                         key={hit.id || idx}
                         style={{
-                          backgroundColor: isZebra ? "#00000017" : "#ffffff",
+                          backgroundColor: isZebra ? "#E8E8E8" : "#ffffff",
                         }}
                         className="px-3 py-0 flex items-center gap-2 hover:brightness-95 text-[11px] transition-colors min-h-[30px] h-[30px]"
                       >
@@ -1563,7 +1571,7 @@ export default function RealtimeHistatsPage() {
                         <div
                           key={idx}
                           style={{
-                            backgroundColor: isZebra ? "#00000017" : "#ffffff",
+                            backgroundColor: isZebra ? "#E8E8E8" : "#ffffff",
                           }}
                           className="px-3 py-0 flex items-center gap-2 hover:brightness-95 text-[11px] transition-colors min-h-[30px] h-[30px]"
                         >
@@ -1704,7 +1712,7 @@ export default function RealtimeHistatsPage() {
                         <div
                           key={idx}
                           style={{
-                            backgroundColor: isZebra ? "#00000017" : "#ffffff",
+                            backgroundColor: isZebra ? "#E8E8E8" : "#ffffff",
                           }}
                           className="px-3 py-0 flex items-center gap-2 hover:brightness-95 text-[11px] transition-colors min-h-[30px] h-[30px]"
                         >
@@ -1797,10 +1805,7 @@ export default function RealtimeHistatsPage() {
                       .map((vis: any, idx: number) => {
                         const isZebra = idx % 2 === 0;
                         const pageviews =
-                          vis.pageviewsCount ??
-                          vis.hitsCount ??
-                          vis.count ??
-                          1;
+                          vis.pageviewsCount ?? vis.hitsCount ?? vis.count ?? 1;
                         const pageUrl = getFullUrl(
                           vis.pageUrl,
                           vis.currentPath,
@@ -1810,9 +1815,7 @@ export default function RealtimeHistatsPage() {
                           <div
                             key={idx}
                             style={{
-                              backgroundColor: isZebra
-                                ? "#00000017"
-                                : "#ffffff",
+                              backgroundColor: isZebra ? "#E8E8E8" : "#ffffff",
                             }}
                             className="px-3 py-1.5 hover:brightness-95 text-[11px] space-y-0.5 transition-colors"
                           >
@@ -1825,7 +1828,9 @@ export default function RealtimeHistatsPage() {
                                   <span className="text-emerald-600 font-bold select-none text-xs shrink-0">
                                     👤
                                   </span>
-                                  <span className="truncate">{formatVisitorIp(vis)}</span>
+                                  <span className="truncate">
+                                    {formatVisitorIp(vis)}
+                                  </span>
                                 </div>
                               </div>
 
@@ -1840,16 +1845,24 @@ export default function RealtimeHistatsPage() {
                                     city={vis.city}
                                   />
                                 ) : (
-                                  <span className="text-slate-400 font-bold text-[10px]">-</span>
+                                  <span className="text-slate-400 font-bold text-[10px]">
+                                    -
+                                  </span>
                                 )}
 
-                                {vis.os && vis.os !== "Other" && vis.os !== "Unknown" ? (
+                                {vis.os &&
+                                vis.os !== "Other" &&
+                                vis.os !== "Unknown" ? (
                                   getDeviceIcon(vis.deviceType, vis.os)
                                 ) : (
-                                  <span className="text-slate-400 font-bold text-[10px]">-</span>
+                                  <span className="text-slate-400 font-bold text-[10px]">
+                                    -
+                                  </span>
                                 )}
 
-                                {vis.browser && vis.browser !== "Other" && vis.browser !== "Unknown" ? (
+                                {vis.browser &&
+                                vis.browser !== "Other" &&
+                                vis.browser !== "Unknown" ? (
                                   <span
                                     className="inline-flex items-center"
                                     title={`Browser: ${vis.browser}`}
@@ -1857,7 +1870,9 @@ export default function RealtimeHistatsPage() {
                                     {getBrowserIcon(vis.browser, vis.os)}
                                   </span>
                                 ) : (
-                                  <span className="text-slate-400 font-bold text-[10px]">-</span>
+                                  <span className="text-slate-400 font-bold text-[10px]">
+                                    -
+                                  </span>
                                 )}
                               </div>
                             </div>
@@ -1932,7 +1947,7 @@ export default function RealtimeHistatsPage() {
                     <div
                       key={hit.id || idx}
                       style={{
-                        backgroundColor: isZebra ? "#00000017" : "#ffffff",
+                        backgroundColor: isZebra ? "#E8E8E8" : "#ffffff",
                       }}
                       className="p-3 hover:brightness-95 transition-all text-xs space-y-1"
                     >
@@ -2427,7 +2442,7 @@ export default function RealtimeHistatsPage() {
                     <div
                       key={idx}
                       style={{
-                        backgroundColor: isZebra ? "#00000017" : "#ffffff",
+                        backgroundColor: isZebra ? "#E8E8E8" : "#ffffff",
                       }}
                       className="px-3 py-0 flex items-center gap-2 hover:brightness-95 text-[11px] transition-colors min-h-[30px] h-[30px]"
                     >
@@ -2549,7 +2564,7 @@ export default function RealtimeHistatsPage() {
                     <div
                       key={idx}
                       style={{
-                        backgroundColor: isZebra ? "#00000017" : "#ffffff",
+                        backgroundColor: isZebra ? "#E8E8E8" : "#ffffff",
                       }}
                       className="px-3 py-0 flex items-center gap-2 hover:brightness-95 text-[11px] transition-colors min-h-[30px] h-[30px]"
                     >
@@ -2665,9 +2680,7 @@ export default function RealtimeHistatsPage() {
                           <div
                             key={i}
                             style={{
-                              backgroundColor: isZebra
-                                ? "#00000017"
-                                : "#ffffff",
+                              backgroundColor: isZebra ? "#E8E8E8" : "#ffffff",
                             }}
                             className="px-3 py-0 flex items-center justify-between text-[11px] min-h-[30px] h-[30px] hover:brightness-95 transition-colors"
                           >
@@ -2756,9 +2769,7 @@ export default function RealtimeHistatsPage() {
                           <div
                             key={i}
                             style={{
-                              backgroundColor: isZebra
-                                ? "#00000017"
-                                : "#ffffff",
+                              backgroundColor: isZebra ? "#E8E8E8" : "#ffffff",
                             }}
                             className="px-3 py-0 flex items-center justify-between text-[11px] min-h-[30px] h-[30px] hover:brightness-95 transition-colors"
                           >
@@ -2854,11 +2865,7 @@ export default function RealtimeHistatsPage() {
                 onClick={() => {
                   const target = safeHref(confirmUrlModal.url);
                   if (typeof window !== "undefined" && target !== "#") {
-                    window.open(
-                      target,
-                      "_blank",
-                      "noopener,noreferrer",
-                    );
+                    window.open(target, "_blank", "noopener,noreferrer");
                   }
                   setConfirmUrlModal(null);
                 }}

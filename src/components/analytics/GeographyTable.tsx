@@ -59,7 +59,7 @@ export const GeographyTable: React.FC<GeographyTableProps> = ({
         </div>
 
         {/* Fixed Column Header */}
-        <div className="flex items-center justify-between px-3.5 py-1 mb-1.5 text-xs font-bold text-slate-700 select-none">
+        <div className="flex items-center justify-between px-3 py-1 mb-1.5 text-xs font-bold text-slate-700 select-none">
           <span>Countries</span>
           <span>Visitors</span>
         </div>
@@ -70,9 +70,10 @@ export const GeographyTable: React.FC<GeographyTableProps> = ({
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <div
                 key={i}
-                className={`rounded-xl px-3.5 py-2.5 flex items-center justify-between animate-pulse ${
-                  i % 2 === 1 ? "bg-white" : "bg-[#E8E8E8]"
-                }`}
+                style={{
+                  backgroundColor: i % 2 === 0 ? "#E8E8E8" : "#ffffff",
+                }}
+                className="rounded-xl px-3 py-0 flex items-center justify-between min-h-[30px] h-[30px] animate-pulse"
               >
                 <div className="flex items-center gap-2.5">
                   <div className="w-5 h-3.5 rounded bg-slate-200 shrink-0" />
@@ -89,17 +90,21 @@ export const GeographyTable: React.FC<GeographyTableProps> = ({
         ) : (
           <div className="space-y-1 overflow-y-auto max-h-[380px] pr-1">
             {displayCountries.map((item, index) => {
-              const isEven = index % 2 === 0;
+              const isZebra = index % 2 !== 0;
 
               return (
                 <div
                   key={index}
-                  className={`rounded-xl px-3.5 py-2 flex items-center justify-between transition-colors ${
-                    isEven ? "bg-white" : "bg-[#E8E8E8]"
-                  }`}
+                  style={{
+                    backgroundColor: isZebra ? "#E8E8E8" : "#ffffff",
+                  }}
+                  className="rounded-xl px-3 py-0 flex items-center justify-between transition-colors hover:brightness-95 min-h-[30px] h-[30px] text-[11px]"
                 >
-                  {/* Left: Country Flag + Country Name */}
+                  {/* Left: Rank + Country Flag + Country Name */}
                   <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="w-4 text-center font-bold text-slate-500 text-xs shrink-0 font-mono">
+                      {index + 1}
+                    </span>
                     <CountryFlag
                       code={item.country_code}
                       countryName={item.country}

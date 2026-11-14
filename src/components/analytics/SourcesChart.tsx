@@ -40,7 +40,7 @@ export const SourcesChart: React.FC<SourcesChartProps> = ({
         </div>
 
         {/* Fixed Column Header */}
-        <div className="flex items-center justify-between px-3.5 py-1 mb-1.5 text-xs font-bold text-slate-700 select-none">
+        <div className="flex items-center justify-between px-3 py-1 mb-1.5 text-xs font-bold text-slate-700 select-none">
           <span>Sources</span>
           <div className="flex items-center gap-3 sm:gap-4 text-right">
             <span className="w-16 text-center">Medium</span>
@@ -55,17 +55,18 @@ export const SourcesChart: React.FC<SourcesChartProps> = ({
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className={`rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-2.5 animate-pulse ${
-                  i % 2 === 1 ? "bg-white" : "bg-[#E8E8E8]"
-                }`}
+                style={{
+                  backgroundColor: i % 2 === 0 ? "#E8E8E8" : "#ffffff",
+                }}
+                className="rounded-xl px-3 py-0 flex items-center justify-between gap-2.5 min-h-[30px] h-[30px] animate-pulse"
               >
-                <div className="flex items-center gap-2">
-                  <div className="w-3.5 h-3.5 bg-slate-200 rounded shrink-0" />
-                  <div className="h-3 w-28 bg-slate-200 rounded" />
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <div className="w-4 h-4 bg-slate-200 rounded shrink-0" />
+                  <div className="h-3 bg-slate-200 rounded w-3/4 max-w-[200px]" />
                 </div>
-                <div className="flex items-center gap-3 sm:gap-4">
+                <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+                  <div className="h-3 w-14 bg-slate-200 rounded" />
                   <div className="h-3 w-12 bg-slate-200 rounded" />
-                  <div className="h-3 w-10 bg-slate-200 rounded" />
                   <div className="h-3 w-8 bg-slate-200 rounded" />
                 </div>
               </div>
@@ -92,25 +93,26 @@ export const SourcesChart: React.FC<SourcesChartProps> = ({
                   ? rawUrl
                   : `https://${rawUrl}`;
               const displayUrl = fullUrl;
-              const isEven = index % 2 === 0;
+              const isZebra = index % 2 !== 0;
 
               return (
                 <div
                   key={index}
-                  className={`rounded-xl px-3.5 py-2 flex items-center justify-between gap-2.5 transition-colors ${
-                    isEven ? "bg-white" : "bg-[#E8E8E8]"
-                  }`}
+                  style={{
+                    backgroundColor: isZebra ? "#E8E8E8" : "#ffffff",
+                  }}
+                  className="rounded-xl px-3 py-0 flex items-center justify-between gap-2.5 transition-colors hover:brightness-95 min-h-[30px] h-[30px] text-[11px]"
                 >
                   {/* Left: Rank + Favicon + Full URL */}
                   <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <span className="w-3.5 text-center font-bold text-slate-500 text-[11px] shrink-0 font-mono">
+                    <span className="w-4 text-center font-bold text-slate-500 text-xs shrink-0 font-mono">
                       {index + 1}
                     </span>
-                    <div className="w-3.5 h-3.5 shrink-0 flex items-center justify-center">
+                    <div className="w-4 h-4 shrink-0 flex items-center justify-center">
                       <WebsiteFavicon
                         url={isDirect ? undefined : fullUrl}
                         domain={item.source}
-                        size={13}
+                        size={14}
                         className="rounded-xs shadow-2xs"
                       />
                     </div>

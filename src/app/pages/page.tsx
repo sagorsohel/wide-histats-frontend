@@ -28,7 +28,11 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { WebsiteFavicon } from "@/components/common/WebsiteFavicon";
-import { useReportLoader, emptyOverview, ReportFetchContext } from "@/hooks/useReportLoader";
+import {
+  useReportLoader,
+  emptyOverview,
+  ReportFetchContext,
+} from "@/hooks/useReportLoader";
 import { formatCommas, safeHref } from "@/lib/utils";
 
 interface TitleItem {
@@ -96,7 +100,10 @@ function TablePagination({
       <div className="text-[11px] text-slate-500 font-medium">
         Showing <span className="font-bold text-slate-800">{startItem}</span> to{" "}
         <span className="font-bold text-slate-800">{endItem}</span> of{" "}
-        <span className="font-bold text-slate-800">{formatCommas(totalItems)}</span> {itemLabel}
+        <span className="font-bold text-slate-800">
+          {formatCommas(totalItems)}
+        </span>{" "}
+        {itemLabel}
       </div>
 
       <div className="flex items-center gap-1">
@@ -205,8 +212,12 @@ export default function PagesReportPage() {
       const q = `${ctx.query}&limit=50000`;
       const [pRes, landRes, exitRes, overviewRes] = await Promise.all([
         ctx.get<PageStat[]>(`/api/v1/analytics/pages?${q}`),
-        ctx.get<{ path: string; sessions: number }[]>(`/api/v1/analytics/landing-pages?${q}`),
-        ctx.get<{ path: string; sessions: number }[]>(`/api/v1/analytics/exit-pages?${q}`),
+        ctx.get<{ path: string; sessions: number }[]>(
+          `/api/v1/analytics/landing-pages?${q}`,
+        ),
+        ctx.get<{ path: string; sessions: number }[]>(
+          `/api/v1/analytics/exit-pages?${q}`,
+        ),
         ctx.get<OverviewStats>(`/api/v1/analytics/overview?${ctx.query}`),
       ]);
       if (ctx.isStale()) return;
@@ -214,16 +225,18 @@ export default function PagesReportPage() {
       if (pRes.success && pRes.data) setPages(pRes.data);
       if (landRes.success && landRes.data) setLandingPages(landRes.data);
       if (exitRes.success && exitRes.data) setExitPages(exitRes.data);
-      if (overviewRes.success && overviewRes.data) setOverview(overviewRes.data);
+      if (overviewRes.success && overviewRes.data)
+        setOverview(overviewRes.data);
     },
     [resetData],
   );
 
-  const { range, customWindow, setRange, setCustomWindow, loading } = useReportLoader({
-    fetcher,
-    onSiteChange: resetData,
-    intervalMs: 30_000,
-  });
+  const { range, customWindow, setRange, setCustomWindow, loading } =
+    useReportLoader({
+      fetcher,
+      onSiteChange: resetData,
+      intervalMs: 30_000,
+    });
 
   const handleRangeChange = (r: RangeOption) => {
     setRange(r);
@@ -280,7 +293,10 @@ export default function PagesReportPage() {
     return pages.slice(start, start + PAGE_SIZE);
   }, [pages, urlPage]);
 
-  const totalTitlePages = Math.max(1, Math.ceil(byTitleList.length / PAGE_SIZE));
+  const totalTitlePages = Math.max(
+    1,
+    Math.ceil(byTitleList.length / PAGE_SIZE),
+  );
   const paginatedTitles = useMemo(() => {
     const start = (titlePage - 1) * PAGE_SIZE;
     return byTitleList.slice(start, start + PAGE_SIZE);
@@ -479,7 +495,7 @@ export default function PagesReportPage() {
                       <div
                         key={index}
                         style={{
-                          backgroundColor: isZebra ? "#00000017" : "#ffffff",
+                          backgroundColor: isZebra ? "#E8E8E8" : "#ffffff",
                         }}
                         className="px-3 py-0 flex items-center justify-between hover:brightness-95 text-[11px] transition-colors min-h-[30px] h-[30px]"
                       >
@@ -607,7 +623,7 @@ export default function PagesReportPage() {
                       <div
                         key={index}
                         style={{
-                          backgroundColor: isZebra ? "#00000017" : "#ffffff",
+                          backgroundColor: isZebra ? "#E8E8E8" : "#ffffff",
                         }}
                         className="px-3 py-0 flex items-center justify-between hover:brightness-95 text-[11px] transition-colors min-h-[30px] h-[30px]"
                       >

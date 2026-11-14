@@ -196,16 +196,8 @@ export default function SettingsPage() {
     setSavePublicError(null);
     setSavePublicSuccess(false);
 
-    let payloadPages = "none";
-    if (isPublic) {
-      if (allPagesChecked || selectedPages.length === ALL_PAGES.length) {
-        payloadPages = "all";
-      } else if (selectedPages.length > 0) {
-        payloadPages = selectedPages.join(",");
-      } else {
-        payloadPages = "none";
-      }
-    }
+    // Public means all pages; private means none (backend only checks isPublic)
+    const payloadPages = isPublic ? "all" : "none";
 
     try {
       const res = await api.patch(`/api/v1/websites/${activeSiteId}`, {

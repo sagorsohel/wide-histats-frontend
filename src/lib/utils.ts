@@ -103,27 +103,7 @@ export function isPagePublic(
   const STRICT_PRIVATE = ["settings", "websites", "control-panel", "profile"];
   if (STRICT_PRIVATE.includes(clean)) return false;
 
-  const isPublic = Boolean(site.isPublic);
-  const publicPages = (site.publicPages || "").toLowerCase().trim();
-
-  // If website is explicitly marked public and no restrictive list or "all"
-  if (isPublic && (!publicPages || publicPages === "all" || publicPages === "*")) {
-    return true;
-  }
-
-  // If publicPages specifies "all" or "*"
-  if (publicPages === "all" || publicPages === "*") {
-    return true;
-  }
-
-  // If publicPages is empty or "none"
-  if (!publicPages || publicPages === "none") {
-    return false;
-  }
-
-  const allowedList = publicPages
-    .split(",")
-    .map((s) => s.trim().replace(/^["'\[]+|["'\]]+$/g, "").toLowerCase());
-
-  return allowedList.includes(clean);
+  // Public => every stats page is viewable without login. Private => none.
+  // (The legacy publicPages value is ignored; the backend only checks isPublic.)
+  return Boolean(site.isPublic);
 }

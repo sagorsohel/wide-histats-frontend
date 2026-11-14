@@ -197,66 +197,67 @@ export const SearchAndSocialCard: React.FC<SearchAndSocialCardProps> = ({
           </div>
         </div>
 
+        {/* Fixed Column Header */}
+        <div className="flex items-center justify-between px-3.5 py-1 mb-1.5 text-xs font-bold text-slate-700 select-none">
+          <span>{activeTab === "search" ? "Search Engine" : "Social Network"}</span>
+          <div className="flex items-center gap-3 sm:gap-4 text-right">
+            <span className="w-16 text-right">Visits</span>
+            <span className="w-10 text-right">Share</span>
+          </div>
+        </div>
+
         {/* Breakdown List */}
         {loading ? (
-          <div className="space-y-1.5">
-            {[1, 2, 3, 4, 5].map((i) => (
+          <div className="space-y-1">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="space-y-1 animate-pulse px-2.5 py-1.5 rounded-xl border border-slate-100 bg-white/50"
+                className={`rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-2.5 animate-pulse ${
+                  i % 2 === 1 ? "bg-white" : "bg-[#E8E8E8]"
+                }`}
               >
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 bg-slate-200 rounded shrink-0" />
-                    <div className="h-3 w-28 bg-slate-200 rounded" />
-                  </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-slate-200 rounded shrink-0" />
+                  <div className="h-3 w-28 bg-slate-200 rounded" />
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="h-3 w-12 bg-slate-200 rounded" />
                   <div className="h-3 w-8 bg-slate-200 rounded" />
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             {currentList.slice(0, 6).map((item, index) => {
               const percentage = Math.round((item.count / currentTotal) * 100);
-              const barGradient =
-                activeTab === "search"
-                  ? "from-blue-600 to-cyan-400"
-                  : "from-purple-600 to-pink-400";
+              const isEven = index % 2 === 0;
 
               return (
                 <div
                   key={index}
-                  className="px-2.5 py-1.5 rounded-xl border border-slate-100/90 bg-white/70 hover:bg-white hover:border-slate-200/90 transition-all duration-150 space-y-1 group shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
+                  className={`rounded-xl px-3.5 py-2 flex items-center justify-between gap-2.5 transition-colors ${
+                    isEven ? "bg-white" : "bg-[#E8E8E8]"
+                  }`}
                 >
-                  <div className="flex items-center justify-between text-xs">
-                    {/* Left: Brand Icon + Channel Name */}
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <div className="w-4 h-4 flex items-center justify-center shrink-0">
-                        <ReferrerBrandIcon referrer={item.name} size={14} />
-                      </div>
-                      <span className="font-bold text-slate-800 text-xs truncate block group-hover:text-blue-600 transition-colors leading-tight">
-                        {item.name}
-                      </span>
+                  {/* Left: Brand Icon + Channel Name */}
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                      <ReferrerBrandIcon referrer={item.name} size={14} />
                     </div>
-
-                    {/* Right: Visits Count + Percentage */}
-                    <div className="flex items-center gap-2.5 shrink-0">
-                      <span className="font-extrabold text-slate-900 text-xs tabular-nums leading-tight">
-                        {formatNumber(item.count)}
-                      </span>
-                      <span className="text-slate-400 font-semibold text-[11px] w-7 text-right tabular-nums leading-tight">
-                        {percentage}%
-                      </span>
-                    </div>
+                    <span className="font-bold text-slate-800 text-xs truncate block group-hover:text-blue-600 transition-colors leading-tight">
+                      {item.name}
+                    </span>
                   </div>
 
-                  {/* Gradient Progress Bar */}
-                  <div className="w-full bg-slate-100/90 rounded-full h-1 overflow-hidden">
-                    <div
-                      className={`bg-gradient-to-r ${barGradient} h-full rounded-full transition-all duration-500`}
-                      style={{ width: `${Math.max(percentage, 2)}%` }}
-                    />
+                  {/* Right: Visits Count + Percentage */}
+                  <div className="flex items-center gap-3 sm:gap-4 shrink-0 text-right">
+                    <span className="w-16 font-bold text-slate-900 text-xs sm:text-[13px] tabular-nums text-right block">
+                      {formatNumber(item.count)}
+                    </span>
+                    <span className="w-10 font-bold text-slate-700 text-xs tabular-nums text-right block">
+                      {percentage}%
+                    </span>
                   </div>
                 </div>
               );

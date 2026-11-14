@@ -103,37 +103,15 @@ export const WebsiteProvider: React.FC<{ children: React.ReactNode }> = ({ child
           dispatch(setWebsites([res.data]));
           dispatch(setSelectedWebsiteAction(res.data));
         } else {
-          // Fallback context so public visitor can query public analytics with targetId
-          const fallbackSite: Website = {
-            id: targetId,
-            name: "Website Analytics",
-            domain: "",
-            trackingId: targetId,
-            displayId: targetId,
-            isPublic: true,
-            publicPages: "all",
-            status: "active",
-            createdAt: new Date().toISOString(),
-          };
-          dispatch(setWebsites([fallbackSite]));
-          dispatch(setSelectedWebsiteAction(fallbackSite));
+          // Site not found or private - do not set fake public site
+          dispatch(setWebsites([]));
+          dispatch(setSelectedWebsiteAction(null));
         }
       })
       .catch(() => {
-        // Fallback context if remote public endpoint is not yet redeployed
-        const fallbackSite: Website = {
-          id: targetId,
-          name: "Website Analytics",
-          domain: "",
-          trackingId: targetId,
-          displayId: targetId,
-          isPublic: true,
-          publicPages: "all",
-          status: "active",
-          createdAt: new Date().toISOString(),
-        };
-        dispatch(setWebsites([fallbackSite]));
-        dispatch(setSelectedWebsiteAction(fallbackSite));
+        // Network error or endpoint failure - do not set fake public site
+        dispatch(setWebsites([]));
+        dispatch(setSelectedWebsiteAction(null));
       });
   }, [userId, dispatch]);
 

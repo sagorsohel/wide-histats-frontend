@@ -82,7 +82,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-[linear-gradient(180deg,#1058d11f_0%,#1058d1_100%)]  text-slate-800 antialiased selection:bg-[#1d5b9f]/20 selection:text-[#1d5b9f]">
+      <body className="min-h-screen text-slate-800 antialiased selection:bg-[#1d5b9f]/20 selection:text-[#1d5b9f]">
         <StoreProvider>
           <AuthProvider>
             <WebsiteProvider>

@@ -497,8 +497,27 @@ export const HistatsCalendar: React.FC<HistatsCalendarProps> = ({
         ) : (
           /* Monthly Grid View */
           <div className="space-y-1 py-1 my-auto">
-            <div className="text-center font-bold text-[10.5px] text-[#1058D1] pb-1.5 border-b border-slate-100 uppercase tracking-wider leading-none">
-              Year {viewYear}
+            <div className="flex items-center justify-between pb-1.5 border-b border-slate-100">
+              <button
+                type="button"
+                aria-label="Previous year"
+                onClick={() => setViewYear((y) => y - 1)}
+                className="w-6 h-6 flex items-center justify-center rounded-md text-slate-500 hover:bg-[#1058D1]/10 hover:text-[#1058D1] transition-colors cursor-pointer text-[14px] leading-none"
+              >
+                ‹
+              </button>
+              <span className="font-bold text-[11px] text-[#1058D1] uppercase tracking-wider leading-none tabular-nums">
+                Year {viewYear}
+              </span>
+              <button
+                type="button"
+                aria-label="Next year"
+                disabled={viewYear >= new Date().getFullYear()}
+                onClick={() => setViewYear((y) => Math.min(y + 1, new Date().getFullYear()))}
+                className="w-6 h-6 flex items-center justify-center rounded-md text-slate-500 hover:bg-[#1058D1]/10 hover:text-[#1058D1] transition-colors cursor-pointer text-[14px] leading-none disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-500"
+              >
+                ›
+              </button>
             </div>
             <div className="grid grid-cols-4 gap-1.5 flex-1 py-2">
               {MONTHS_LIST.map((mName, mIdx) => {

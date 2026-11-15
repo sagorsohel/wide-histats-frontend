@@ -56,171 +56,122 @@ export const AudienceLoyaltyCard: React.FC<AudienceLoyaltyCardProps> = ({
   ], [firstTime, returning, safeTotal, newPct, retPct]);
 
   return (
-    <div className={`bg-white rounded-[18px] border border-white/70 shadow-[0_8px_24px_-8px_rgba(8,40,110,0.35)] p-4 sm:p-5 transition-all duration-200 flex flex-col justify-between ${className}`}>
+    <div className={`bg-white rounded-[18px] border border-white/70 shadow-[0_8px_24px_-8px_rgba(8,40,110,0.35)] p-4 transition-all duration-200 flex flex-col ${className}`}>
       {/* Header */}
-      <div>
-        <div className="flex items-center justify-between mb-2.5 pb-2 gap-2.5">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-7 h-7 rounded-lg bg-slate-50 text-slate-700 border border-slate-200/80 flex items-center justify-center shrink-0">
-              <Users className="w-3.5 h-3.5" />
-            </div>
-            <div className="min-w-0">
-              <h3 className="font-bold text-sm sm:text-base text-slate-900 tracking-tight truncate">
-                New vs. Returning Visitors
-              </h3>
-              <p className="text-[11px] text-slate-500 truncate">
-                Audience distribution between first-time and repeat visitors
-              </p>
-            </div>
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-9 h-9 rounded-xl bg-[#1058D1]/10 text-[#1058D1] flex items-center justify-center shrink-0">
+            <Users className="w-4 h-4" />
           </div>
-
-          <div className="px-2.5 py-0.5 rounded-full bg-slate-50 text-slate-700 border border-slate-200 text-[11px] font-semibold tabular-nums">
-            Total: {safeTotal.toLocaleString()}
+          <div className="min-w-0">
+            <h3 className="font-bold text-[14px] text-slate-900 tracking-tight leading-tight truncate">
+              New vs. Returning
+            </h3>
+            <p className="text-[11px] text-slate-400 leading-tight truncate">
+              First-time and repeat visitors
+            </p>
           </div>
         </div>
-
-        {/* Clean Pie Chart & Minimal Stats Layout */}
-        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 my-2">
-          {/* Left: Recharts Donut Pie Chart */}
-          <div className="relative w-32 h-32 shrink-0 flex items-center justify-center">
-            {loading ? (
-              <div className="w-24 h-24 rounded-full border-2 border-slate-100 animate-pulse" />
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        const item = payload[0].payload;
-                        return (
-                          <div className="bg-white/95 backdrop-blur-xs p-2 rounded border border-slate-200 shadow-md text-[11px] font-sans">
-                            <div className="font-bold text-slate-800 flex items-center gap-1.5 pb-0.5 border-b border-slate-100">
-                              <span
-                                className="w-2.5 h-2.5 rounded-full inline-block"
-                                style={{ backgroundColor: item.color }}
-                              />
-                              <span>{item.name}</span>
-                            </div>
-                            <div className="flex items-center justify-between gap-3 pt-1 text-slate-600">
-                              <span>Visitors:</span>
-                              <span className="font-bold font-mono text-slate-900">
-                                {item.value?.toLocaleString()} ({item.pct}%)
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Pie
-                    data={chartData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={56}
-                    innerRadius={32}
-                    paddingAngle={3}
-                    stroke="#ffffff"
-                    strokeWidth={2}
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-            )}
-
-            {/* Inner Center Label */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-              <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
-                NEW
-              </span>
-              <span className="text-base sm:text-lg font-black text-slate-900 tracking-tight tabular-nums">
-                {newPct}%
-              </span>
-            </div>
-          </div>
-
-          {/* Right: Clean & Fresh Minimal Metric Rows */}
-          <div className="flex-1 w-full space-y-2.5">
-            {/* 1. First-Time Visitors */}
-            <div className="flex items-center justify-between py-1 px-2 rounded-lg hover:bg-slate-50 transition-colors">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#1058D1] shrink-0" />
-                <div className="min-w-0">
-                  <span className="font-bold text-slate-900 text-xs sm:text-sm block leading-tight">
-                    First-Time Visitors (New)
-                  </span>
-                  <span className="text-[10px] sm:text-[11px] text-slate-400 block leading-tight">
-                    Visiting for the very first time
-                  </span>
-                </div>
-              </div>
-
-              <div className="text-right shrink-0 pl-2">
-                <span className="text-sm sm:text-base font-bold font-mono text-slate-900 tabular-nums block leading-tight">
-                  {firstTime.toLocaleString()}
-                </span>
-                <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 tabular-nums leading-tight">
-                  {newPct}%
-                </span>
-              </div>
-            </div>
-
-            {/* 2. Returning Visitors */}
-            <div className="flex items-center justify-between py-1 px-2 rounded-lg hover:bg-slate-50 transition-colors">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#94a3b8] shrink-0" />
-                <div className="min-w-0">
-                  <span className="font-bold text-slate-900 text-xs sm:text-sm block leading-tight">
-                    Returning / Loyal Visitors
-                  </span>
-                  <span className="text-[10px] sm:text-[11px] text-slate-400 block leading-tight">
-                    Repeat and returning audience
-                  </span>
-                </div>
-              </div>
-
-              <div className="text-right shrink-0 pl-2">
-                <span className="text-sm sm:text-base font-bold font-mono text-slate-900 tabular-nums block leading-tight">
-                  {returning.toLocaleString()}
-                </span>
-                <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 tabular-nums leading-tight">
-                  {retPct}%
-                </span>
-              </div>
-            </div>
-
-            {/* Subtle Dual Segment Progress Bar */}
-            <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden flex mt-1">
-              <div
-                className="bg-[#1058D1] h-full transition-all duration-700"
-                style={{ width: `${newPct}%` }}
-              />
-              <div
-                className="bg-[#94a3b8] h-full transition-all duration-700"
-                style={{ width: `${retPct}%` }}
-              />
-            </div>
-          </div>
+        <div className="px-2.5 py-0.5 rounded-full bg-[#1058D1]/10 text-[#1058D1] text-[11px] font-bold tabular-nums shrink-0">
+          {safeTotal.toLocaleString()} total
         </div>
       </div>
 
-      {/* Bottom Insights Footer */}
-      <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 flex-wrap gap-2">
-        <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-[#1058D1] inline-block" />
-          <span>New: {newPct}%</span>
-          <span className="text-slate-300">•</span>
-          <span className="w-2 h-2 rounded-full bg-[#94a3b8] inline-block" />
-          <span>Returning: {retPct}%</span>
-        </span>
-        <span className="text-slate-400 font-medium">
-          Total Analyzed: {safeTotal.toLocaleString()} visitors
-        </span>
+      {/* Donut + rows */}
+      <div className="flex items-center gap-4 flex-1">
+        <div className="relative w-[96px] h-[96px] shrink-0 flex items-center justify-center">
+          {loading ? (
+            <div className="w-20 h-20 rounded-full border-2 border-slate-100 animate-pulse" />
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const item = payload[0].payload;
+                      return (
+                        <div className="bg-white/95 p-2 rounded border border-slate-200 shadow-md text-[11px] font-sans">
+                          <div className="font-bold text-slate-800 flex items-center gap-1.5">
+                            <span
+                              className="w-2.5 h-2.5 rounded-full inline-block"
+                              style={{ backgroundColor: item.color }}
+                            />
+                            <span>{item.name}</span>
+                          </div>
+                          <div className="pt-1 text-slate-600">
+                            {item.value?.toLocaleString()} ({item.pct}%)
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Pie
+                  data={chartData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={46}
+                  innerRadius={30}
+                  paddingAngle={3}
+                  stroke="#ffffff"
+                  strokeWidth={2}
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <span className="text-[15px] font-extrabold text-slate-900 tracking-tight tabular-nums leading-none">
+              {newPct}%
+            </span>
+            <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mt-0.5">
+              new
+            </span>
+          </div>
+        </div>
+
+        <div className="flex-1 min-w-0 space-y-2">
+          {[
+            { label: "New visitors", sub: "First visit", color: "#1058D1", count: firstTime, pct: newPct },
+            { label: "Returning", sub: "Came back", color: "#94a3b8", count: returning, pct: retPct },
+          ].map((row) => (
+            <div
+              key={row.label}
+              className="flex items-center justify-between gap-2 rounded-xl bg-slate-50 px-3 py-2"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: row.color }} />
+                <div className="min-w-0">
+                  <span className="font-bold text-slate-900 text-[12.5px] block leading-tight truncate">
+                    {row.label}
+                  </span>
+                  <span className="text-[10.5px] text-slate-400 block leading-tight truncate">
+                    {row.sub}
+                  </span>
+                </div>
+              </div>
+              <div className="text-right shrink-0">
+                <span className="text-[15px] font-extrabold text-slate-900 tabular-nums block leading-tight">
+                  {row.count.toLocaleString()}
+                </span>
+                <span className="text-[10.5px] font-semibold text-slate-500 tabular-nums leading-tight">
+                  {row.pct}%
+                </span>
+              </div>
+            </div>
+          ))}
+
+          <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden flex">
+            <div className="bg-[#1058D1] h-full transition-all duration-700" style={{ width: `${newPct}%` }} />
+            <div className="bg-[#94a3b8] h-full transition-all duration-700" style={{ width: `${retPct}%` }} />
+          </div>
+        </div>
       </div>
     </div>
   );

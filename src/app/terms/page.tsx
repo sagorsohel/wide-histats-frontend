@@ -4,6 +4,7 @@ import { LegalPage, type LegalSection } from "@/components/layout/LegalPage";
 export const metadata: Metadata = {
   title: "Terms of Service — Analycos",
   description: "The terms that apply when you use Analycos analytics and hit counters.",
+  alternates: { canonical: "/terms" },
 };
 
 const sections: LegalSection[] = [

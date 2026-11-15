@@ -1,51 +1,58 @@
-"use client";
+import type { Metadata } from "next";
+import { LandingPage } from "@/components/landing/LandingPage";
+import { FAQS } from "@/components/landing/faqData";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 
-import React from "react";
-import { LandingNavbar } from "@/components/landing/LandingNavbar";
-import { LandingHero } from "@/components/landing/LandingHero";
-import { LandingMockup } from "@/components/landing/LandingMockup";
-import { LandingFeatures } from "@/components/landing/LandingFeatures";
-import { LandingAudience } from "@/components/landing/LandingAudience";
-import { LandingSteps } from "@/components/landing/LandingSteps";
-import { LandingCounter } from "@/components/landing/LandingCounter";
-import { LandingFaq } from "@/components/landing/LandingFaq";
-import { LandingCta } from "@/components/landing/LandingCta";
-import { LandingFooter } from "@/components/landing/LandingFooter";
+export const metadata: Metadata = {
+  title: { absolute: SITE_TITLE },
+  description: SITE_DESCRIPTION,
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    type: "website",
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: SITE_TITLE }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: ["/og-image.jpg"],
+  },
+};
+
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: SITE_NAME,
+    url: SITE_URL,
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web",
+    description: SITE_DESCRIPTION,
+    offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQS.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: { "@type": "Answer", text: f.answer },
+    })),
+  },
+];
 
 export default function HomePage() {
   return (
-    <div className="w-full  mx-auto bg-white text-slate-900 selection:bg-blue-600/10 selection:text-blue-600 shadow-[0_0_50px_rgba(0,0,0,0.04)] border-x border-slate-200/80 min-h-screen flex flex-col">
-      {/* 1. Header / Navbar Section */}
-      <LandingNavbar />
-
-      <main className="flex-1 w-full">
-        {/* 2. Hero Section */}
-        <LandingHero />
-
-        {/* 3. Dashboard Preview Mockup Card */}
-        <LandingMockup />
-
-        {/* 4. "Less noise. More understanding." Feature Cards */}
-        <LandingFeatures />
-
-        {/* 5. "Your audience, without the guesswork." Geolocation Banner */}
-        <LandingAudience />
-
-        {/* 6. "Three steps. Then you're live." Timeline Steps */}
-        <LandingSteps />
-
-        {/* 7. "A little counter. A perfect fit." Hit Counter Styles */}
-        <LandingCounter />
-
-        {/* 8. FAQ Accordion Section */}
-        <LandingFaq />
-
-        {/* 9. "A clearer view starts here." CTA Banner */}
-        <LandingCta />
-      </main>
-
-      {/* 10. Footer Section */}
-      <LandingFooter />
-    </div>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <LandingPage />
+    </>
   );
 }

@@ -4,6 +4,7 @@ import { LegalPage, type LegalSection } from "@/components/layout/LegalPage";
 export const metadata: Metadata = {
   title: "Privacy Policy — Analycos",
   description: "How Analycos collects, uses and protects account and visitor analytics data.",
+  alternates: { canonical: "/privacy" },
 };
 
 const sections: LegalSection[] = [

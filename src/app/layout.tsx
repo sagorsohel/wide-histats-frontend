@@ -7,6 +7,7 @@ import { WebsiteProvider } from "@/context/WebsiteContext";
 import { AppShell } from "@/components/layout/AppShell";
 import { TrackingModalWrapper } from "@/components/analytics/TrackingModalWrapper";
 import { UrlWebsiteSync } from "@/components/common/UrlWebsiteSync";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 
 export const viewport: Viewport = {
   width: 1140,
@@ -15,17 +16,23 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://analycos.com"),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Analycos",
+    default: SITE_TITLE,
     template: "%s",
   },
-  applicationName: "Analycos",
-  description:
-    "Monitor website visitors, pageviews, and traffic sources with Analycos. Free web statistics, hit counters, and visitor tracking tools to understand your audience.",
-  alternates: {
-    canonical: "https://analycos.com",
-  },
+  applicationName: SITE_NAME,
+  description: SITE_DESCRIPTION,
+  keywords: [
+    "web analytics",
+    "website statistics",
+    "hit counter",
+    "visitor tracking",
+    "real-time visitors",
+    "traffic sources",
+  ],
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
@@ -35,27 +42,19 @@ export const metadata: Metadata = {
     apple: "/favicon.svg",
   },
   openGraph: {
-    title: "Analycos",
-    description:
-      "Monitor website visitors, pageviews, and traffic sources with Analycos. Free web statistics, hit counters, and visitor tracking tools to understand your audience.",
-    siteName: "Analycos",
-    url: "https://analycos.com",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    siteName: SITE_NAME,
+    url: SITE_URL,
     type: "website",
-    images: [
-      {
-        url: "/favicon.svg",
-        width: 100,
-        height: 100,
-        alt: "Analycos Logo",
-      },
-    ],
+    locale: "en_US",
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: SITE_TITLE }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Analycos",
-    description:
-      "Monitor website visitors, pageviews, and traffic sources with Analycos. Free web statistics, hit counters, and visitor tracking tools to understand your audience.",
-    images: ["/favicon.svg"],
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: ["/og-image.jpg"],
   },
 };
 
@@ -73,9 +72,9 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebSite",
-              name: "Analycos",
+              name: SITE_NAME,
               alternateName: ["analycos.com", "Analycos Analytics"],
-              url: "https://analycos.com/",
+              url: SITE_URL + "/",
             }),
           }}
         />
@@ -85,9 +84,9 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
-              name: "Analycos",
-              url: "https://analycos.com/",
-              logo: "https://analycos.com/favicon.svg",
+              name: SITE_NAME,
+              url: SITE_URL + "/",
+              logo: SITE_URL + "/favicon.svg",
             }),
           }}
         />

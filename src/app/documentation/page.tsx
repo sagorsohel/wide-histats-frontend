@@ -4,6 +4,7 @@ import { LegalPage, type LegalSection } from "@/components/layout/LegalPage";
 export const metadata: Metadata = {
   title: "Documentation — Analycos",
   description: "Install the Analycos tracking script and understand the dashboard reports.",
+  alternates: { canonical: "/documentation" },
 };
 
 const snippet = `<script

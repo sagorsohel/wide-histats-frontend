@@ -15,9 +15,17 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Analycos — Free Web Stats, Hit Counter & Visitor Tracking",
+  metadataBase: new URL("https://analycos.com"),
+  title: {
+    default: "Analycos",
+    template: "%s",
+  },
+  applicationName: "Analycos",
   description:
     "Monitor website visitors, pageviews, and traffic sources with Analycos. Free web statistics, hit counters, and visitor tracking tools to understand your audience.",
+  alternates: {
+    canonical: "https://analycos.com",
+  },
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
@@ -27,10 +35,11 @@ export const metadata: Metadata = {
     apple: "/favicon.svg",
   },
   openGraph: {
-    title: "Analycos — Free Web Stats, Hit Counter & Visitor Tracking",
+    title: "Analycos",
     description:
       "Monitor website visitors, pageviews, and traffic sources with Analycos. Free web statistics, hit counters, and visitor tracking tools to understand your audience.",
     siteName: "Analycos",
+    url: "https://analycos.com",
     type: "website",
     images: [
       {
@@ -43,7 +52,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Analycos — Free Web Stats, Hit Counter & Visitor Tracking",
+    title: "Analycos",
     description:
       "Monitor website visitors, pageviews, and traffic sources with Analycos. Free web statistics, hit counters, and visitor tracking tools to understand your audience.",
     images: ["/favicon.svg"],
@@ -58,6 +67,30 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full scroll-smooth bg-[#f1f4f8]">
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "Analycos",
+              alternateName: ["analycos.com", "Analycos Analytics"],
+              url: "https://analycos.com/",
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "Analycos",
+              url: "https://analycos.com/",
+              logo: "https://analycos.com/favicon.svg",
+            }),
+          }}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `

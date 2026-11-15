@@ -56,10 +56,10 @@ export const AudienceLoyaltyCard: React.FC<AudienceLoyaltyCardProps> = ({
   ], [firstTime, returning, safeTotal, newPct, retPct]);
 
   return (
-    <div className={`bg-white rounded-2xl border border-slate-200/90 shadow-xs p-3.5 sm:p-4 transition-all duration-200 flex flex-col justify-between ${className}`}>
+    <div className={`bg-white rounded-[18px] border border-white/70 shadow-[0_8px_24px_-8px_rgba(8,40,110,0.35)] p-4 sm:p-5 transition-all duration-200 flex flex-col justify-between ${className}`}>
       {/* Header */}
       <div>
-        <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-100 gap-2.5">
+        <div className="flex items-center justify-between mb-2.5 pb-2 gap-2.5">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-7 h-7 rounded-lg bg-slate-50 text-slate-700 border border-slate-200/80 flex items-center justify-center shrink-0">
               <Users className="w-3.5 h-3.5" />

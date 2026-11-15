@@ -15,7 +15,6 @@ import {
   ReferrerStat,
 } from "@/types/analytics";
 import { HistatsCalendar } from "@/components/analytics/HistatsCalendar";
-import { DailyStatsCard } from "@/components/analytics/DailyStatsCard";
 import { TopPagesTable } from "@/components/analytics/TopPagesTable";
 import { SourcesChart } from "@/components/analytics/SourcesChart";
 import { GeographyTable } from "@/components/analytics/GeographyTable";
@@ -24,13 +23,19 @@ import { AudienceLoyaltyCard } from "@/components/analytics/AudienceLoyaltyCard"
 import { TopCitiesTable } from "@/components/analytics/TopCitiesTable";
 import { OperatingSystemsCard } from "@/components/analytics/OperatingSystemsCard";
 import { SearchAndSocialCard } from "@/components/analytics/SearchAndSocialCard";
-import { Users, Eye, Activity, Plus } from "lucide-react";
+import { Users, Eye, Activity, Plus, ChevronRight } from "lucide-react";
+import { useAppSelector } from "@/store";
 import Link from "next/link";
 import { formatNumber } from "@/lib/utils";
 import { useReportLoader, emptyOverview, ReportFetchContext } from "@/hooks/useReportLoader";
 
 export default function SummaryPage() {
   const { selectedWebsite, websites, websitesLoaded } = useWebsite();
+  const realtimeActiveCount = useAppSelector((state) =>
+    selectedWebsite?.id
+      ? state.realtime.byWebsite[selectedWebsite.id]?.data?.activeCount
+      : undefined,
+  );
 
   const [overview, setOverview] = useState<OverviewStats | null>(null);
   const [pages, setPages] = useState<PageStat[]>([]);
@@ -181,35 +186,151 @@ export default function SummaryPage() {
     );
   }
 
+  const showSkeleton = loading && !overview;
+  const isDaily = range === "today" || range === "yesterday";
+  const periodTitle = isDaily ? "Daily stats" : "Period stats";
+  const periodDate =
+    range === "yesterday"
+      ? "Yesterday"
+      : new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long" }).format(new Date());
+
+  const liveCount =
+    [overview?.activeVisitors, realtimeActiveCount, selectedWebsite?.usersOnline].find(
+      (v) => typeof v === "number" && v > 0,
+    ) ?? 0;
+
+  const uniq = overview?.uniqueVisitors || 0;
+  const firstTime =
+    overview?.firstTimeVisitors ?? Math.round(uniq * ((overview?.newVisitorsPct ?? 0) / 100));
+  const perVisit = overview?.pagesPerSession
+    ? Number(overview.pagesPerSession).toFixed(2)
+    : ((overview?.totalPageviews || 0) / Math.max(uniq, 1)).toFixed(2);
+  const newRatio =
+    overview?.newVisitorsPct ?? (uniq ? Math.round((firstTime / uniq) * 100) : 0);
+
+  const periodRows: { label: string; value: string }[] = [
+    { label: "Total page views", value: formatNumber(overview?.totalPageviews || 0) },
+    { label: "Total visitors", value: formatNumber(uniq) },
+    { label: "First time visitors", value: formatNumber(firstTime) },
+    { label: "Page views per visit", value: perVisit },
+    { label: "New visitors ratio", value: `${newRatio}%` },
+  ];
+
+  const lifetimeRows = [
+    { label: "All-time total users", sub: "Individuals", value: overview?.allTimeVisitors ?? 0, Icon: Users },
+    { label: "All-time views", sub: "Impressions", value: overview?.allTimePageviews ?? 0, Icon: Eye },
+    { label: "All-time visits", sub: "Sessions", value: overview?.allTimeSessions ?? 0, Icon: Activity },
+  ];
+
+  const railCard =
+    "rounded-[18px] bg-white border border-white/70 shadow-[0_8px_24px_-8px_rgba(8,40,110,0.35)] p-4";
+  const railTitle = "text-[11px] font-extrabold uppercase tracking-wider text-[#1058D1]";
+
   return (
-    <div className="space-y-3.5 relative select-text antialiased w-full">
-      {/* ============================================================ */}
-      {/* ROW 1: UNIFIED Daily Stats (Left) + Calendar (Right)         */}
-      {/* ============================================================ */}
-      <DailyStatsCard
-        overview={overview}
-        loading={loading}
-        range={range}
-        domain={selectedWebsite?.domain}
-        liveOnlineCount={overview?.activeVisitors}
-        calendar={
+    <div className="relative select-text antialiased w-full grid grid-cols-1 lg:grid-cols-[268px_minmax(0,1fr)] gap-4 items-start">
+      {/* ============================ LEFT RAIL ============================ */}
+      <aside className="flex flex-col gap-4 min-w-0">
+        {/* Online now */}
+        <Link
+          href="/realtime"
+          title="Click to view live users online"
+          className="group rounded-[18px] p-4 text-white border border-white/20 shadow-[0_8px_24px_-8px_rgba(8,40,110,0.5)] bg-gradient-to-br from-[#0b46ad] to-[#2d7bf0] block"
+        >
+          <div className="flex items-center justify-between text-[11px] font-semibold opacity-90">
+            <span className="flex items-center gap-1.5">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+              </span>
+              Online now
+            </span>
+            <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+          </div>
+          <div className="mt-1 text-[34px] font-extrabold leading-none tracking-tight tabular-nums">
+            {showSkeleton ? "–" : liveCount.toLocaleString()}
+          </div>
+          <div className="mt-1 text-[11px] opacity-80">users on your site</div>
+        </Link>
+
+        {/* Period / daily stats */}
+        <div className={railCard}>
+          <div className="flex items-center justify-between mb-1">
+            <h3 className={railTitle}>{periodTitle}</h3>
+            <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-[#1058D1]/10 text-[#1058D1]">
+              {periodDate}
+            </span>
+          </div>
+          <div>
+            {periodRows.map((row, i) => (
+              <div
+                key={row.label}
+                className={`flex items-baseline justify-between gap-2 py-2.5 ${
+                  i < periodRows.length - 1 ? "border-b border-slate-100" : ""
+                }`}
+              >
+                <span className="text-[12px] text-slate-500">{row.label}</span>
+                {showSkeleton ? (
+                  <span className="h-4 w-12 bg-slate-200/60 rounded animate-pulse" />
+                ) : (
+                  <span className="text-[17px] font-extrabold text-[#1058D1] tabular-nums">
+                    {row.value}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Lifetime totals */}
+        <div className={railCard}>
+          <div className="flex items-center justify-between mb-1">
+            <h3 className={railTitle}>Lifetime totals</h3>
+            <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-[#1058D1]/10 text-[#1058D1]">
+              Since installed
+            </span>
+          </div>
+          {lifetimeRows.map(({ label, sub, value, Icon }, i) => (
+            <div
+              key={label}
+              className={`flex items-center gap-3 py-2.5 ${
+                i < lifetimeRows.length - 1 ? "border-b border-slate-100" : ""
+              }`}
+            >
+              <span className="w-8 h-8 rounded-lg bg-[#1058D1]/10 text-[#1058D1] flex items-center justify-center shrink-0">
+                <Icon className="w-4 h-4" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="text-[11.5px] text-slate-500 truncate">{label}</div>
+                <div className="text-[10px] text-slate-400">{sub}</div>
+              </div>
+              {showSkeleton ? (
+                <span className="h-5 w-14 bg-slate-200/60 rounded animate-pulse" />
+              ) : (
+                <span className="text-[17px] font-extrabold text-slate-900 tabular-nums">
+                  {formatNumber(value)}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Calendar */}
+        <div className="rounded-[18px] bg-white border border-white/70 shadow-[0_8px_24px_-8px_rgba(8,40,110,0.35)] p-2.5 flex justify-center">
           <HistatsCalendar
             selectedPreset={range}
             onPresetChange={handleRangeChange}
             currentWindow={customWindow}
             onDateChange={handleCustomRangeChange}
-            className="w-full max-w-[340px]"
+            className="w-full"
           />
-        }
-      />
+        </div>
+      </aside>
 
-      {/* ============================================================ */}
-      {/* ROW 2: New vs Returning (Left) + Lifetime Totals (Right)     */}
-      {/* Heights matched, widths matched!                             */}
-      {/* ============================================================ */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-stretch w-full">
-        {/* Feature 1: New vs. Returning Visitors */}
-        <div className="lg:col-span-8 flex flex-col">
+      {/* =========================== MAIN CONTENT ========================== */}
+      <div className="flex flex-col gap-4 min-w-0">
+        <TopPagesTable pages={pages} domain={selectedWebsite?.domain} loading={loading} />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
           <AudienceLoyaltyCard
             firstTimeVisitors={overview?.firstTimeVisitors}
             returningVisitors={overview?.returningVisitors}
@@ -219,150 +340,14 @@ export default function SummaryPage() {
             loading={loading}
             className="h-full"
           />
+          <SourcesChart sources={sources} loading={loading} />
+          <SearchAndSocialCard referrers={referrers} loading={loading} />
+          <TopCitiesTable cities={cities} totalCities={totalCities} loading={loading} />
+          <GeographyTable countries={countries} totalCountries={totalCountries} loading={loading} />
+          <DeviceBreakdown devices={devices} browsers={browsers} loading={loading} />
         </div>
 
-        {/* Lifetime Totals Card (Row 2 Right, Height matched to Audience Loyalty) */}
-        <div className="lg:col-span-4 flex flex-col">
-          <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3.5 sm:p-4 space-y-2.5 flex flex-col justify-between h-full">
-            {/* Header */}
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100 shrink-0">
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-3.5 rounded-full bg-[#1058D1] shadow-xs" />
-                <h3 className="text-xs font-black uppercase tracking-wider text-[#1058D1]">
-                  Lifetime Totals
-                </h3>
-              </div>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#1058D1]/10 text-[#1058D1] border border-[#1058D1]/20 shadow-2xs">
-                Since Installed
-              </span>
-            </div>
-
-            {/* 3 Dedicated Stats Cards - Unified with #1058D1 */}
-            <div className="space-y-2 flex-1 flex flex-col justify-between">
-              {/* Card 1: All-Time Users */}
-              <div className="rounded-xl px-3 py-2 bg-slate-50/70 border border-slate-200/80 shadow-2xs hover:shadow-xs transition-all group flex-1 flex flex-col justify-between">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-700">
-                    All-Time Total Users
-                  </span>
-                  <div className="w-6 h-6 rounded-lg bg-[#1058D1] text-white flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
-                    <Users className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-                <div className="mt-1 flex items-baseline justify-between">
-                  {loading && !overview ? (
-                    <div className="h-6 w-16 bg-slate-200/50 rounded-lg animate-pulse" />
-                  ) : (
-                    <span className="text-xl sm:text-2xl font-black text-[#1058D1] tracking-tight tabular-nums">
-                      {formatNumber(overview?.allTimeVisitors ?? 0)}
-                    </span>
-                  )}
-                  <span className="text-[10px] font-bold text-slate-400">
-                    Individuals
-                  </span>
-                </div>
-              </div>
-
-              {/* Card 2: All-Time Views */}
-              <div className="rounded-xl px-3 py-2 bg-slate-50/70 border border-slate-200/80 shadow-2xs hover:shadow-xs transition-all group flex-1 flex flex-col justify-between">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-700">
-                    All-Time Views
-                  </span>
-                  <div className="w-6 h-6 rounded-lg bg-[#1058D1] text-white flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
-                    <Eye className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-                <div className="mt-1 flex items-baseline justify-between">
-                  {loading && !overview ? (
-                    <div className="h-6 w-16 bg-slate-200/50 rounded-lg animate-pulse" />
-                  ) : (
-                    <span className="text-xl sm:text-2xl font-black text-[#1058D1] tracking-tight tabular-nums">
-                      {formatNumber(overview?.allTimePageviews ?? 0)}
-                    </span>
-                  )}
-                  <span className="text-[10px] font-bold text-slate-400">
-                    Impressions
-                  </span>
-                </div>
-              </div>
-
-              {/* Card 3: All-Time Visits */}
-              <div className="rounded-xl px-3 py-2 bg-slate-50/70 border border-slate-200/80 shadow-2xs hover:shadow-xs transition-all group flex-1 flex flex-col justify-between">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-700">
-                    All-Time Visits
-                  </span>
-                  <div className="w-6 h-6 rounded-lg bg-[#1058D1] text-white flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
-                    <Activity className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-                <div className="mt-1 flex items-baseline justify-between">
-                  {loading && !overview ? (
-                    <div className="h-6 w-16 bg-slate-200/50 rounded-lg animate-pulse" />
-                  ) : (
-                    <span className="text-xl sm:text-2xl font-black text-[#1058D1] tracking-tight tabular-nums">
-                      {formatNumber(overview?.allTimeSessions ?? 0)}
-                    </span>
-                  )}
-                  <span className="text-[10px] font-bold text-slate-400">
-                    Sessions
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ============================================================ */}
-      {/* SECTION 2: Top Pages Table (Full Width)                      */}
-      {/* ============================================================ */}
-      <div className="w-full">
-        <TopPagesTable
-          pages={pages}
-          domain={selectedWebsite?.domain}
-          loading={loading}
-        />
-      </div>
-
-      {/* ============================================================ */}
-      {/* SECTION 3: Traffic Sources & Search/Social (Full Width 2-Col) */}
-      {/* ============================================================ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 items-stretch w-full">
-        <SourcesChart sources={sources} loading={loading} />
-        <SearchAndSocialCard referrers={referrers} loading={loading} />
-      </div>
-
-      {/* ============================================================ */}
-      {/* SECTION 4: Geography (Top Cities & Visitors by Country)      */}
-      {/* ============================================================ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 items-stretch w-full">
-        <TopCitiesTable
-          cities={cities}
-          totalCities={totalCities}
-          loading={loading}
-        />
-        <GeographyTable
-          countries={countries}
-          totalCountries={totalCountries}
-          loading={loading}
-        />
-      </div>
-
-      {/* ============================================================ */}
-      {/* SECTION 5: Devices & Operating Systems (Full Width 2-Col)    */}
-      {/* ============================================================ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 items-stretch w-full">
-        <DeviceBreakdown
-          devices={devices}
-          browsers={browsers}
-          loading={loading}
-        />
-        <OperatingSystemsCard
-          operatingSystems={operatingSystems}
-          loading={loading}
-        />
+        <OperatingSystemsCard operatingSystems={operatingSystems} loading={loading} />
       </div>
     </div>
   );

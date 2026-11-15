@@ -136,7 +136,7 @@ export const DailyStatsCard: React.FC<DailyStatsCardProps> = ({
     baseItems.push({
       value: (
         <span className="flex items-center gap-1.5">
-          <span className="text-[17px] sm:text-[18px] font-bold text-[#0055aa] group-hover:text-blue-700 transition-colors">
+          <span className="text-[22px] font-extrabold text-emerald-700">
             {liveCount.toLocaleString()}
           </span>
           <span className="relative flex h-2 w-2 shrink-0">
@@ -156,129 +156,89 @@ export const DailyStatsCard: React.FC<DailyStatsCardProps> = ({
 
   const displayItems: StatItem[] = baseItems;
 
+  const skeleton = loading && !overview && (!items || items.length === 0);
+
+  const tile = (
+    item: StatItem | undefined,
+    primary: boolean,
+    key: number,
+  ) => (
+    <div
+      key={key}
+      className={`rounded-xl px-3.5 py-3 min-w-0 border transition-colors ${
+        primary
+          ? "bg-[#1058d1]/[0.05] border-[#1058d1]/10"
+          : "bg-slate-50 border-slate-100"
+      }`}
+    >
+      <div
+        className={`text-[22px] font-extrabold leading-none tracking-tight tabular-nums truncate ${
+          primary ? "text-[#1058d1]" : "text-slate-900"
+        }`}
+      >
+        {skeleton ? (
+          <div className="h-6 w-16 bg-slate-200/60 rounded animate-pulse" />
+        ) : (
+          item?.value
+        )}
+      </div>
+      <div className="mt-1.5 text-[11.5px] font-medium text-slate-500 truncate leading-tight">
+        {item?.label}
+      </div>
+    </div>
+  );
+
   return (
-    <div className="rounded-[4px] border border-[#b0b0b0] shadow-[inset_1px_0px_20px_8px_#a1a1aabf] w-full select-none bg-white font-sans text-slate-800">
+    <div className="rounded-[18px] overflow-hidden w-full select-none bg-white font-sans text-slate-800 border border-white/70 shadow-[0_8px_24px_-8px_rgba(8,40,110,0.35)]">
       <div className="flex flex-col lg:flex-row items-stretch justify-between">
-        {/* Left Stats Section: Header bar extends only up to before the calendar */}
-        <div className="flex-1 w-full lg:border-r border-[#d4d4d4] flex flex-col justify-between">
-          {/* Blue Header Bar: Ends before the calendar */}
-          <div className="bg-[#1058d1] px-3.5 py-1.5 flex items-center justify-between text-white">
-            <div className="flex items-center gap-2">
-              <span className="text-[17px] sm:text-[18px] font-bold text-white tracking-normal font-sans drop-shadow-xs">
-                {displayTitle}
-              </span>
-            </div>
-            <div className="text-[17px] sm:text-[18px] font-bold text-white tracking-normal font-sans drop-shadow-xs">
+        {/* Left: hero header band + stat tiles */}
+        <div className="flex-1 w-full flex flex-col">
+          <div className="bg-gradient-to-r from-[#0b46ad] to-[#2d7bf0] px-5 py-3 flex items-center justify-between text-white">
+            <span className="text-[16px] font-bold tracking-tight">
+              {displayTitle}
+            </span>
+            <span className="text-[12px] font-semibold px-3 py-1 rounded-full bg-white/15 border border-white/20">
               {displayDateText}
-            </div>
+            </span>
           </div>
 
-          {/* Card Body: Compact metrics */}
-          <div className="p-2.5 sm:p-3 flex-1 flex flex-col justify-center">
+          <div className="p-4 flex-1 flex flex-col justify-center">
             {children ? (
               children
             ) : (
-              <>
-                {/* Row 1: Primary Metrics with 1px gray vertical dividers */}
-                <div className="grid grid-cols-3 divide-x divide-[#d4d4d4] pb-2 border-b border-[#d4d4d4]">
-                  {displayItems.slice(0, 3).map((item, idx) => (
-                    <div
-                      key={idx}
-                      className={
-                        idx === 0 ? "pr-3" : idx === 1 ? "px-3" : "pl-3"
-                      }
+              <div className="grid grid-cols-3 gap-2.5">
+                {displayItems.slice(0, 3).map((item, idx) => tile(item, true, idx))}
+                {tile(displayItems[3], false, 3)}
+                {tile(displayItems[4], false, 4)}
+                {displayItems[5] ? (
+                  displayItems[5].href ? (
+                    <Link
+                      href={displayItems[5].href}
+                      className="group rounded-xl px-3.5 py-3 min-w-0 border bg-emerald-50 border-emerald-200/80 hover:bg-emerald-100/70 transition-colors cursor-pointer"
+                      title="Click to view live users online"
                     >
-                      <div className="text-[18px] sm:text-[19px] font-bold text-[#0055aa] leading-tight tracking-tight tabular-nums truncate">
-                        {loading &&
-                        !overview &&
-                        (!items || items.length === 0) ? (
-                          <div className="h-5 w-16 bg-slate-200/60 rounded animate-pulse" />
-                        ) : (
-                          item.value
-                        )}
+                      <div className="text-[22px] font-extrabold leading-none tracking-tight tabular-nums truncate flex items-center text-emerald-700">
+                        {displayItems[5].value}
                       </div>
-                      <div className="text-[11px] sm:text-[11.5px] font-normal text-[#222222] mt-0.5 truncate leading-tight">
-                        {item.label}
+                      <div className="mt-1.5 text-[11.5px] font-medium text-emerald-800 truncate leading-tight flex items-center gap-1">
+                        <span>{displayItems[5].label}</span>
+                        <ChevronRight className="w-3 h-3 text-emerald-600 transition-transform group-hover:translate-x-0.5" />
                       </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Row 2: Secondary Metrics directly under row 1 */}
-                <div className="grid grid-cols-3 pt-2">
-                  {/* Col 1 */}
-                  <div className="pr-3 border-r border-[#d4d4d4]">
-                    <div className="text-[17px] sm:text-[18px] font-bold text-[#111111] leading-tight tracking-tight tabular-nums truncate">
-                      {loading &&
-                      !overview &&
-                      (!items || items.length === 0) ? (
-                        <div className="h-5 w-12 bg-slate-200/60 rounded animate-pulse" />
-                      ) : (
-                        displayItems[3]?.value
-                      )}
-                    </div>
-                    <div className="text-[11px] sm:text-[11.5px] font-normal text-[#222222] mt-0.5 truncate leading-tight">
-                      {displayItems[3]?.label}
-                    </div>
-                  </div>
-
-                  {/* Col 2 */}
-                  <div className="px-3">
-                    <div className="text-[17px] sm:text-[18px] font-bold text-[#111111] leading-tight tracking-tight tabular-nums truncate">
-                      {loading &&
-                      !overview &&
-                      (!items || items.length === 0) ? (
-                        <div className="h-5 w-12 bg-slate-200/60 rounded animate-pulse" />
-                      ) : (
-                        displayItems[4]?.value
-                      )}
-                    </div>
-                    <div className="text-[11px] sm:text-[11.5px] font-normal text-[#222222] mt-0.5 truncate leading-tight">
-                      {displayItems[4]?.label}
-                    </div>
-                  </div>
-
-                  {/* Col 3: Users online (Clickable link to /realtime) */}
-                  {displayItems[5] ? (
-                    displayItems[5].href ? (
-                      <Link
-                        href={displayItems[5].href}
-                        className="pl-3 border-l border-[#d4d4d4] flex flex-col justify-center group hover:bg-[#eef8ee] -my-1 py-1 px-2 rounded transition-colors cursor-pointer"
-                        title="Click to view live users online"
-                      >
-                        <div className="text-[17px] sm:text-[18px] font-bold text-[#0055aa] group-hover:text-[#1b5e20] leading-tight tracking-tight tabular-nums truncate flex items-center">
-                          {displayItems[5].value}
-                        </div>
-                        <div className="text-[11px] sm:text-[11.5px] font-normal text-[#222222] group-hover:text-[#1b5e20] mt-0.5 truncate leading-tight flex items-center gap-1">
-                          <span className="text-[8.5px] font-black uppercase tracking-wider px-1 py-0.2 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
-                            LIVE
-                          </span>
-                          <span>{displayItems[5].label}</span>
-                          <ChevronRight className="w-3 h-3 text-slate-400 group-hover:text-emerald-700 transition-transform group-hover:translate-x-0.5" />
-                        </div>
-                      </Link>
-                    ) : (
-                      <div className="pl-3 border-l border-[#d4d4d4]">
-                        <div className="text-[17px] sm:text-[18px] font-bold text-[#111111] leading-tight tracking-tight tabular-nums truncate">
-                          {displayItems[5].value}
-                        </div>
-                        <div className="text-[11px] sm:text-[11.5px] font-normal text-[#222222] mt-0.5 truncate leading-tight">
-                          {displayItems[5].label}
-                        </div>
-                      </div>
-                    )
+                    </Link>
                   ) : (
-                    <div />
-                  )}
-                </div>
-              </>
+                    tile(displayItems[5], false, 5)
+                  )
+                ) : (
+                  <div />
+                )}
+              </div>
             )}
           </div>
         </div>
 
-        {/* Right Calendar Section: Cleanly rendered without clipping */}
+        {/* Right: calendar panel */}
         {calendar && (
-          <div className="shrink-0 w-full lg:w-[276px] p-2 flex shadow-[inset_1px_0px_20px_8px_#a1a1aabf] items-center justify-center bg-white">
+          <div className="shrink-0 w-full lg:w-[276px] p-3 flex items-center justify-center bg-slate-50/70 lg:border-l border-slate-100">
             {calendar}
           </div>
         )}

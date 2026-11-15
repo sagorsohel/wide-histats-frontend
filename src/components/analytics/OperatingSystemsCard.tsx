@@ -45,12 +45,12 @@ export const OperatingSystemsCard: React.FC<OperatingSystemsCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-3.5 sm:p-4 flex flex-col justify-between transition-all duration-200">
+    <div className="bg-white rounded-[18px] border border-white/70 shadow-[0_8px_24px_-8px_rgba(8,40,110,0.35)] p-4 sm:p-5 flex flex-col justify-between transition-all duration-200">
       {/* Header */}
       <div>
-        <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-100 gap-2.5">
+        <div className="flex items-center justify-between mb-2.5 pb-2 gap-2.5">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center shrink-0 shadow-2xs">
+            <div className="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
               <Cpu className="w-4 h-4" />
             </div>
             <div className="min-w-0">

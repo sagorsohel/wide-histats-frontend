@@ -20,12 +20,12 @@ export const SourcesChart: React.FC<SourcesChartProps> = ({
     displaySources.reduce((sum, s) => sum + s.sessions, 0) || 1;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-3.5 sm:p-4 flex flex-col justify-between transition-all duration-200">
+    <div className="bg-white rounded-[18px] border border-white/70 shadow-[0_8px_24px_-8px_rgba(8,40,110,0.35)] p-4 sm:p-5 flex flex-col justify-between transition-all duration-200">
       {/* Header */}
       <div>
-        <div className="flex items-center justify-between gap-2 mb-3 pb-2.5 border-b border-slate-100">
+        <div className="flex items-center justify-between gap-2 mb-3 pb-2.5">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0 shadow-2xs">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
               <Share2 className="w-4 h-4" />
             </div>
             <div className="min-w-0">

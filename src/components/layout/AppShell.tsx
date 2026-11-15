@@ -9,7 +9,7 @@ import { useWebsite } from "@/context/WebsiteContext";
 import { isPagePublic } from "@/lib/utils";
 
 // Routes reachable without signing in. Everything else in the dashboard shell is protected.
-const PUBLIC_PATHS = ["/login", "/register"];
+const PUBLIC_PATHS = ["/login", "/register", "/privacy", "/terms", "/documentation"];
 
 const isPublicPath = (pathname: string) =>
   PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
@@ -78,10 +78,10 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
 
   // Dashboard shell: 1140px boxed container, two-tier header, footer at bottom
   return (
-    <div className="desktop-app-container w-[1140px] min-w-[1140px] max-w-[1140px] mx-auto h-auto min-h-0 flex flex-col bg-white border-0 border-none shadow-[0_10px_31px_rgb(1,45,121)] relative rounded-b-xl overflow-hidden">
+    <div className="desktop-app-container w-[1140px] min-w-[1140px] max-w-[1140px] mx-auto h-auto min-h-[calc(100vh-2.5rem)] flex flex-col bg-white border-0 border-none shadow-[0_10px_31px_rgb(1,45,121)] relative rounded-b-xl overflow-hidden">
       <Header />
-      <div className="desktop-content-row flex-none border-none flex flex-col items-stretch w-full bg-[#F1F5F9]">
-        <main className="desktop-main-scroll flex-none min-w-0 border-0 border-black px-2 py-2.5 lg:p-4 pb-4 bg-[linear-gradient(180deg,#1058d11f,#1058d1)]">
+      <div className="desktop-content-row flex-1 border-none flex flex-col items-stretch w-full bg-[#F1F5F9]">
+        <main className="desktop-main-scroll flex-1 min-w-0 border-0 border-black px-2 py-2.5 lg:p-4 pb-4 bg-[linear-gradient(180deg,#1058d11f,#1058d1)]">
           {blocked ? (
             <div
               className="w-full min-h-[50vh] flex items-center justify-center text-xs font-semibold text-white/90"
